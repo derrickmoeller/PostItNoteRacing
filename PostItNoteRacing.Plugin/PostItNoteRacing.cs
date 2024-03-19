@@ -67,6 +67,7 @@ namespace PostItNoteRacing.Plugin
                     }
                     else
                     {
+                        driver.Position = driver.Position > 0 ? driver.Position : drivers.Max(x => x.Position) + 1;
                         driver.LivePosition = driver.Position;
                         driver.LivePositionInClass = driver.PositionInClass;
                     }
