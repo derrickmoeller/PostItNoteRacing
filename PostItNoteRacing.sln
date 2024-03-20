@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostItNoteRacing.Plugin", "PostItNoteRacing.Plugin\PostItNoteRacing.Plugin.csproj", "{833040C9-FE5E-4CCF-B21D-71979E049B6B}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "PostItNoteRacing.JSExtensions", "PostItNoteRacing.JSExtensions\PostItNoteRacing.JSExtensions.esproj", "{B1BE9900-A96E-4520-85F8-03D20427A6AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +17,13 @@ Global
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{833040C9-FE5E-4CCF-B21D-71979E049B6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1BE9900-A96E-4520-85F8-03D20427A6AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1BE9900-A96E-4520-85F8-03D20427A6AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4C929380-63E7-4296-B420-B568A14852D7}
 	EndGlobalSection
 EndGlobal
