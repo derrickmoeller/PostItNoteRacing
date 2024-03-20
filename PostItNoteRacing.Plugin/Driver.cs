@@ -30,9 +30,9 @@
 
         public string Name { get; set; }
 
-        public int? Position { get; set; }
+        public int? LeaderboardPosition { get; set; }
 
-        public int? PositionInClass { get; set; }
+        public int? LeaderboardPositionInClass { get; set; }
 
         public double? RelativeGapToPlayer { get; set; }
 

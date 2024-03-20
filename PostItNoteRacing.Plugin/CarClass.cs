@@ -4,7 +4,7 @@ namespace PostItNoteRacing.Plugin
 {
     internal class CarClass
     {
-        private static readonly ReadOnlyCollection<string> _classColors =
+        private static readonly ReadOnlyCollection<string> _colors =
             new ReadOnlyCollection<string>(new []
             {
                 "#FFDA59", //1: light yellow
@@ -14,7 +14,7 @@ namespace PostItNoteRacing.Plugin
                 "#53FF77"  //5: light lime green
             });
 
-        public static ReadOnlyCollection<string> ClassColors => _classColors;
+        public static ReadOnlyCollection<string> Colors => _colors;
         
         public string Color { get; set; }
 
@@ -22,7 +22,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                return ClassColors.IndexOf(Color) + 1;
+                return Colors.IndexOf(Color) + 1;
             }
         }
 

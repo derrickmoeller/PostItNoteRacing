@@ -50,8 +50,8 @@ namespace PostItNoteRacing.Plugin
                             String = opponent.LicenceString
                         },
                         Name = opponent.Name,
-                        Position = opponent.Position,
-                        PositionInClass = opponent.PositionInClass,
+                        LeaderboardPosition = opponent.Position,
+                        LeaderboardPositionInClass = opponent.PositionInClass,
                         RelativeGapToPlayer = opponent.RelativeGapToPlayer
                     };
 
@@ -67,9 +67,9 @@ namespace PostItNoteRacing.Plugin
                     }
                     else
                     {
-                        driver.Position = driver.Position > 0 ? driver.Position : drivers.Max(x => x.Position) + 1;
-                        driver.LivePosition = driver.Position;
-                        driver.LivePositionInClass = driver.PositionInClass;
+                        driver.LeaderboardPosition = driver.LeaderboardPosition > 0 ? driver.LeaderboardPosition : drivers.Max(x => x.LeaderboardPosition) + 1;
+                        driver.LivePosition = driver.LeaderboardPosition;
+                        driver.LivePositionInClass = driver.LeaderboardPositionInClass;
                     }
                 }
 
@@ -104,7 +104,7 @@ namespace PostItNoteRacing.Plugin
                     }
                 }
 
-                foreach (var (driver, i) in drivers.OrderBy(x => x.Position).Select((driver, i) => (driver, i)))
+                foreach (var (driver, i) in drivers.OrderBy(x => x.LeaderboardPosition).Select((driver, i) => (driver, i)))
                 {
                     _drivers[i].CarClass.Color = driver.CarClass.Color;
                     _drivers[i].CarClass.Name = driver.CarClass.Name;
@@ -122,11 +122,11 @@ namespace PostItNoteRacing.Plugin
                     _drivers[i].LivePosition = driver.LivePosition;
                     _drivers[i].LivePositionInClass = driver.LivePositionInClass;
                     _drivers[i].Name = driver.Name;
-                    _drivers[i].Position = driver.Position;
-                    _drivers[i].PositionInClass = driver.PositionInClass;
+                    _drivers[i].LeaderboardPosition = driver.LeaderboardPosition;
+                    _drivers[i].LeaderboardPositionInClass = driver.LeaderboardPositionInClass;
                     _drivers[i].RelativeGapToPlayer = driver.RelativeGapToPlayer;
 
-                    SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_Position", driver.Position);
+                    SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_LeaderboardPosition", driver.LeaderboardPosition);
                 }
             }
 
@@ -205,17 +205,17 @@ namespace PostItNoteRacing.Plugin
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LivePosition", () => driver.LivePosition);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LivePositionInClass", () => driver.LivePositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_Name", () => driver.Name);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_Position", () => driver.Position);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_PositionInClass", () => driver.PositionInClass);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPosition", () => driver.LeaderboardPosition);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPositionInClass", () => driver.LeaderboardPositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayer", () => driver.RelativeGapToPlayer);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayerString", () => driver.RelativeGapToPlayerString);
             }
 
-            for (int i = 1; i <= CarClass.ClassColors.Count; i++)
+            for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
                 for (int j = 1; j <= 63; j++)
                 {
-                    AddProperty($"Class_{i:D2}_{j:D2}_Position", -1);
+                    AddProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
                 }
             }
 
