@@ -56,6 +56,7 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Colors.cs" />
     <Compile Include="License.cs" />
     <Compile Include="CarClass.cs" />
     <Compile Include="Driver.cs" />

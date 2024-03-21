@@ -4,18 +4,22 @@ namespace PostItNoteRacing.Plugin
 {
     internal class CarClass
     {
-        private static readonly ReadOnlyCollection<string> _colors =
-            new ReadOnlyCollection<string>(new []
+        private const string LightLimeGreen = "#53FF77";
+        private const string LightPink = "#FF5888";
+        private const string LightYellow = "#FFDA59";
+        private const string VeryLightViolet = "#AE6BFF";
+        private const string VividCyan = "#33CEFF";
+        
+        public static ReadOnlyCollection<string> Colors =
+            new ReadOnlyCollection<string>(new[]
             {
-                "#FFDA59", //1: light yellow
-                "#33CEFF", //2: vivid cyan
-                "#FF5888", //3: light pink
-                "#AE6BFF", //4: very light violet
-                "#53FF77"  //5: light lime green
+                LightYellow,
+                VividCyan,
+                LightPink,
+                VeryLightViolet,
+                LightLimeGreen
             });
 
-        public static ReadOnlyCollection<string> Colors => _colors;
-        
         public string Color { get; set; }
 
         public int Index

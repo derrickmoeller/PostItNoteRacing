@@ -4,6 +4,12 @@ namespace PostItNoteRacing.Plugin
 {
     internal class License
     {
+        private const string blue = "#FF0153DB";
+        private const string green = "#FF00C702";
+        private const string orange = "#FFFC8A27";
+        private const string red = "#FFB40800";
+        private const string yellow = "#FFFEEC04";
+
         public string Color
         {
             get
@@ -11,17 +17,17 @@ namespace PostItNoteRacing.Plugin
                 switch ((String ?? String.Empty).Split(' ')[0])
                 {
                     case "A":
-                        return "#0153DB";
+                        return blue;
                     case "B":
-                        return "#00C702";
+                        return green;
                     case "C":
-                        return "#FEEC04";
+                        return yellow;
                     case "D":
-                        return "#FC8A27";
+                        return orange;
                     case "R":
-                        return "#B40800";
+                        return red;
                     default:
-                        return "#FFFFFF";
+                        return Colors.White;
                 }
             }
         }
@@ -34,11 +40,11 @@ namespace PostItNoteRacing.Plugin
             {
                 switch (Color)
                 {
-                    case "#0153DB":
-                    case "#B40800":
-                        return "White";
+                    case blue:
+                    case red:
+                        return Colors.White;
                     default:
-                        return "Black";
+                        return Colors.Black;
                 }
             }
         }
