@@ -71,11 +71,11 @@ namespace PostItNoteRacing.Plugin
                     else
                     {
                         driver.LeaderboardPosition = driver.LeaderboardPosition > 0 ? driver.LeaderboardPosition : drivers.Max(x => x.LeaderboardPosition) + 1;
-                        driver.LivePosition = driver.LeaderboardPosition;
-                        driver.LivePositionInClass = driver.LeaderboardPositionInClass;
+                        driver.LivePosition = drivers.Count(x => x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds != 0) + 1;
+                        driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds != 0) + 1;
                     }
 
-                    driver.DeltaToBest = driver.BestLapTime.TotalSeconds > 0 ? (driver.BestLapTime - drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds > 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                    driver.DeltaToBest = driver.BestLapTime.TotalSeconds != 0 ? (driver.BestLapTime - drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds != 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
                 }
 
                 var player = drivers.SingleOrDefault(x => x.IsPlayer);
@@ -85,7 +85,7 @@ namespace PostItNoteRacing.Plugin
                     var classLeader = carClass.SingleOrDefault(x => x.LivePositionInClass == 1);
                     double? gapToOverallLeader = classLeader?.GapToLeader;
 
-                    foreach (var driver in carClass)
+                    foreach (var driver in carClass.OrderBy(x => x.LivePositionInClass))
                     {
                         driver.GapToLeader -= gapToOverallLeader;
 
@@ -148,6 +148,8 @@ namespace PostItNoteRacing.Plugin
 
                     SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_LeaderboardPosition", driver.LeaderboardPosition);
                 }
+
+                SetProperty("Player_LeaderboardPosition", player.LeaderboardPosition);
             }
 
             string GetGapAsString(Driver a, Driver b, double? gap)
@@ -237,6 +239,7 @@ namespace PostItNoteRacing.Plugin
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPositionInClass", () => driver.LeaderboardPositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayer", () => driver.RelativeGapToPlayer);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayerString", () => driver.RelativeGapToPlayerString);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_ShortName", () => driver.ShortName);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
@@ -247,6 +250,7 @@ namespace PostItNoteRacing.Plugin
                 }
             }
 
+            AddProperty("Player_LeaderboardPosition", -1);
             AddProperty("Version", "1.00.0");
         }
         #endregion

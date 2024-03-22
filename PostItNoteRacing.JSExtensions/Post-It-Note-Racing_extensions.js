@@ -10,6 +10,16 @@ function pinr_GetLeaderboardPosition(classIndex, classPosition) {
     }
 }
 
+function pinr_GetPlayerLeaderboardPosition() {
+    let leaderboardPosition = $prop('PostItNoteRacing.Player_LeaderboardPosition');
+
+    if (leaderboardPosition === undefined) {
+        return null;
+    } else {
+        return leaderboardPosition;
+    }
+}
+
 function pinr_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName) {
     let propertyValue = $prop('PostItNoteRacing.Drivers_' + (leaderboardPosition ?? '00').toString().padStart(2, '0') + '_' + propertyName);
 

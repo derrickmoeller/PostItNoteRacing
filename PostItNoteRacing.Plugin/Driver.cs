@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin
 {
@@ -89,5 +90,7 @@ namespace PostItNoteRacing.Plugin
         public double? RelativeGapToPlayer { get; set; }
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
+
+        public string ShortName => $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1))}";
     }
 }
