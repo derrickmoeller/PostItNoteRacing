@@ -52,13 +52,15 @@ namespace PostItNoteRacing.Plugin
                             IsInPit = opponent.IsCarInPit,
                             IsPlayer = opponent.IsPlayer,
                             LastLapTime = opponent.LastLapTime,
+                            LeaderboardPosition = opponent.Position,
+                            LeaderboardPositionInClass = opponent.PositionInClass,
                             License = new License
                             {
                                 String = opponent.LicenceString
                             },
+                            LivePosition = -1,
+                            LivePositionInClass = -1,
                             Name = opponent.Name,
-                            LeaderboardPosition = opponent.Position,
-                            LeaderboardPositionInClass = opponent.PositionInClass,
                             RelativeGapToPlayer = opponent.RelativeGapToPlayer
                         };
 
@@ -75,11 +77,20 @@ namespace PostItNoteRacing.Plugin
                         else
                         {
                             driver.LeaderboardPosition = driver.LeaderboardPosition > 0 ? driver.LeaderboardPosition : drivers.Max(x => x.LeaderboardPosition) + 1;
-                            driver.LivePosition = drivers.Count(x => x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds != 0) + 1;
-                            driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds != 0) + 1;
+                            
+                            if (driver.BestLapTime.TotalSeconds > 0)
+                            {
+                                driver.LivePosition = drivers.Count(x => x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
+                                driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
+                            }
+                            else
+                            {
+                                driver.LivePosition = drivers.Count(x => x.BestLapTime.TotalSeconds > 0 || x.LivePosition != -1) + 1;
+                                driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && (x.BestLapTime.TotalSeconds > 0 || x.LivePositionInClass != -1)) + 1;
+                            }
                         }
 
-                        driver.DeltaToBest = driver.BestLapTime.TotalSeconds != 0 ? (driver.BestLapTime - drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds != 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                        driver.DeltaToBest = driver.BestLapTime.TotalSeconds > 0 ? (driver.BestLapTime - drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds > 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
                     }
 
                     var player = drivers.SingleOrDefault(x => x.IsPlayer);
