@@ -52,6 +52,8 @@ namespace PostItNoteRacing.Plugin
 
         public bool IsConnected { get; set; }
 
+        public bool IsInPit { get; set; }
+
         public bool IsPlayer { get; set; }
 
         public string LastLapColor
@@ -91,6 +93,19 @@ namespace PostItNoteRacing.Plugin
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
 
-        public string ShortName => $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1))}";
+        public string ShortName
+        {
+            get
+            {
+                if (Name != null)
+                {
+                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1))}";
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
     }
 }

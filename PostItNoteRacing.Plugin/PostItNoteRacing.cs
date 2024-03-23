@@ -49,6 +49,7 @@ namespace PostItNoteRacing.Plugin
                             GapToLeader = opponent.GaptoLeader ?? 0,
                             GapToPlayer = opponent.GaptoPlayer,
                             IsConnected = opponent.IsConnected,
+                            IsInPit = opponent.IsCarInPit,
                             IsPlayer = opponent.IsPlayer,
                             LastLapTime = opponent.LastLapTime,
                             License = new License
@@ -141,15 +142,38 @@ namespace PostItNoteRacing.Plugin
                         _drivers[i].IsConnected = driver.IsConnected;
                         _drivers[i].IsPlayer = driver.IsPlayer;
                         _drivers[i].LastLapTime = driver.LastLapTime;
+                        _drivers[i].LeaderboardPosition = driver.LeaderboardPosition;
+                        _drivers[i].LeaderboardPositionInClass = driver.LeaderboardPositionInClass;
                         _drivers[i].License.String = driver.License.String;
                         _drivers[i].LivePosition = driver.LivePosition;
                         _drivers[i].LivePositionInClass = driver.LivePositionInClass;
                         _drivers[i].Name = driver.Name;
-                        _drivers[i].LeaderboardPosition = driver.LeaderboardPosition;
-                        _drivers[i].LeaderboardPositionInClass = driver.LeaderboardPositionInClass;
                         _drivers[i].RelativeGapToPlayer = driver.RelativeGapToPlayer;
 
                         SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_LeaderboardPosition", driver.LeaderboardPosition);
+                    }
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        var driverAhead = drivers.Where(x => x.RelativeGapToPlayer < 0 && x.IsInPit == false).OrderByDescending(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
+                        if (driverAhead != null)
+                        {
+                            SetProperty($"Ahead_{i + 1:D2}_LeaderboardPosition", driverAhead.LeaderboardPosition);
+                        }
+                        else
+                        {
+                            SetProperty($"Ahead_{i + 1:D2}_LeaderboardPosition", -1);
+                        }
+
+                        var driverBehind = drivers.Where(x => x.RelativeGapToPlayer >= 0 && x.IsInPit == false).OrderBy(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
+                        if (driverBehind != null)
+                        {
+                            SetProperty($"Behind_{i + 1:D2}_LeaderboardPosition", driverBehind.LeaderboardPosition);
+                        }
+                        else
+                        {
+                            SetProperty($"Behind_{i + 1:D2}_LeaderboardPosition", -1);
+                        }
                     }
 
                     SetProperty("Player_LeaderboardPosition", player.LeaderboardPosition);
@@ -203,7 +227,9 @@ namespace PostItNoteRacing.Plugin
         }
 
         public void End(PluginManager _)
-        { }
+        {
+            Logging.Current.Info($"Stopping Plugin {nameof(PostItNoteRacing)}");
+        }
 
         /// <summary>
         /// Called once after plugins startup
@@ -212,7 +238,7 @@ namespace PostItNoteRacing.Plugin
         /// <param name="pluginManager"></param>
         public void Init(PluginManager _)
         {
-            Logging.Current.Info("Starting plugin : PostItNoteRacing");
+            Logging.Current.Info($"Starting Plugin {nameof(PostItNoteRacing)}");
 
             foreach (var (driver, i) in _drivers.Select((driver, i) => (driver, i)))
             {
@@ -237,17 +263,23 @@ namespace PostItNoteRacing.Plugin
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IsPlayer", () => driver.IsPlayer);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LastLapColor", () => driver.LastLapColor);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LastLapTime", () => driver.LastLapTime);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPosition", () => driver.LeaderboardPosition);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPositionInClass", () => driver.LeaderboardPositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseColor", () => driver.License.Color);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseString", () => driver.License.String);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseTextColor", () => driver.License.TextColor);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LivePosition", () => driver.LivePosition);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_LivePositionInClass", () => driver.LivePositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_Name", () => driver.Name);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPosition", () => driver.LeaderboardPosition);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPositionInClass", () => driver.LeaderboardPositionInClass);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayer", () => driver.RelativeGapToPlayer);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayerString", () => driver.RelativeGapToPlayerString);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_ShortName", () => driver.ShortName);
+            }
+
+            for (int i = 1; i <= 5; i++)
+            {
+                AddProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
+                AddProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
@@ -259,7 +291,7 @@ namespace PostItNoteRacing.Plugin
             }
 
             AddProperty("Player_LeaderboardPosition", -1);
-            AddProperty("Version", "1.00.0");
+            AddProperty("Version", "1.0.0.1");
         }
         #endregion
     }
