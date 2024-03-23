@@ -26,9 +26,6 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
-                if (data?.GameName != "IRacing")
-                    return;
-
                 if (data.GameRunning && data.NewData != null)
                 {
                     var drivers = new List<Driver>();
@@ -189,10 +186,14 @@ namespace PostItNoteRacing.Plugin
 
                     SetProperty("Player_LeaderboardPosition", player.LeaderboardPosition);
                 }
+                else
+                {
+                    InitializeSimHubProperties();
+                }
             }
             catch (Exception ex)
             {
-                Logging.Current.Info($"Exception in Plugin {nameof(PostItNoteRacing)}: {ex.Message}");
+                Logging.Current.Info($"Exception in plugin ({nameof(PostItNoteRacing)}) : {ex.Message}");
             }
 
             string GetGapAsString(Driver a, Driver b, double? gap)
@@ -235,11 +236,59 @@ namespace PostItNoteRacing.Plugin
                     return $"{interval:+0.0;-0.0}";
                 }
             }
+
+            void InitializeSimHubProperties()
+            {
+                foreach (var driver in _drivers)
+                {
+                    driver.BestLapTime = TimeSpan.Zero;
+                    driver.CarClass.Color = null;
+                    driver.CarClass.Name = null;
+                    driver.CarClass.TextColor = null;
+                    driver.CarNumber = null;
+                    driver.CurrentLapHighPrecision = null;
+                    driver.DeltaToBest = null;
+                    driver.DeltaToPlayerBest = null;
+                    driver.DeltaToPlayerLast = null;
+                    driver.GapToLeader = null;
+                    driver.GapToLeaderString = null;
+                    driver.GapToPlayer = null;
+                    driver.GapToPlayerString = null;
+                    driver.Interval = null;
+                    driver.IntervalString = null;
+                    driver.IsConnected = false;
+                    driver.IsPlayer = false;
+                    driver.LastLapTime = TimeSpan.Zero;
+                    driver.LeaderboardPosition = -1;
+                    driver.LeaderboardPositionInClass = -1;
+                    driver.License.String = null;
+                    driver.LivePosition = -1;
+                    driver.LivePositionInClass = -1;
+                    driver.Name = null;
+                    driver.RelativeGapToPlayer = null;
+                }
+
+                for (int i = 1; i <= 5; i++)
+                {
+                    SetProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
+                    SetProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
+                }
+
+                for (int i = 1; i <= CarClass.Colors.Count; i++)
+                {
+                    for (int j = 1; j <= 63; j++)
+                    {
+                        SetProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
+                    }
+                }
+
+                SetProperty("Player_LeaderboardPosition", -1);
+            }
         }
 
         public void End(PluginManager _)
         {
-            Logging.Current.Info($"Stopping Plugin {nameof(PostItNoteRacing)}");
+            Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
         }
 
         /// <summary>
@@ -249,7 +298,7 @@ namespace PostItNoteRacing.Plugin
         /// <param name="pluginManager"></param>
         public void Init(PluginManager _)
         {
-            Logging.Current.Info($"Starting Plugin {nameof(PostItNoteRacing)}");
+            Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
             foreach (var (driver, i) in _drivers.Select((driver, i) => (driver, i)))
             {
