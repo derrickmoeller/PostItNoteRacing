@@ -54,7 +54,11 @@ namespace PostItNoteRacing.Plugin
 
         public double? IRating { get; set; }
 
-        public string IRatingLicenseCombinedString => $"{License.ShortString} {(IRating ?? 0D) / 1000:0.0k}";
+        public double? IRatingChange { get; set; }
+
+        public string IRatingString => $"{(IRating ?? 0D) / 1000:0.0k}";
+
+        public string IRatingLicenseCombinedString => $"{License.ShortString} {IRatingString}";
 
         public bool? IsConnected { get; set; }
 

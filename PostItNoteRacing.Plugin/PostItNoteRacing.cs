@@ -1,4 +1,5 @@
 ﻿using GameReaderCommon;
+using IRacingReader;
 using SimHub;
 using SimHub.Plugins;
 using System;
@@ -14,10 +15,66 @@ namespace PostItNoteRacing.Plugin
     public class PostItNoteRacing : IDataPlugin
     {
         private readonly ReadOnlyCollection<Driver> _drivers = new ReadOnlyCollection<Driver>(Enumerable.Repeat(0, 63).Select(x => new Driver()).ToList());
+        private readonly double _weight = 1600 / Math.Log(2);
 
         public void AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
 
         public void SetProperty(string propertyName, dynamic value) => PluginManager.SetPropertyValue(propertyName, typeof(PostItNoteRacing), value);
+
+        private void InitializeSimHubProperties()
+        {
+            foreach (var driver in _drivers)
+            {
+                driver.BestLapTime = TimeSpan.Zero;
+                driver.CarClass.Color = null;
+                driver.CarClass.Name = null;
+                driver.CarClass.TextColor = null;
+                driver.CarNumber = null;
+                driver.CurrentLapHighPrecision = null;
+                driver.DeltaToBest = null;
+                driver.DeltaToPlayerBest = null;
+                driver.DeltaToPlayerLast = null;
+                driver.GapToLeader = null;
+                driver.GapToLeaderString = null;
+                driver.GapToPlayer = null;
+                driver.GapToPlayerString = null;
+                driver.Interval = null;
+                driver.IntervalString = null;
+                driver.IRating = null;
+                driver.IRatingChange = null;
+                driver.IsConnected = null;
+                driver.IsInPit = null;
+                driver.IsPlayer = null;
+                driver.LastLapTime = TimeSpan.Zero;
+                driver.LeaderboardPosition = -1;
+                driver.LeaderboardPositionInClass = -1;
+                driver.License.String = null;
+                driver.LivePosition = -1;
+                driver.LivePositionInClass = -1;
+                driver.Name = null;
+                driver.RelativeGapToPlayer = null;
+            }
+
+            for (int i = 1; i <= 5; i++)
+            {
+                SetProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
+                SetProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
+            }
+
+            for (int i = 1; i <= CarClass.Colors.Count; i++)
+            {
+                SetProperty($"Class_{i:D2}_SoF", 0);
+                SetProperty($"Class_{i:D2}_SoFString", String.Empty);
+
+                for (int j = 1; j <= 63; j++)
+                {
+                    SetProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
+                }
+            }
+
+            SetProperty("Player_Incidents", 0);
+            SetProperty("Player_LeaderboardPosition", -1);
+        }
 
         #region Interface: IDataPlugin
         public PluginManager PluginManager { get; set; }
@@ -43,7 +100,7 @@ namespace PostItNoteRacing.Plugin
                             },
                             CarNumber = opponent.CarNumber,
                             CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
-                            GapToLeader = opponent.GaptoLeader ?? 0,
+                            GapToLeader = opponent.GaptoClassLeader ?? 0,
                             GapToPlayer = opponent.GaptoPlayer,
                             IRating = opponent.IRacing_IRating,
                             IsConnected = opponent.IsConnected,
@@ -71,6 +128,11 @@ namespace PostItNoteRacing.Plugin
                         {
                             driver.LivePosition = drivers.Count(x => x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
                             driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
+
+                            if (driver.IRating > 0)
+                            {
+                                driver.IRatingChange = GetIRatingChange(driver.IRating.Value, driver.LivePositionInClass, drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.IRating > 0).Select(x => x.IRating.Value));
+                            }
                         }
                         else
                         {
@@ -95,16 +157,13 @@ namespace PostItNoteRacing.Plugin
 
                     foreach (var carClass in drivers.GroupBy(x => x.CarClass.Index))
                     {
-                        var classLeader = carClass.SingleOrDefault(x => x.LivePositionInClass == 1);
-                        double? gapToOverallLeader = classLeader?.GapToLeader;
-
+                        var leader = carClass.SingleOrDefault(x => x.LivePositionInClass == 1);
+                        
                         foreach (var driver in carClass.OrderBy(x => x.LivePositionInClass))
                         {
-                            driver.GapToLeader -= gapToOverallLeader;
-
-                            if (classLeader != null)
+                            if (leader != null)
                             {
-                                driver.GapToLeaderString = GetGapAsString(driver, classLeader, driver.GapToLeader);
+                                driver.GapToLeaderString = GetGapAsString(driver, leader, driver.GapToLeader);
                             }
 
                             if (player != null)
@@ -129,6 +188,11 @@ namespace PostItNoteRacing.Plugin
                                 }
                             }
                         }
+
+                        int strengthOfField = GetStrengthOfField(carClass.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
+
+                        SetProperty($"Class_{carClass.Key:D2}_SoF", strengthOfField);
+                        SetProperty($"Class_{carClass.Key:D2}_SoFString", $"{strengthOfField / 1000D:0.0k}");
                     }
 
                     foreach (var (driver, i) in drivers.OrderBy(x => x.LeaderboardPosition).Select((driver, i) => (driver, i)))
@@ -149,6 +213,7 @@ namespace PostItNoteRacing.Plugin
                         _drivers[i].Interval = driver.Interval;
                         _drivers[i].IntervalString = driver.IntervalString;
                         _drivers[i].IRating = driver.IRating;
+                        _drivers[i].IRatingChange = driver.IRatingChange;
                         _drivers[i].IsConnected = driver.IsConnected;
                         _drivers[i].IsInPit = driver.IsInPit;
                         _drivers[i].IsPlayer = driver.IsPlayer;
@@ -184,6 +249,17 @@ namespace PostItNoteRacing.Plugin
                         else
                         {
                             SetProperty($"Behind_{i + 1:D2}_LeaderboardPosition", -1);
+                        }
+                    }
+
+                    if (data.GameName == "IRacing")
+                    {
+                        var iRacingData = data.NewData.GetRawDataObject() as DataSampleEx;
+                        if (iRacingData != null)
+                        {
+                            iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
+
+                            SetProperty("Player_Incidents", Convert.ToInt32(rawIncidents));
                         }
                     }
 
@@ -240,54 +316,29 @@ namespace PostItNoteRacing.Plugin
                 }
             }
 
-            void InitializeSimHubProperties()
+            int GetIRatingChange(double driverIRating, int position, IEnumerable<double> iRatings)
             {
-                foreach (var driver in _drivers)
+                double factor = (iRatings.Count() / 2 - position) / 100;
+                double sum = -0.5;
+
+                foreach (var iRating in iRatings)
                 {
-                    driver.BestLapTime = TimeSpan.Zero;
-                    driver.CarClass.Color = null;
-                    driver.CarClass.Name = null;
-                    driver.CarClass.TextColor = null;
-                    driver.CarNumber = null;
-                    driver.CurrentLapHighPrecision = null;
-                    driver.DeltaToBest = null;
-                    driver.DeltaToPlayerBest = null;
-                    driver.DeltaToPlayerLast = null;
-                    driver.GapToLeader = null;
-                    driver.GapToLeaderString = null;
-                    driver.GapToPlayer = null;
-                    driver.GapToPlayerString = null;
-                    driver.Interval = null;
-                    driver.IntervalString = null;
-                    driver.IRating = null;
-                    driver.IsConnected = null;
-                    driver.IsInPit = null;
-                    driver.IsPlayer = null;
-                    driver.LastLapTime = TimeSpan.Zero;
-                    driver.LeaderboardPosition = -1;
-                    driver.LeaderboardPositionInClass = -1;
-                    driver.License.String = null;
-                    driver.LivePosition = -1;
-                    driver.LivePositionInClass = -1;
-                    driver.Name = null;
-                    driver.RelativeGapToPlayer = null;
+                    sum += (1 - Math.Exp(-driverIRating / _weight)) * Math.Exp(-iRating / _weight) / ((1 - Math.Exp(-iRating / _weight)) * Math.Exp(-driverIRating / _weight) + (1 - Math.Exp(-driverIRating / _weight)) * Math.Exp(-iRating / _weight));
                 }
 
-                for (int i = 1; i <= 5; i++)
+                return (int)Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count());
+            }
+
+            int GetStrengthOfField(IEnumerable<double> iRatings)
+            {
+                double sum = 0;
+
+                foreach (var iRating in  iRatings)
                 {
-                    SetProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
-                    SetProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
+                    sum += Math.Pow(2, -iRating / 1600);
                 }
 
-                for (int i = 1; i <= CarClass.Colors.Count; i++)
-                {
-                    for (int j = 1; j <= 63; j++)
-                    {
-                        SetProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
-                    }
-                }
-
-                SetProperty("Player_LeaderboardPosition", -1);
+                return (int)Math.Round(_weight * Math.Log(iRatings.Count() / sum));
             }
         }
 
@@ -325,6 +376,8 @@ namespace PostItNoteRacing.Plugin
                 this.AttachDelegate($"Drivers_{i + 1:D2}_Interval", () => driver.Interval);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IntervalString", () => driver.IntervalString);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IRating", () => driver.IRating);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingChange", () => driver.IRatingChange);
+                this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingString", () => driver.IRatingString);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingLicenseCombinedString", () => driver.IRatingLicenseCombinedString);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IsConnected", () => driver.IsConnected);
                 this.AttachDelegate($"Drivers_{i + 1:D2}_IsInPit", () => driver.IsInPit);
@@ -354,12 +407,16 @@ namespace PostItNoteRacing.Plugin
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
+                AddProperty($"Class_{i:D2}_SoF", 0);
+                AddProperty($"Class_{i:D2}_SoFString", String.Empty);
+
                 for (int j = 1; j <= 63; j++)
                 {
                     AddProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
                 }
             }
 
+            AddProperty("Player_Incidents", 0);
             AddProperty("Player_LeaderboardPosition", -1);
             AddProperty("Version", "1.0.0.2");
         }
