@@ -14,7 +14,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                switch ((String ?? String.Empty).Split(' ')[0])
+                switch (ShortString)
                 {
                     case "A":
                         return blue;
@@ -31,6 +31,8 @@ namespace PostItNoteRacing.Plugin
                 }
             }
         }
+
+        public string ShortString => (String ?? String.Empty).Split(' ')[0];
 
         public string String { get; set; }
 

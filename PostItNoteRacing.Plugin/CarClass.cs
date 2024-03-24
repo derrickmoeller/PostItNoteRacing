@@ -22,11 +22,19 @@ namespace PostItNoteRacing.Plugin
 
         public string Color { get; set; }
 
-        public int Index
+        public int? Index
         {
             get
             {
-                return Colors.IndexOf(Color) + 1;
+                var index = Colors.IndexOf(Color);
+                if (index == -1)
+                {
+                    return null;
+                }
+                else
+                {
+                    return index + 1;
+                }
             }
         }
 

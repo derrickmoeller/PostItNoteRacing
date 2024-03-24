@@ -5,6 +5,8 @@ namespace PostItNoteRacing.Plugin
 {
     internal class Driver
     {
+        private static readonly char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
         public string BestLapColor
         {
             get
@@ -13,7 +15,7 @@ namespace PostItNoteRacing.Plugin
                 {
                     return Colors.Purple;
                 }
-                else if (IsPlayer)
+                else if (IsPlayer == true)
                 {
                     return Colors.Yellow;
                 }
@@ -50,21 +52,25 @@ namespace PostItNoteRacing.Plugin
 
         public string IntervalString { get; set; }
 
-        public bool IsConnected { get; set; }
+        public double? IRating { get; set; }
 
-        public bool IsInPit { get; set; }
+        public string IRatingLicenseCombinedString => $"{License.ShortString} {(IRating ?? 0D) / 1000:0.0k}";
 
-        public bool IsPlayer { get; set; }
+        public bool? IsConnected { get; set; }
+
+        public bool? IsInPit { get; set; }
+
+        public bool? IsPlayer { get; set; }
 
         public string LastLapColor
         {
             get
             {
-                if (LastLapTime == BestLapTime)
+                if (LastLapTime.TotalSeconds > 0 && LastLapTime == BestLapTime)
                 {
                     return Colors.Green;
                 }
-                else if (IsPlayer)
+                else if (IsPlayer == true)
                 {
                     return Colors.Yellow;
                 }
@@ -91,6 +97,25 @@ namespace PostItNoteRacing.Plugin
 
         public double? RelativeGapToPlayer { get; set; }
 
+        public string RelativeGapToPlayerColor
+        {
+            get
+            {
+                if (GapToPlayer < 0 && (GapToPlayerString.EndsWith("L") || RelativeGapToPlayer >= 0))
+                {
+                    return Colors.Orange;
+                }
+                else if (GapToPlayer > 0 && (GapToPlayerString.EndsWith("L") || RelativeGapToPlayer <= 0))
+                {
+                    return Colors.Blue;
+                }
+                else
+                {
+                    return Colors.White;
+                }
+            }
+        }
+
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
 
         public string ShortName
@@ -99,7 +124,7 @@ namespace PostItNoteRacing.Plugin
             {
                 if (Name != null)
                 {
-                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1))}";
+                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1)).TrimEnd(digits)}";
                 }
                 else
                 {
