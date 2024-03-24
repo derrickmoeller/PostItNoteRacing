@@ -4,7 +4,6 @@ using SimHub;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin
@@ -14,66 +13,98 @@ namespace PostItNoteRacing.Plugin
     [PluginName("PostItNoteRacing")]
     public class PostItNoteRacing : IDataPlugin
     {
-        private readonly ReadOnlyCollection<Driver> _drivers = new ReadOnlyCollection<Driver>(Enumerable.Repeat(0, 63).Select(x => new Driver()).ToList());
+        private readonly List<Driver> _drivers = new List<Driver>();
         private readonly double _weight = 1600 / Math.Log(2);
 
-        public void AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
+        private string _sessionType;
 
-        public void SetProperty(string propertyName, dynamic value) => PluginManager.SetPropertyValue(propertyName, typeof(PostItNoteRacing), value);
-
-        private void InitializeSimHubProperties()
+        private string SessionType
         {
-            foreach (var driver in _drivers)
+            get { return _sessionType; }
+            set
             {
-                driver.BestLapTime = TimeSpan.Zero;
-                driver.CarClass.Color = null;
-                driver.CarClass.Name = null;
-                driver.CarClass.TextColor = null;
-                driver.CarNumber = null;
-                driver.CurrentLapHighPrecision = null;
-                driver.DeltaToBest = null;
-                driver.DeltaToPlayerBest = null;
-                driver.DeltaToPlayerLast = null;
-                driver.GapToLeader = null;
-                driver.GapToLeaderString = null;
-                driver.GapToPlayer = null;
-                driver.GapToPlayerString = null;
-                driver.Interval = null;
-                driver.IntervalString = null;
-                driver.IRating = null;
-                driver.IRatingChange = null;
-                driver.IsConnected = null;
-                driver.IsInPit = null;
-                driver.IsPlayer = null;
-                driver.LastLapTime = TimeSpan.Zero;
-                driver.LeaderboardPosition = -1;
-                driver.LeaderboardPositionInClass = -1;
-                driver.License.String = null;
-                driver.LivePosition = -1;
-                driver.LivePositionInClass = -1;
-                driver.Name = null;
-                driver.RelativeGapToPlayer = null;
+                if (_sessionType != value)
+                {
+                    _sessionType = value;
+                    OnSessionTypeChanged();
+                }
+            }
+        }
+
+        private void AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
+
+        private void SetProperty(string propertyName, dynamic value) => PluginManager.SetPropertyValue(propertyName, typeof(PostItNoteRacing), value);
+
+        private void OnSessionTypeChanged()
+        {
+            _drivers.Clear();
+
+            ResetSimHubProperties();
+        }
+
+        private void ResetSimHubProperties()
+        {
+            for (int i = 1; i <= 63; i++)
+            {
+                SetProperty($"Drivers_{i:D2}_BestLapColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
+                SetProperty($"Drivers_{i:D2}_CarNumber", -1);
+                SetProperty($"Drivers_{i:D2}_ClassColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_ClassIndex", -1);
+                SetProperty($"Drivers_{i:D2}_ClassString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_ClassTextColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
+                SetProperty($"Drivers_{i:D2}_DeltaToBest", 0);
+                SetProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
+                SetProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
+                SetProperty($"Drivers_{i:D2}_GapToLeader", 0);
+                SetProperty($"Drivers_{i:D2}_GapToLeaderString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_GapToPlayer", 0);
+                SetProperty($"Drivers_{i:D2}_GapToPlayerString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_Interval", 0);
+                SetProperty($"Drivers_{i:D2}_IntervalString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_IRating", 0);
+                SetProperty($"Drivers_{i:D2}_IRatingChange", 0);
+                SetProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_IRatingLicenseCombinedString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_IsConnected", false);
+                SetProperty($"Drivers_{i:D2}_IsInPit", false);
+                SetProperty($"Drivers_{i:D2}_IsPlayer", false);
+                SetProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
+                SetProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_LicenseShortString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_LicenseString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_LicenseTextColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_LivePosition", -1);
+                SetProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
+                SetProperty($"Drivers_{i:D2}_Name", String.Empty);
+                SetProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
+                SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", String.Empty);
+                SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", String.Empty);
+                SetProperty($"Drivers_{i:D2}_ShortName", String.Empty);
             }
 
             for (int i = 1; i <= 5; i++)
             {
-                SetProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
-                SetProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
+                SetProperty($"Ahead_{i:D2}_LivePosition", -1);
+                SetProperty($"Behind_{i:D2}_LivePosition", -1);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
+                SetProperty($"Class_{i:D2}_Best_LivePosition", -1);
                 SetProperty($"Class_{i:D2}_SoF", 0);
                 SetProperty($"Class_{i:D2}_SoFString", String.Empty);
 
                 for (int j = 1; j <= 63; j++)
                 {
-                    SetProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
+                    SetProperty($"Class_{i:D2}_{j:D2}_LivePosition", -1);
                 }
             }
 
             SetProperty("Player_Incidents", 0);
-            SetProperty("Player_LeaderboardPosition", -1);
+            SetProperty("Player_LivePosition", -1);
         }
 
         #region Interface: IDataPlugin
@@ -85,77 +116,92 @@ namespace PostItNoteRacing.Plugin
             {
                 if (data.GameRunning && data.NewData != null)
                 {
-                    var drivers = new List<Driver>();
-
+                    SessionType = data.NewData.SessionTypeName;
+                    
                     foreach (var opponent in data.NewData.Opponents)
                     {
-                        var driver = new Driver
+                        var driver = _drivers.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                        if (driver == null)
                         {
-                            BestLapTime = opponent.BestLapTime,
-                            CarClass = new CarClass
+                            driver = new Driver
                             {
-                                Color = opponent.CarClassColor,
-                                Name = opponent.CarClass,
-                                TextColor = opponent.CarClassTextColor
-                            },
-                            CarNumber = opponent.CarNumber,
-                            CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
-                            GapToLeader = opponent.GaptoClassLeader ?? 0,
-                            GapToPlayer = opponent.GaptoPlayer,
-                            IRating = opponent.IRacing_IRating,
-                            IsConnected = opponent.IsConnected,
-                            IsInPit = opponent.IsCarInPit,
-                            IsPlayer = opponent.IsPlayer,
-                            LastLapTime = opponent.LastLapTime,
-                            LeaderboardPosition = opponent.Position,
-                            LeaderboardPositionInClass = opponent.PositionInClass,
-                            License = new License
-                            {
-                                String = opponent.LicenceString
-                            },
-                            LivePosition = -1,
-                            LivePositionInClass = -1,
-                            Name = opponent.Name,
-                            RelativeGapToPlayer = opponent.RelativeGapToPlayer
-                        };
+                                BestLapTime = opponent.BestLapTime,
+                                CarClass = new CarClass
+                                {
+                                    Color = opponent.CarClassColor,
+                                    Name = opponent.CarClass,
+                                    TextColor = opponent.CarClassTextColor
+                                },
+                                CarNumber = opponent.CarNumber,
+                                CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
+                                IRating = opponent.IRacing_IRating,
+                                LastLapTime = opponent.LastLapTime,
+                                License = new License
+                                {
+                                    String = opponent.LicenceString
+                                },
+                                Name = opponent.Name,
+                                RelativeGapToPlayer = opponent.RelativeGapToPlayer,
+                            };
 
-                        drivers.Add(driver);
+                            _drivers.Add(driver);
+                        }
+                        else if (opponent.IsConnected == true)
+                        {
+                            driver.BestLapTime = opponent.BestLapTime;
+                            driver.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
+                            driver.IRating = opponent.IRacing_IRating;
+                            driver.LastLapTime = opponent.LastLapTime;
+                            driver.License.String = opponent.LicenceString;
+                            driver.Name = opponent.Name;
+                            driver.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
+                        }
+                        else if (opponent.IsConnected == false)
+                        {
+                            driver.RelativeGapToPlayer = null;
+                        }
+
+                        driver.GapToLeader = opponent.GaptoClassLeader ?? 0;
+                        driver.GapToPlayer = opponent.GaptoPlayer;
+                        driver.IsConnected = opponent.IsConnected;
+                        driver.IsInPit = opponent.IsCarInPit;
+                        driver.IsPlayer = opponent.IsPlayer;
+                        driver.LivePosition = -1;
+                        driver.LivePositionInClass = -1;
                     }
 
-                    foreach (var driver in drivers)
+                    foreach (var driver in _drivers)
                     {
-                        if (data.NewData.SessionTypeName == "Race")
+                        if (SessionType == "Race")
                         {
-                            driver.LivePosition = drivers.Count(x => x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
-                            driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
+                            driver.LivePosition = _drivers.Count(x => x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
+                            driver.LivePositionInClass = _drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.CurrentLapHighPrecision > driver.CurrentLapHighPrecision) + 1;
 
                             if (driver.IRating > 0)
                             {
-                                driver.IRatingChange = GetIRatingChange(driver.IRating.Value, driver.LivePositionInClass, drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.IRating > 0).Select(x => x.IRating.Value));
+                                driver.IRatingChange = GetIRatingChange(driver.IRating.Value, driver.LivePositionInClass, _drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.IRating > 0).Select(x => x.IRating.Value));
                             }
                         }
                         else
                         {
-                            driver.LeaderboardPosition = driver.LeaderboardPosition > 0 ? driver.LeaderboardPosition : drivers.Max(x => x.LeaderboardPosition) + 1;
-                            
                             if (driver.BestLapTime.TotalSeconds > 0)
                             {
-                                driver.LivePosition = drivers.Count(x => x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
-                                driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
+                                driver.LivePosition = _drivers.Count(x => x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
+                                driver.LivePositionInClass = _drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime < driver.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
                             }
                             else
                             {
-                                driver.LivePosition = drivers.Count(x => x.BestLapTime.TotalSeconds > 0 || x.LivePosition != -1) + 1;
-                                driver.LivePositionInClass = drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && (x.BestLapTime.TotalSeconds > 0 || x.LivePositionInClass != -1)) + 1;
+                                driver.LivePosition = _drivers.Count(x => x.BestLapTime.TotalSeconds > 0 || x.LivePosition != -1) + 1;
+                                driver.LivePositionInClass = _drivers.Count(x => x.CarClass.Index == driver.CarClass.Index && (x.BestLapTime.TotalSeconds > 0 || x.LivePositionInClass != -1)) + 1;
                             }
                         }
 
-                        driver.DeltaToBest = driver.BestLapTime.TotalSeconds > 0 ? (driver.BestLapTime - drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds > 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                        driver.DeltaToBest = driver.BestLapTime.TotalSeconds > 0 ? (driver.BestLapTime - _drivers.Where(x => x.CarClass.Index == driver.CarClass.Index && x.BestLapTime.TotalSeconds > 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
                     }
 
-                    var player = drivers.SingleOrDefault(x => x.IsPlayer == true);
+                    var player = _drivers.SingleOrDefault(x => x.IsPlayer == true);
 
-                    foreach (var carClass in drivers.GroupBy(x => x.CarClass.Index))
+                    foreach (var carClass in _drivers.GroupBy(x => x.CarClass.Index))
                     {
                         var leader = carClass.SingleOrDefault(x => x.LivePositionInClass == 1);
                         
@@ -180,7 +226,7 @@ namespace PostItNoteRacing.Plugin
                             }
                             else
                             {
-                                var driverAhead = drivers.SingleOrDefault(x => x.CarClass.Index == driver.CarClass.Index && x.LivePositionInClass == driver.LivePositionInClass - 1);
+                                var driverAhead = carClass.SingleOrDefault(x => x.LivePositionInClass == driver.LivePositionInClass - 1);
                                 if (driverAhead != null)
                                 {
                                     driver.Interval = driver.GapToLeader - driverAhead.GapToLeader;
@@ -191,64 +237,74 @@ namespace PostItNoteRacing.Plugin
 
                         int strengthOfField = GetStrengthOfField(carClass.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
 
+                        SetProperty($"Class_{carClass.Key:D2}_Best_LivePosition", carClass.Where(x => x.BestLapTime.TotalSeconds > 0).OrderBy(x => x.BestLapTime).FirstOrDefault()?.LivePosition ?? -1);
                         SetProperty($"Class_{carClass.Key:D2}_SoF", strengthOfField);
                         SetProperty($"Class_{carClass.Key:D2}_SoFString", $"{strengthOfField / 1000D:0.0k}");
                     }
 
-                    foreach (var (driver, i) in drivers.OrderBy(x => x.LeaderboardPosition).Select((driver, i) => (driver, i)))
+                    foreach (var (driver, i) in _drivers.OrderBy(x => x.LivePosition).Select((driver, i) => (driver, i)))
                     {
-                        _drivers[i].BestLapTime = driver.BestLapTime;
-                        _drivers[i].CarClass.Color = driver.CarClass.Color;
-                        _drivers[i].CarClass.Name = driver.CarClass.Name;
-                        _drivers[i].CarClass.TextColor = driver.CarClass.TextColor;
-                        _drivers[i].CarNumber = driver.CarNumber;
-                        _drivers[i].CurrentLapHighPrecision = driver.CurrentLapHighPrecision;
-                        _drivers[i].DeltaToBest = driver.DeltaToBest;
-                        _drivers[i].DeltaToPlayerBest = driver.DeltaToPlayerBest;
-                        _drivers[i].DeltaToPlayerLast = driver.DeltaToPlayerLast;
-                        _drivers[i].GapToLeader = driver.GapToLeader;
-                        _drivers[i].GapToLeaderString = driver.GapToLeaderString;
-                        _drivers[i].GapToPlayer = driver.GapToPlayer;
-                        _drivers[i].GapToPlayerString = driver.GapToPlayerString;
-                        _drivers[i].Interval = driver.Interval;
-                        _drivers[i].IntervalString = driver.IntervalString;
-                        _drivers[i].IRating = driver.IRating;
-                        _drivers[i].IRatingChange = driver.IRatingChange;
-                        _drivers[i].IsConnected = driver.IsConnected;
-                        _drivers[i].IsInPit = driver.IsInPit;
-                        _drivers[i].IsPlayer = driver.IsPlayer;
-                        _drivers[i].LastLapTime = driver.LastLapTime;
-                        _drivers[i].LeaderboardPosition = driver.LeaderboardPosition;
-                        _drivers[i].LeaderboardPositionInClass = driver.LeaderboardPositionInClass;
-                        _drivers[i].License.String = driver.License.String;
-                        _drivers[i].LivePosition = driver.LivePosition;
-                        _drivers[i].LivePositionInClass = driver.LivePositionInClass;
-                        _drivers[i].Name = driver.Name;
-                        _drivers[i].RelativeGapToPlayer = driver.RelativeGapToPlayer;
+                        SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_LivePosition", driver.LivePosition);
 
-                        SetProperty($"Class_{driver.CarClass.Index:D2}_{driver.LivePositionInClass:D2}_LeaderboardPosition", driver.LeaderboardPosition);
+                        SetProperty($"Drivers_{i + 1:D2}_BestLapColor", driver.BestLapColor);
+                        SetProperty($"Drivers_{i + 1:D2}_BestLapTime", driver.BestLapTime);
+                        SetProperty($"Drivers_{i + 1:D2}_CarNumber", driver.CarNumber);
+                        SetProperty($"Drivers_{i + 1:D2}_ClassColor", driver.CarClass.Color);
+                        SetProperty($"Drivers_{i + 1:D2}_ClassIndex", driver.CarClass.Index);
+                        SetProperty($"Drivers_{i + 1:D2}_ClassString", driver.CarClass.Name);
+                        SetProperty($"Drivers_{i + 1:D2}_ClassTextColor", driver.CarClass.TextColor);
+                        SetProperty($"Drivers_{i + 1:D2}_CurrentLapHighPrecision", driver.CurrentLapHighPrecision);
+                        SetProperty($"Drivers_{i + 1:D2}_DeltaToBest", driver.DeltaToBest);
+                        SetProperty($"Drivers_{i + 1:D2}_DeltaToPlayerBest", driver.DeltaToPlayerBest);
+                        SetProperty($"Drivers_{i + 1:D2}_DeltaToPlayerLast", driver.DeltaToPlayerLast);
+                        SetProperty($"Drivers_{i + 1:D2}_GapToLeader", driver.GapToLeader);
+                        SetProperty($"Drivers_{i + 1:D2}_GapToLeaderString", driver.GapToLeaderString);
+                        SetProperty($"Drivers_{i + 1:D2}_GapToPlayer", driver.GapToPlayer);
+                        SetProperty($"Drivers_{i + 1:D2}_GapToPlayerString", driver.GapToPlayerString);
+                        SetProperty($"Drivers_{i + 1:D2}_Interval", driver.Interval);
+                        SetProperty($"Drivers_{i + 1:D2}_IntervalString", driver.IntervalString);
+                        SetProperty($"Drivers_{i + 1:D2}_IRating", driver.IRating);
+                        SetProperty($"Drivers_{i + 1:D2}_IRatingChange", driver.IRatingChange);
+                        SetProperty($"Drivers_{i + 1:D2}_IRatingString", driver.IRatingString);
+                        SetProperty($"Drivers_{i + 1:D2}_IRatingLicenseCombinedString", driver.IRatingLicenseCombinedString);
+                        SetProperty($"Drivers_{i + 1:D2}_IsConnected", driver.IsConnected);
+                        SetProperty($"Drivers_{i + 1:D2}_IsInPit", driver.IsInPit);
+                        SetProperty($"Drivers_{i + 1:D2}_IsPlayer", driver.IsPlayer);
+                        SetProperty($"Drivers_{i + 1:D2}_LastLapColor", driver.LastLapColor);
+                        SetProperty($"Drivers_{i + 1:D2}_LastLapTime", driver.LastLapTime);
+                        SetProperty($"Drivers_{i + 1:D2}_LicenseColor", driver.License.Color);
+                        SetProperty($"Drivers_{i + 1:D2}_LicenseShortString", driver.License.ShortString);
+                        SetProperty($"Drivers_{i + 1:D2}_LicenseString", driver.License.String);
+                        SetProperty($"Drivers_{i + 1:D2}_LicenseTextColor", driver.License.TextColor);
+                        SetProperty($"Drivers_{i + 1:D2}_LivePosition", driver.LivePosition);
+                        SetProperty($"Drivers_{i + 1:D2}_LivePositionInClass", driver.LivePositionInClass);
+                        SetProperty($"Drivers_{i + 1:D2}_Name", driver.Name);
+                        SetProperty($"Drivers_{i + 1:D2}_RelativeGapToPlayer", driver.RelativeGapToPlayer);
+                        SetProperty($"Drivers_{i + 1:D2}_RelativeGapToPlayerColor", driver.RelativeGapToPlayerColor);
+                        SetProperty($"Drivers_{i + 1:D2}_RelativeGapToPlayerString", driver.RelativeGapToPlayerString);
+                        SetProperty($"Drivers_{i + 1:D2}_ShortName", driver.ShortName);
                     }
 
                     for (int i = 0; i < 5; i++)
                     {
-                        var driverAhead = drivers.Where(x => x.RelativeGapToPlayer < 0 && x.IsInPit == false).OrderByDescending(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
+                        var driverAhead = _drivers.Where(x => x.RelativeGapToPlayer < 0 && x.IsInPit == false).OrderByDescending(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
                         if (driverAhead != null)
                         {
-                            SetProperty($"Ahead_{i + 1:D2}_LeaderboardPosition", driverAhead.LeaderboardPosition);
+                            SetProperty($"Ahead_{i + 1:D2}_LivePosition", driverAhead.LivePosition);
                         }
                         else
                         {
-                            SetProperty($"Ahead_{i + 1:D2}_LeaderboardPosition", -1);
+                            SetProperty($"Ahead_{i + 1:D2}_LivePosition", -1);
                         }
 
-                        var driverBehind = drivers.Where(x => x.RelativeGapToPlayer >= 0 && x.IsInPit == false).OrderBy(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
+                        var driverBehind = _drivers.Where(x => x.RelativeGapToPlayer >= 0 && x.IsInPit == false).OrderBy(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
                         if (driverBehind != null)
                         {
-                            SetProperty($"Behind_{i + 1:D2}_LeaderboardPosition", driverBehind.LeaderboardPosition);
+                            SetProperty($"Behind_{i + 1:D2}_LivePosition", driverBehind.LivePosition);
                         }
                         else
                         {
-                            SetProperty($"Behind_{i + 1:D2}_LeaderboardPosition", -1);
+                            SetProperty($"Behind_{i + 1:D2}_LivePosition", -1);
                         }
                     }
 
@@ -263,11 +319,11 @@ namespace PostItNoteRacing.Plugin
                         }
                     }
 
-                    SetProperty("Player_LeaderboardPosition", player.LeaderboardPosition);
+                    SetProperty("Player_LivePosition", player.LivePosition);
                 }
                 else
                 {
-                    InitializeSimHubProperties();
+                    SessionType = null;
                 }
             }
             catch (Exception ex)
@@ -356,69 +412,68 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
-            foreach (var (driver, i) in _drivers.Select((driver, i) => (driver, i)))
+            for (int i = 1; i <= 63; i++)
             {
-                this.AttachDelegate($"Drivers_{i + 1:D2}_BestLapColor", () => driver.BestLapColor);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_BestLapTime", () => driver.BestLapTime);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_CarNumber", () => driver.CarNumber);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_ClassColor", () => driver.CarClass.Color);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_ClassIndex", () => driver.CarClass.Index);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_ClassString", () => driver.CarClass.Name);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_ClassTextColor", () => driver.CarClass.TextColor);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_CurrentLapHighPrecision", () => driver.CurrentLapHighPrecision);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_DeltaToBest", () => driver.DeltaToBest);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_DeltaToPlayerBest", () => driver.DeltaToPlayerBest);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_DeltaToPlayerLast", () => driver.DeltaToPlayerLast);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_GapToLeader", () => driver.GapToLeader);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_GapToLeaderString", () => driver.GapToLeaderString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_GapToPlayer", () => driver.GapToPlayer);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_GapToPlayerString", () => driver.GapToPlayerString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_Interval", () => driver.Interval);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IntervalString", () => driver.IntervalString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IRating", () => driver.IRating);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingChange", () => driver.IRatingChange);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingString", () => driver.IRatingString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IRatingLicenseCombinedString", () => driver.IRatingLicenseCombinedString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IsConnected", () => driver.IsConnected);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IsInPit", () => driver.IsInPit);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_IsPlayer", () => driver.IsPlayer);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LastLapColor", () => driver.LastLapColor);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LastLapTime", () => driver.LastLapTime);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPosition", () => driver.LeaderboardPosition);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LeaderboardPositionInClass", () => driver.LeaderboardPositionInClass);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseColor", () => driver.License.Color);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseShortString", () => driver.License.ShortString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseString", () => driver.License.String);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LicenseTextColor", () => driver.License.TextColor);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LivePosition", () => driver.LivePosition);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_LivePositionInClass", () => driver.LivePositionInClass);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_Name", () => driver.Name);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayer", () => driver.RelativeGapToPlayer);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayerColor", () => driver.RelativeGapToPlayerColor);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_RelativeGapToPlayerString", () => driver.RelativeGapToPlayerString);
-                this.AttachDelegate($"Drivers_{i + 1:D2}_ShortName", () => driver.ShortName);
+                AddProperty($"Drivers_{i:D2}_BestLapColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
+                AddProperty($"Drivers_{i:D2}_CarNumber", -1);
+                AddProperty($"Drivers_{i:D2}_ClassColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_ClassIndex", -1);
+                AddProperty($"Drivers_{i:D2}_ClassString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_ClassTextColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
+                AddProperty($"Drivers_{i:D2}_DeltaToBest", 0);
+                AddProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
+                AddProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
+                AddProperty($"Drivers_{i:D2}_GapToLeader", 0);
+                AddProperty($"Drivers_{i:D2}_GapToLeaderString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_GapToPlayer", 0);
+                AddProperty($"Drivers_{i:D2}_GapToPlayerString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_Interval", 0);
+                AddProperty($"Drivers_{i:D2}_IntervalString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_IRating", 0);
+                AddProperty($"Drivers_{i:D2}_IRatingChange", 0);
+                AddProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_IRatingLicenseCombinedString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_IsConnected", false);
+                AddProperty($"Drivers_{i:D2}_IsInPit", false);
+                AddProperty($"Drivers_{i:D2}_IsPlayer", false);
+                AddProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
+                AddProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_LicenseShortString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_LicenseString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_LicenseTextColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_LivePosition", -1);
+                AddProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
+                AddProperty($"Drivers_{i:D2}_Name", String.Empty);
+                AddProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
+                AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", String.Empty);
+                AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", String.Empty);
+                AddProperty($"Drivers_{i:D2}_ShortName", String.Empty);
             }
 
             for (int i = 1; i <= 5; i++)
             {
-                AddProperty($"Ahead_{i:D2}_LeaderboardPosition", -1);
-                AddProperty($"Behind_{i:D2}_LeaderboardPosition", -1);
+                AddProperty($"Ahead_{i:D2}_LivePosition", -1);
+                AddProperty($"Behind_{i:D2}_LivePosition", -1);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
+                AddProperty($"Class_{i:D2}_Best_LivePosition", -1);
                 AddProperty($"Class_{i:D2}_SoF", 0);
                 AddProperty($"Class_{i:D2}_SoFString", String.Empty);
 
                 for (int j = 1; j <= 63; j++)
                 {
-                    AddProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
+                    AddProperty($"Class_{i:D2}_{j:D2}_LivePosition", -1);
                 }
             }
 
             AddProperty("Player_Incidents", 0);
-            AddProperty("Player_LeaderboardPosition", -1);
-            AddProperty("Version", "1.0.0.2");
+            AddProperty("Player_LivePosition", -1);
+            AddProperty("Version", "1.0.1.0");
         }
         #endregion
     }

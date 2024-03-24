@@ -28,7 +28,7 @@ namespace PostItNoteRacing.Plugin
 
         public TimeSpan BestLapTime { get; set; }
 
-        public CarClass CarClass { get; set; } = new CarClass();
+        public CarClass CarClass { get; set; }
 
         public string CarNumber { get; set; }
 
@@ -87,17 +87,13 @@ namespace PostItNoteRacing.Plugin
 
         public TimeSpan LastLapTime { get; set; }
 
-        public License License { get; set; } = new License();
+        public License License { get; set; }
 
         public int LivePosition { get; set; } = -1;
 
         public int LivePositionInClass { get; set; } = -1;
 
         public string Name { get; set; }
-
-        public int LeaderboardPosition { get; set; } = -1;
-
-        public int LeaderboardPositionInClass { get; set; } = -1;
 
         public double? RelativeGapToPlayer { get; set; }
 

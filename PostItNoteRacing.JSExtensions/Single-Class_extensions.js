@@ -1,29 +1,29 @@
 "use strict";
 
 function sc_GetPropertyFromAheadBehind(aheadBehind, propertyName) {
-    let leaderboardPosition = null;    
+    let livePosition = null;    
 
     if (aheadBehind > 0) {
-        leaderboardPosition = $prop('PostItNoteRacing.Behind_' + aheadBehind.toString().padStart(2, '0') + '_LeaderboardPosition');
+        livePosition = $prop('PostItNoteRacing.Behind_' + aheadBehind.toString().padStart(2, '0') + '_LivePosition');
     } else if (aheadBehind < 0) {
-        leaderboardPosition = $prop('PostItNoteRacing.Ahead_' + (-aheadBehind).toString().padStart(2, '0') + '_LeaderboardPosition');
+        livePosition = $prop('PostItNoteRacing.Ahead_' + (-aheadBehind).toString().padStart(2, '0') + '_LivePosition');
     }
 
-    return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
+    return sc_GetPropertyFromLivePosition(livePosition, propertyName);
 }
 
-function sc_GetPlayerLeaderboardPosition() {
-    let leaderboardPosition = $prop('PostItNoteRacing.Player_LeaderboardPosition');
+function sc_GetPlayerLivePosition() {
+    let livePosition = $prop('PostItNoteRacing.Player_LivePosition');
 
-    if (leaderboardPosition === undefined) {
+    if (livePosition === undefined) {
         return null;
     } else {
-        return leaderboardPosition;
+        return livePosition;
     }
 }
 
-function sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName) {
-    let propertyValue = $prop('PostItNoteRacing.Drivers_' + (leaderboardPosition ?? '00').toString().padStart(2, '0') + '_' + propertyName);
+function sc_GetPropertyFromLivePosition(livePosition, propertyName) {
+    let propertyValue = $prop('PostItNoteRacing.Drivers_' + (livePosition ?? '00').toString().padStart(2, '0') + '_' + propertyName);
 
     if (propertyValue === undefined) {
         return null;
