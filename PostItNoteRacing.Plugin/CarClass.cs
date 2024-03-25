@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace PostItNoteRacing.Plugin
 {
@@ -39,6 +40,8 @@ namespace PostItNoteRacing.Plugin
         }
 
         public string Name { get; set; }
+
+        public List<Team> Teams { get; set; }
 
         public string TextColor { get; set; }
     }
