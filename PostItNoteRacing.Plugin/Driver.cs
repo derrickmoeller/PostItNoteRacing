@@ -9,13 +9,15 @@ namespace PostItNoteRacing.Plugin
 
         public double? IRating { get; set; }
 
-        public double? IRatingChange { get; set; }
+        public int IRatingChange { get; set; }
 
         public string IRatingString => $"{(IRating ?? 0D) / 1000:0.0k}";
 
         public string IRatingLicenseCombinedString => $"{License.ShortString} {IRatingString}";
 
         public bool IsActive { get; set; }
+
+        public int LapsCompleted { get; set; }
 
         public License License { get; set; }
 

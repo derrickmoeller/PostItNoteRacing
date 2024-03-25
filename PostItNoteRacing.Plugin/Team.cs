@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin
 {
     internal class Team
     {
+        private int _lapsCompleted = 0;
+
         public string BestLapColor
         {
             get
@@ -50,11 +53,34 @@ namespace PostItNoteRacing.Plugin
 
         public string IntervalString { get; set; }
 
+        public int IRating => (int)Math.Round(Drivers.Where(x => x.IRating > 0).Sum(x => x.IRating.Value * x.LapsCompleted) / Drivers.Where(x => x.IRating > 0).Sum(x => x.LapsCompleted));
+
         public bool? IsConnected { get; set; }
 
         public bool? IsInPit { get; set; }
 
         public bool? IsPlayer { get; set; }
+
+        public int LapsCompleted
+        {
+            get { return _lapsCompleted; }
+            set
+            {
+                if (_lapsCompleted != value)
+                {
+                    _lapsCompleted = value;
+                }
+
+                if (Drivers.Sum(x => x.LapsCompleted) != LapsCompleted)
+                {
+                    var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
+                    if (driver != null)
+                    {
+                        driver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
+                    }
+                }
+            }
+        }
 
         public string LastLapColor
         {

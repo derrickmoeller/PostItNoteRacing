@@ -70,6 +70,7 @@ namespace PostItNoteRacing.Plugin
                 SetProperty($"Drivers_{i:D2}_IsConnected", false);
                 SetProperty($"Drivers_{i:D2}_IsInPit", false);
                 SetProperty($"Drivers_{i:D2}_IsPlayer", false);
+                SetProperty($"Drivers_{i:D2}_LapsCompleted", 0);
                 SetProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 SetProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 SetProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
@@ -83,6 +84,8 @@ namespace PostItNoteRacing.Plugin
                 SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", String.Empty);
                 SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", String.Empty);
                 SetProperty($"Drivers_{i:D2}_ShortName", String.Empty);
+                SetProperty($"Drivers_{i:D2}_TeamIRating", 0);
+                SetProperty($"Drivers_{i:D2}_TeamLapsCompleted", 0);
                 SetProperty($"Drivers_{i:D2}_TeamName", String.Empty);
             }
 
@@ -144,6 +147,7 @@ namespace PostItNoteRacing.Plugin
                                 CarNumber = opponent.CarNumber,
                                 CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                                 Drivers = new List<Driver>(),
+                                LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0),
                                 LastLapTime = opponent.LastLapTime,
                                 Name = opponent.TeamName,
                                 RelativeGapToPlayer = opponent.RelativeGapToPlayer
@@ -155,6 +159,7 @@ namespace PostItNoteRacing.Plugin
                         {
                             team.BestLapTime = opponent.BestLapTime;
                             team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
+                            team.LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0);
                             team.LastLapTime = opponent.LastLapTime;
                             team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                         }
@@ -203,11 +208,13 @@ namespace PostItNoteRacing.Plugin
                                 team.LivePosition = _carClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
                                 team.LivePositionInClass = carClass.Teams.Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
 
+                                var iRatingChange = GetIRatingChange(team.IRating, team.LivePositionInClass, carClass.Teams.Where(x => x.IRating > 0).Select(x => x.IRating));
+
                                 foreach (var driver in team.Drivers)
                                 {
                                     if (driver.IRating > 0)
                                     {
-                                        driver.IRatingChange = GetIRatingChange(driver.IRating.Value, team.LivePositionInClass, team.Drivers.Count, carClass.Teams.Select(x => x.Drivers.Average(y => y.IRating)).Where(x => x > 0).Select(x => x.Value));
+                                        driver.IRatingChange = (int)(iRatingChange * driver.LapsCompleted / team.LapsCompleted);
                                     }
                                 }
                             }
@@ -290,6 +297,7 @@ namespace PostItNoteRacing.Plugin
                             SetProperty($"Drivers_{team.LivePosition:D2}_IsConnected", team.IsConnected);
                             SetProperty($"Drivers_{team.LivePosition:D2}_IsInPit", team.IsInPit);
                             SetProperty($"Drivers_{team.LivePosition:D2}_IsPlayer", team.IsPlayer);
+                            SetProperty($"Drivers_{team.LivePosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive).LapsCompleted);
                             SetProperty($"Drivers_{team.LivePosition:D2}_LastLapColor", team.LastLapColor);
                             SetProperty($"Drivers_{team.LivePosition:D2}_LastLapTime", team.LastLapTime);
                             SetProperty($"Drivers_{team.LivePosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive).License.Color);
@@ -303,10 +311,12 @@ namespace PostItNoteRacing.Plugin
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerColor", team.RelativeGapToPlayerColor);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
                             SetProperty($"Drivers_{team.LivePosition:D2}_ShortName", team.Drivers.Single(x => x.IsActive).ShortName);
+                            SetProperty($"Drivers_{team.LivePosition:D2}_TeamIRating", team.IRating);
+                            SetProperty($"Drivers_{team.LivePosition:D2}_TeamLapsCompleted", team.LapsCompleted);
                             SetProperty($"Drivers_{team.LivePosition:D2}_TeamName", team.Name);
                         }
 
-                        int strengthOfField = GetStrengthOfField(carClass.Teams.Select(x => x.Drivers.Average(y => y.IRating)).Where(x => x > 0).Select(x => x.Value));
+                        int strengthOfField = GetStrengthOfField(carClass.Teams.Where(x => x.IRating > 0).Select(x => x.IRating));
 
                         SetProperty($"Class_{carClass.Index:D2}_Best_LivePosition", carClass.Teams.Where(x => x.BestLapTime.TotalSeconds > 0).OrderBy(x => x.BestLapTime).FirstOrDefault()?.LivePosition ?? -1);
                         SetProperty($"Class_{carClass.Index:D2}_SoF", strengthOfField);
@@ -347,7 +357,8 @@ namespace PostItNoteRacing.Plugin
                         }
                     }
 
-                    SetProperty("Player_LivePosition", player.LivePosition);
+                    
+                    SetProperty("Player_LivePosition", player?.LivePosition ?? -1);
                 }
                 else
                 {
@@ -400,26 +411,26 @@ namespace PostItNoteRacing.Plugin
                 }
             }
 
-            int GetIRatingChange(double driverIRating, int position, int numberOfTeammates, IEnumerable<double> iRatings)
+            double GetIRatingChange(int teamIRating, int position, IEnumerable<int> iRatings)
             {
-                double factor = (iRatings.Count() / 2 - position) / 100;
+                double factor = (iRatings.Count() / 2D - position) / 100D;
                 double sum = -0.5;
 
                 foreach (var iRating in iRatings)
                 {
-                    sum += (1 - Math.Exp(-driverIRating / _weight)) * Math.Exp(-iRating / _weight) / ((1 - Math.Exp(-iRating / _weight)) * Math.Exp(-driverIRating / _weight) + (1 - Math.Exp(-driverIRating / _weight)) * Math.Exp(-iRating / _weight));
+                    sum += (1 - Math.Exp(-teamIRating / _weight)) * Math.Exp(-iRating / _weight) / ((1 - Math.Exp(-iRating / _weight)) * Math.Exp(-teamIRating / _weight) + (1 - Math.Exp(-teamIRating / _weight)) * Math.Exp(-iRating / _weight));
                 }
 
-                return (int)(Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count()) / numberOfTeammates);
+                return Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count());
             }
 
-            int GetStrengthOfField(IEnumerable<double> iRatings)
+            int GetStrengthOfField(IEnumerable<int> iRatings)
             {
                 double sum = 0;
 
                 foreach (var iRating in  iRatings)
                 {
-                    sum += Math.Pow(2, -iRating / 1600);
+                    sum += Math.Pow(2, -iRating / 1600D);
                 }
 
                 return (int)Math.Round(_weight * Math.Log(iRatings.Count() / sum));
@@ -466,6 +477,7 @@ namespace PostItNoteRacing.Plugin
                 AddProperty($"Drivers_{i:D2}_IsConnected", false);
                 AddProperty($"Drivers_{i:D2}_IsInPit", false);
                 AddProperty($"Drivers_{i:D2}_IsPlayer", false);
+                AddProperty($"Drivers_{i:D2}_LapsCompleted", 0);
                 AddProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 AddProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 AddProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
@@ -479,6 +491,8 @@ namespace PostItNoteRacing.Plugin
                 AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", String.Empty);
                 AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", String.Empty);
                 AddProperty($"Drivers_{i:D2}_ShortName", String.Empty);
+                AddProperty($"Drivers_{i:D2}_TeamIRating", 0);
+                AddProperty($"Drivers_{i:D2}_TeamLapsCompleted", 0);
                 AddProperty($"Drivers_{i:D2}_TeamName", String.Empty);
             }
 
@@ -502,7 +516,7 @@ namespace PostItNoteRacing.Plugin
 
             AddProperty("Player_Incidents", 0);
             AddProperty("Player_LivePosition", -1);
-            AddProperty("Version", "1.0.1.1");
+            AddProperty("Version", "1.0.1.2");
         }
         #endregion
     }
