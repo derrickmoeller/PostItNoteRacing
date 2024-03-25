@@ -308,7 +308,7 @@ namespace PostItNoteRacing.Plugin
                             SetProperty($"Drivers_{team.LivePosition:D2}_LivePositionInClass", team.LivePositionInClass);
                             SetProperty($"Drivers_{team.LivePosition:D2}_Name", team.Drivers.Single(x => x.IsActive).Name);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerColor", team.RelativeGapToPlayerColor);
+                            SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerColor", SessionType == "Race" ? team.RelativeGapToPlayerColor : Colors.White);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
                             SetProperty($"Drivers_{team.LivePosition:D2}_ShortName", team.Drivers.Single(x => x.IsActive).ShortName);
                             SetProperty($"Drivers_{team.LivePosition:D2}_TeamIRating", team.IRating);
@@ -516,7 +516,7 @@ namespace PostItNoteRacing.Plugin
 
             AddProperty("Player_Incidents", 0);
             AddProperty("Player_LivePosition", -1);
-            AddProperty("Version", "1.0.1.2");
+            AddProperty("Version", "1.0.1.3");
         }
         #endregion
     }
