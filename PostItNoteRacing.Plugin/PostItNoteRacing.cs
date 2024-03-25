@@ -5,7 +5,6 @@ using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static iRacingSDK.SessionData._DriverInfo;
 
 namespace PostItNoteRacing.Plugin
 {
@@ -146,7 +145,7 @@ namespace PostItNoteRacing.Plugin
                                 CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                                 Drivers = new List<Driver>(),
                                 LastLapTime = opponent.LastLapTime,
-                                Name = opponent.Name,
+                                Name = opponent.TeamName,
                                 RelativeGapToPlayer = opponent.RelativeGapToPlayer
                             };
 
@@ -157,7 +156,6 @@ namespace PostItNoteRacing.Plugin
                             team.BestLapTime = opponent.BestLapTime;
                             team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
                             team.LastLapTime = opponent.LastLapTime;
-                            team.Name = opponent.Name;
                             team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                         }
                         else if (opponent.IsConnected == false)
@@ -258,11 +256,11 @@ namespace PostItNoteRacing.Plugin
                             }
                             else
                             {
-                                var driverAhead = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == team.LivePositionInClass - 1);
-                                if (driverAhead != null)
+                                var teamAhead = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == team.LivePositionInClass - 1);
+                                if (teamAhead != null)
                                 {
-                                    team.Interval = team.GapToLeader - driverAhead.GapToLeader;
-                                    team.IntervalString = GetIntervalAsString(team, driverAhead, team.Interval);
+                                    team.Interval = team.GapToLeader - teamAhead.GapToLeader;
+                                    team.IntervalString = GetIntervalAsString(team, teamAhead, team.Interval);
                                 }
                             }
 
@@ -300,7 +298,7 @@ namespace PostItNoteRacing.Plugin
                             SetProperty($"Drivers_{team.LivePosition:D2}_LicenseTextColor", team.Drivers.Single(x => x.IsActive).License.TextColor);
                             SetProperty($"Drivers_{team.LivePosition:D2}_LivePosition", team.LivePosition);
                             SetProperty($"Drivers_{team.LivePosition:D2}_LivePositionInClass", team.LivePositionInClass);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_Name", team.Name);
+                            SetProperty($"Drivers_{team.LivePosition:D2}_Name", team.Drivers.Single(x => x.IsActive).Name);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerColor", team.RelativeGapToPlayerColor);
                             SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
@@ -358,7 +356,7 @@ namespace PostItNoteRacing.Plugin
             }
             catch (Exception ex)
             {
-                Logging.Current.Info($"Exception in plugin ({nameof(PostItNoteRacing)}) : {ex.Message}");
+                Logging.Current.Info($"Exception in plugin ({nameof(PostItNoteRacing)}) : {ex}");
             }
 
             string GetGapAsString(Team a, Team b, double? gap)
@@ -504,7 +502,7 @@ namespace PostItNoteRacing.Plugin
 
             AddProperty("Player_Incidents", 0);
             AddProperty("Player_LivePosition", -1);
-            AddProperty("Version", "1.0.1.0");
+            AddProperty("Version", "1.0.1.1");
         }
         #endregion
     }
