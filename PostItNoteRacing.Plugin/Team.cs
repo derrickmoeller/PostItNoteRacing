@@ -39,7 +39,7 @@ namespace PostItNoteRacing.Plugin
 
         public double? DeltaToPlayerLast { get; set; }
 
-        public List<Driver> Drivers { get; set; }
+        public List<Driver> Drivers { get; } = new List<Driver>();
 
         public double? GapToLeader { get; set; }
 
@@ -53,8 +53,23 @@ namespace PostItNoteRacing.Plugin
 
         public string IntervalString { get; set; }
 
-        public int IRating => (int)Math.Round(Drivers.Where(x => x.IRating > 0).Sum(x => x.IRating.Value * x.LapsCompleted) / Drivers.Where(x => x.IRating > 0).Sum(x => x.LapsCompleted));
+        public int? IRating
+        {
+            get
+            {
+                var filteredDrivers = Drivers.Where(x => x.IRating > 0 && x.LapsCompleted > 0);
 
+                if (filteredDrivers.Count() > 0)
+                {
+                    return (int)Math.Round(filteredDrivers.Sum(x => x.IRating.Value * x.LapsCompleted) / filteredDrivers.Sum(x => x.LapsCompleted));
+                }
+                else
+                {
+                    return (int?)Drivers.SingleOrDefault(x => x.IsActive == true)?.IRating;
+                }
+            }
+        }
+        
         public bool? IsConnected { get; set; }
 
         public bool? IsInPit { get; set; }
