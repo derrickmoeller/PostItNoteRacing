@@ -118,6 +118,8 @@ namespace PostItNoteRacing.Plugin
 
         public TimeSpan LastLapTime { get; set; }
 
+        public int LeaderboardPosition { get; set; } = -1;
+
         public int LivePosition { get; set; } = -1;
 
         public int LivePositionInClass { get; set; } = -1;

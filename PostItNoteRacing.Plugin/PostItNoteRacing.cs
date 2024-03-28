@@ -87,28 +87,21 @@ namespace PostItNoteRacing.Plugin
                 SetProperty($"Drivers_{i:D2}_TeamIRating", 0);
                 SetProperty($"Drivers_{i:D2}_TeamLapsCompleted", 0);
                 SetProperty($"Drivers_{i:D2}_TeamName", String.Empty);
-            }
-
-            for (int i = 1; i <= 5; i++)
-            {
-                SetProperty($"Ahead_{i:D2}_LivePosition", -1);
-                SetProperty($"Behind_{i:D2}_LivePosition", -1);
+                SetProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
-                SetProperty($"Class_{i:D2}_Best_LivePosition", -1);
                 SetProperty($"Class_{i:D2}_SoF", 0);
                 SetProperty($"Class_{i:D2}_SoFString", String.Empty);
 
                 for (int j = 1; j <= 63; j++)
                 {
-                    SetProperty($"Class_{i:D2}_{j:D2}_LivePosition", -1);
+                    SetProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
                 }
             }
 
             SetProperty("Player_Incidents", 0);
-            SetProperty("Player_LivePosition", -1);
         }
 
         #region Interface: IDataPlugin
@@ -122,8 +115,10 @@ namespace PostItNoteRacing.Plugin
                 {
                     SessionType = data.NewData.SessionTypeName;
 
-                    foreach (var opponent in data.NewData.Opponents)
+                    for (int i = 1; i <= data.NewData.OpponentsCount; i++)
                     {
+                        var opponent = data.NewData.OpponentAtPosition(i, false, false, false);
+                        
                         var carClass = _carClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
                         if (carClass == null)
                         {
@@ -146,7 +141,7 @@ namespace PostItNoteRacing.Plugin
                                 BestLapTime = opponent.BestLapTime,
                                 CarNumber = opponent.CarNumber,
                                 CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
-                                LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0),
+                                LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0D),
                                 LastLapTime = opponent.LastLapTime,
                                 Name = opponent.TeamName,
                                 RelativeGapToPlayer = opponent.RelativeGapToPlayer
@@ -158,7 +153,7 @@ namespace PostItNoteRacing.Plugin
                         {
                             team.BestLapTime = opponent.BestLapTime;
                             team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
-                            team.LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0);
+                            team.LapsCompleted = (int)(opponent.CurrentLapHighPrecision ?? 0D);
                             team.LastLapTime = opponent.LastLapTime;
                             team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                         }
@@ -173,6 +168,7 @@ namespace PostItNoteRacing.Plugin
                         team.IsConnected = opponent.IsConnected;
                         team.IsInPit = opponent.IsCarInPit;
                         team.IsPlayer = opponent.IsPlayer;
+                        team.LeaderboardPosition = i;
                         team.LivePosition = -1;
                         team.LivePositionInClass = -1;
 
@@ -284,79 +280,56 @@ namespace PostItNoteRacing.Plugin
                                 }
                             }
 
-                            SetProperty($"Class_{carClass.Index:D2}_{team.LivePositionInClass:D2}_LivePosition", team.LivePosition);
+                            SetProperty($"Class_{carClass.Index:D2}_{team.LivePositionInClass:D2}_LeaderboardPosition", team.LeaderboardPosition);
 
-                            SetProperty($"Drivers_{team.LivePosition:D2}_BestLapColor", team.BestLapColor);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_BestLapTime", team.BestLapTime);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_CarNumber", team.CarNumber);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_ClassColor", carClass.Color);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_ClassIndex", carClass.Index);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_ClassString", carClass.Name);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_ClassTextColor", carClass.TextColor);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_CurrentLapHighPrecision", team.CurrentLapHighPrecision);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_DeltaToBest", team.DeltaToBest);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_DeltaToPlayerBest", team.DeltaToPlayerBest);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_DeltaToPlayerLast", team.DeltaToPlayerLast);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_GapToLeader", team.GapToLeader);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_GapToLeaderString", team.GapToLeaderString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_GapToPlayer", team.GapToPlayer);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_GapToPlayerString", team.GapToPlayerString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_Interval", team.Interval);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IntervalString", team.IntervalString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IRatingChange", team.Drivers.Single(x => x.IsActive).IRatingChange);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IsConnected", team.IsConnected);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IsInPit", team.IsInPit);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_IsPlayer", team.IsPlayer);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive).LapsCompleted);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LastLapColor", team.LastLapColor);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LastLapTime", team.LastLapTime);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive).License.Color);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LicenseShortString", team.Drivers.Single(x => x.IsActive).License.ShortString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LicenseString", team.Drivers.Single(x => x.IsActive).License.String);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LicenseTextColor", team.Drivers.Single(x => x.IsActive).License.TextColor);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LivePosition", team.LivePosition);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_LivePositionInClass", team.LivePositionInClass);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_Name", team.Drivers.Single(x => x.IsActive).Name);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerColor", SessionType == "Race" ? team.RelativeGapToPlayerColor : Colors.White);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_ShortName", team.Drivers.Single(x => x.IsActive).ShortName);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_TeamIRating", team.IRating);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_TeamLapsCompleted", team.LapsCompleted);
-                            SetProperty($"Drivers_{team.LivePosition:D2}_TeamName", team.Name);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapColor", team.BestLapColor);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapTime", team.BestLapTime);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_CarNumber", team.CarNumber);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassColor", carClass.Color);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassIndex", carClass.Index);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassString", carClass.Name);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassTextColor", carClass.TextColor);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_CurrentLapHighPrecision", team.CurrentLapHighPrecision);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBest", team.DeltaToBest);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBest", team.DeltaToPlayerBest);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLast", team.DeltaToPlayerLast);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeader", team.GapToLeader);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeaderString", team.GapToLeaderString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayer", team.GapToPlayer);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayerString", team.GapToPlayerString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_Interval", team.Interval);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalString", team.IntervalString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingChange", team.Drivers.Single(x => x.IsActive).IRatingChange);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsConnected", team.IsConnected);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsInPit", team.IsInPit);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsPlayer", team.IsPlayer);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive).LapsCompleted);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapColor", team.LastLapColor);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapTime", team.LastLapTime);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive).License.Color);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseShortString", team.Drivers.Single(x => x.IsActive).License.ShortString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseString", team.Drivers.Single(x => x.IsActive).License.String);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseTextColor", team.Drivers.Single(x => x.IsActive).License.TextColor);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePosition", team.LivePosition);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePositionInClass", team.LivePositionInClass);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_Name", team.Drivers.Single(x => x.IsActive).Name);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerColor", SessionType == "Race" ? team.RelativeGapToPlayerColor : Colors.White);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_ShortName", team.Drivers.Single(x => x.IsActive).ShortName);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamIRating", team.IRating);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamLapsCompleted", team.LapsCompleted);
+                            SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamName", team.Name);
+                            SetProperty($"Drivers_Live_{team.LivePosition:D2}_LeaderboardPosition", team.LeaderboardPosition);
                         }
 
                         int strengthOfField = GetStrengthOfField(carClass.Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
 
-                        SetProperty($"Class_{carClass.Index:D2}_Best_LivePosition", carClass.Teams.Where(x => x.BestLapTime.TotalSeconds > 0).OrderBy(x => x.BestLapTime).FirstOrDefault()?.LivePosition ?? -1);
                         SetProperty($"Class_{carClass.Index:D2}_SoF", strengthOfField);
                         SetProperty($"Class_{carClass.Index:D2}_SoFString", $"{strengthOfField / 1000D:0.0k}");
-                    }
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var teamAhead = _carClasses.SelectMany(x => x.Teams).Where(x => x.RelativeGapToPlayer < 0 && x.IsInPit == false).OrderByDescending(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
-                        if (teamAhead != null)
-                        {
-                            SetProperty($"Ahead_{i + 1:D2}_LivePosition", teamAhead.LivePosition);
-                        }
-                        else
-                        {
-                            SetProperty($"Ahead_{i + 1:D2}_LivePosition", -1);
-                        }
-
-                        var teamBehind = _carClasses.SelectMany(x => x.Teams).Where(x => x.RelativeGapToPlayer >= 0 && x.IsInPit == false).OrderBy(x => x.RelativeGapToPlayer).ElementAtOrDefault(i);
-                        if (teamBehind != null)
-                        {
-                            SetProperty($"Behind_{i + 1:D2}_LivePosition", teamBehind.LivePosition);
-                        }
-                        else
-                        {
-                            SetProperty($"Behind_{i + 1:D2}_LivePosition", -1);
-                        }
                     }
 
                     var iRacingData = data.NewData.GetRawDataObject() as DataSampleEx;
@@ -366,8 +339,6 @@ namespace PostItNoteRacing.Plugin
 
                         SetProperty("Player_Incidents", Convert.ToInt32(rawIncidents));
                     }
-
-                    SetProperty("Player_LivePosition", player?.LivePosition ?? -1);
                 }
                 else
                 {
@@ -503,29 +474,22 @@ namespace PostItNoteRacing.Plugin
                 AddProperty($"Drivers_{i:D2}_TeamIRating", 0);
                 AddProperty($"Drivers_{i:D2}_TeamLapsCompleted", 0);
                 AddProperty($"Drivers_{i:D2}_TeamName", String.Empty);
-            }
-
-            for (int i = 1; i <= 5; i++)
-            {
-                AddProperty($"Ahead_{i:D2}_LivePosition", -1);
-                AddProperty($"Behind_{i:D2}_LivePosition", -1);
+                AddProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
-                AddProperty($"Class_{i:D2}_Best_LivePosition", -1);
                 AddProperty($"Class_{i:D2}_SoF", 0);
                 AddProperty($"Class_{i:D2}_SoFString", String.Empty);
 
                 for (int j = 1; j <= 63; j++)
                 {
-                    AddProperty($"Class_{i:D2}_{j:D2}_LivePosition", -1);
+                    AddProperty($"Class_{i:D2}_{j:D2}_LeaderboardPosition", -1);
                 }
             }
 
             AddProperty("Player_Incidents", 0);
-            AddProperty("Player_LivePosition", -1);
-            AddProperty("Version", "1.0.1.3");
+            AddProperty("Version", "1.0.2.0");
         }
         #endregion
     }

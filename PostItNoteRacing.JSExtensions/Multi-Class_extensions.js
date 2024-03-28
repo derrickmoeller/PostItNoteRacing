@@ -1,25 +1,19 @@
 "use strict";
 
-function mc_GetLivePosition(classPosition) {
-    let classIndex = sc_GetPropertyFromLivePosition(sc_GetPlayerLivePosition(), 'ClassIndex');
+function mc_GetLeaderboardPosition(classPosition) {
+    let classIndex = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'ClassIndex');
     
-    let livePosition = $prop('PostItNoteRacing.Class_' + (classIndex ?? '00').toString().padStart(2, '0') + '_' + (classPosition ?? '00').toString().padStart(2, '0') + '_LivePosition');
-
-    if (livePosition === undefined) {
-        return null;
-    } else {
-        return livePosition;
-    }
+    return $prop('PostItNoteRacing.Class_' + (classIndex ?? '00').toString().padStart(2, '0') + '_' + (classPosition ?? '00').toString().padStart(2, '0') + '_LeaderboardPosition');
 }
 
 function mc_GetPropertyFromClassPosition(classPosition, propertyName) {
-    let livePosition = mc_GetLivePosition(classPosition);
+    let leaderboardPosition = mc_GetLeaderboardPosition(classPosition);
 
-    return sc_GetPropertyFromLivePosition(livePosition, propertyName);
+    return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 }
 
 function mc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
-    let positionInClass = sc_GetPropertyFromLivePosition(sc_GetPlayerLivePosition(), 'LivePositionInClass');
+    let positionInClass = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'LivePositionInClass') + relativePosition;
 
-    return mc_GetPropertyFromClassPosition(positionInClass + relativePosition, propertyName);
+    return mc_GetPropertyFromClassPosition(positionInClass, propertyName);
 }
