@@ -3,19 +3,35 @@ using IRacingReader;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 
 namespace PostItNoteRacing.Plugin
 {
-    internal class Session
+    internal class Session : IDisposable
     {
-        private readonly List<CarClass> _carClasses = new List<CarClass>();
         private readonly PluginManager _pluginManager;
         private readonly Type _pluginType;
         private readonly double _weight = 1600 / Math.Log(2);
 
+        private ObservableCollection<CarClass> _carClasses;
         private string _description;
+
+        private ObservableCollection<CarClass> CarClasses
+        {
+            get
+            {
+                if (_carClasses == null)
+                {
+                    _carClasses = new ObservableCollection<CarClass>();
+                    _carClasses.CollectionChanged += OnCarClassesCollectionChanged;
+                }
+
+                return _carClasses;
+            }
+        }
 
         private string Description
         {
@@ -48,7 +64,7 @@ namespace PostItNoteRacing.Plugin
             {
                 foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
                 {
-                    var carClass = _carClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
+                    var carClass = CarClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
                     if (carClass == null)
                     {
                         carClass = new CarClass
@@ -59,7 +75,7 @@ namespace PostItNoteRacing.Plugin
                             TextColor = opponent.CarClassTextColor
                         };
 
-                        _carClasses.Add(carClass);
+                        CarClasses.Add(carClass);
                     }
 
                     var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
@@ -123,36 +139,37 @@ namespace PostItNoteRacing.Plugin
                     }
                 }
             
-                foreach (var carClass in _carClasses)
+                foreach (var carClass in CarClasses)
                 {
                     foreach (var team in carClass.Teams)
                     {
                         if (Description == "Race")
                         {
-                            team.LivePosition = _carClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
+                            team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
                             team.LivePositionInClass = carClass.Teams.Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
                         }
                         else
                         {
-                            if (team.BestLapTime.TotalSeconds > 0)
+                            if (team.BestLapTime != TimeSpan.Zero)
                             {
-                                team.LivePosition = _carClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
-                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime.TotalSeconds > 0) + 1;
+                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
+                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
                             }
                             else
                             {
-                                team.LivePosition = _carClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime.TotalSeconds > 0 || x.LivePosition != -1) + 1;
-                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime.TotalSeconds > 0 || x.LivePositionInClass != -1) + 1;
+                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePosition != -1) + 1;
+                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePositionInClass != -1) + 1;
                             }
                         }
 
-                        team.DeltaToBest = team.BestLapTime.TotalSeconds > 0 ? (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime.TotalSeconds > 0).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                        team.DeltaToBest = team.BestLapTime != TimeSpan.Zero ? (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime != TimeSpan.Zero).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                        team.DeltaToBestFive = team.BestFiveLapsAverage != TimeSpan.Zero ? (team.BestFiveLapsAverage - carClass.Teams.Where(x => x.BestFiveLapsAverage != TimeSpan.Zero).Min(x => x.BestFiveLapsAverage)).TotalSeconds : default(double?);
                     }
                 }
 
-                var player = _carClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
+                var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
-                foreach (var carClass in _carClasses)
+                foreach (var carClass in CarClasses)
                 {
                     var leader = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == 1);
 
@@ -166,7 +183,9 @@ namespace PostItNoteRacing.Plugin
                         if (player != null)
                         {
                             team.DeltaToPlayerBest = (team.BestLapTime - player.BestLapTime).TotalSeconds;
+                            team.DeltaToPlayerBestFive = (team.BestFiveLapsAverage - player.BestFiveLapsAverage).TotalSeconds;
                             team.DeltaToPlayerLast = (team.LastLapTime - player.LastLapTime).TotalSeconds;
+                            team.DeltaToPlayerLastFive = (team.LastFiveLapsAverage - player.LastFiveLapsAverage).TotalSeconds;
                             team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer);
                         }
 
@@ -187,6 +206,8 @@ namespace PostItNoteRacing.Plugin
 
                         SetSimHubProperty($"Class_{carClass.Index:D2}_{team.LivePositionInClass:D2}_LeaderboardPosition", team.LeaderboardPosition);
 
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsAverage", team.BestFiveLapsAverage);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsColor", team.BestFiveLapsColor);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapColor", team.BestLapColor);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapTime", team.BestLapTime);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_CarNumber", team.CarNumber);
@@ -196,8 +217,11 @@ namespace PostItNoteRacing.Plugin
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassTextColor", carClass.TextColor);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_CurrentLapHighPrecision", team.CurrentLapHighPrecision);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBest", team.DeltaToBest);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBestFive", team.DeltaToBestFive);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBest", team.DeltaToPlayerBest);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBestFive", team.DeltaToPlayerBestFive);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLast", team.DeltaToPlayerLast);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLastFive", team.DeltaToPlayerLastFive);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeader", team.GapToLeader);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeaderString", team.GapToLeaderString);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayer", team.GapToPlayer);
@@ -213,6 +237,7 @@ namespace PostItNoteRacing.Plugin
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsPlayer", team.IsPlayer);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive).LapsCompleted);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastFiveLapsAverage", team.LastFiveLapsAverage);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastFiveLapsColor", team.LastFiveLapsColor);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapColor", team.LastLapColor);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapTime", team.LastLapTime);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive).License.Color);
@@ -236,7 +261,7 @@ namespace PostItNoteRacing.Plugin
 
             if (counter % 15 == 0)
             {
-                foreach (var carClass in _carClasses)
+                foreach (var carClass in CarClasses)
                 {
                     if (Description == "Race")
                     {
@@ -349,10 +374,12 @@ namespace PostItNoteRacing.Plugin
 
         public void Reset()
         {
-            _carClasses.Clear();
+            CarClasses.Clear();
 
             for (int i = 1; i <= 63; i++)
             {
+                SetSimHubProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
+                SetSimHubProperty($"Drivers_{i:D2}_BestFiveLapsColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_BestLapColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_CarNumber", -1);
@@ -362,8 +389,11 @@ namespace PostItNoteRacing.Plugin
                 SetSimHubProperty($"Drivers_{i:D2}_ClassTextColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_DeltaToBest", 0);
+                SetSimHubProperty($"Drivers_{i:D2}_DeltaToBestFive", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
+                SetSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerBestFive", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
+                SetSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerLastFive", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_GapToLeader", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_GapToLeaderString", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_GapToPlayer", 0);
@@ -379,6 +409,7 @@ namespace PostItNoteRacing.Plugin
                 SetSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
                 SetSimHubProperty($"Drivers_{i:D2}_LapsCompleted", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
+                SetSimHubProperty($"Drivers_{i:D2}_LastFiveLapsColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
@@ -412,10 +443,28 @@ namespace PostItNoteRacing.Plugin
             SetSimHubProperty("Player_Incidents", 0);
         }
 
+        protected void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_carClasses != null)
+                {
+                    foreach (var team in _carClasses.SelectMany(x => x.Teams))
+                    {
+                        team.Dispose();
+                    }
+
+                    _carClasses.CollectionChanged -= OnCarClassesCollectionChanged;
+                }
+            }
+        }
+
         private void CreateSimHubProperties()
         {
             for (int i = 1; i <= 63; i++)
             {
+                AddSimHubProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
+                AddSimHubProperty($"Drivers_{i:D2}_BestFiveLapsColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_BestLapColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_CarNumber", -1);
@@ -425,8 +474,11 @@ namespace PostItNoteRacing.Plugin
                 AddSimHubProperty($"Drivers_{i:D2}_ClassTextColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_DeltaToBest", 0);
+                AddSimHubProperty($"Drivers_{i:D2}_DeltaToBestFive", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
+                AddSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerBestFive", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
+                AddSimHubProperty($"Drivers_{i:D2}_DeltaToPlayerLastFive", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_GapToLeader", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_GapToLeaderString", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_GapToPlayer", 0);
@@ -442,6 +494,7 @@ namespace PostItNoteRacing.Plugin
                 AddSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
                 AddSimHubProperty($"Drivers_{i:D2}_LapsCompleted", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
+                AddSimHubProperty($"Drivers_{i:D2}_LastFiveLapsColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
@@ -478,11 +531,31 @@ namespace PostItNoteRacing.Plugin
             void AddSimHubProperty(string propertyName, dynamic defaultValue) => _pluginManager.AddProperty(propertyName, _pluginType, defaultValue);
         }
 
+        private void OnCarClassesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null && e.OldItems.Count != 0)
+            {
+                foreach (var team in e.OldItems.OfType<CarClass>().SelectMany(x => x.Teams))
+                {
+                    team.Dispose();
+                }
+            }
+        }
+
         private void OnDescriptionChanged()
         {
             Reset();
         }
 
         private void SetSimHubProperty(string propertyName, dynamic value) => _pluginManager.SetPropertyValue(propertyName, _pluginType, value);
+
+        #region Interface: IDispose
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

@@ -8,10 +8,18 @@ namespace PostItNoteRacing.Plugin
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Properties for iRacing")]
     [PluginName("PostItNoteRacing")]
-    public class PostItNoteRacing : IDataPlugin
+    public class PostItNoteRacing : IDataPlugin, IDisposable
     {
         private short _counter;
         private Session _session;
+
+        protected void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _session?.Dispose();
+            }
+        }
 
         #region Interface: IDataPlugin
         public PluginManager PluginManager { get; set; }
@@ -53,6 +61,15 @@ namespace PostItNoteRacing.Plugin
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
             _session = new Session(pluginManager, typeof(PostItNoteRacing));
+        }
+        #endregion
+
+        #region Interface: IDispose
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

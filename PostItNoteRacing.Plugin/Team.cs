@@ -1,15 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin
 {
-    internal class Team
+    internal class Team : IDisposable
     {
-        private readonly List<TimeSpan> _lastFiveLaps = new List<TimeSpan>();
-
         private int _lapsCompleted = 0;
+        private ObservableCollection<TimeSpan> _lastFiveLaps;
         private TimeSpan _lastLapTime;
+
+        private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
+
+        private ObservableCollection<TimeSpan> LastFiveLaps
+        {
+            get
+            {
+                if (_lastFiveLaps == null)
+                {
+                    _lastFiveLaps = new ObservableCollection<TimeSpan>();
+                    _lastFiveLaps.CollectionChanged += OnLastFiveLapsCollectionChanged;
+                }
+
+                return _lastFiveLaps;
+            }
+        }
+
+        public TimeSpan BestFiveLapsAverage
+        {
+            get
+            {
+                if (BestFiveLaps.Any() == false)
+                {
+                    return TimeSpan.Zero;
+                }
+                else
+                {
+                    return TimeSpan.FromSeconds(BestFiveLaps.Average(x => x.TotalSeconds));
+                }
+            }
+        }
+
+        public string BestFiveLapsColor
+        {
+            get
+            {
+                if (DeltaToBestFive == 0)
+                {
+                    return Colors.Purple;
+                }
+                else if (IsPlayer == true)
+                {
+                    return Colors.Yellow;
+                }
+                else
+                {
+                    return Colors.White;
+                }
+            }
+        }
 
         public string BestLapColor
         {
@@ -38,9 +89,15 @@ namespace PostItNoteRacing.Plugin
 
         public double? DeltaToBest { get; set; }
 
+        public double? DeltaToBestFive { get; set; }
+
         public double? DeltaToPlayerBest { get; set; }
 
+        public double? DeltaToPlayerBestFive { get; set; }
+
         public double? DeltaToPlayerLast { get; set; }
+
+        public double? DeltaToPlayerLastFive { get; set; }
 
         public List<Driver> Drivers { get; } = new List<Driver>();
 
@@ -104,13 +161,32 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (_lastFiveLaps.Any() == false)
+                if (LastFiveLaps.Any() == false)
                 {
                     return TimeSpan.Zero;
                 }
                 else
                 {
-                    return TimeSpan.FromSeconds(_lastFiveLaps.Average(x => x.TotalSeconds));
+                    return TimeSpan.FromSeconds(LastFiveLaps.Average(x => x.TotalSeconds));
+                }
+            }
+        }
+
+        public string LastFiveLapsColor
+        {
+            get
+            {
+                if (LastFiveLapsAverage != TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
+                {
+                    return Colors.Green;
+                }
+                else if (IsPlayer == true)
+                {
+                    return Colors.Yellow;
+                }
+                else
+                {
+                    return Colors.White;
                 }
             }
         }
@@ -119,7 +195,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (LastLapTime.TotalSeconds > 0 && LastLapTime == BestLapTime)
+                if (LastLapTime != TimeSpan.Zero && LastLapTime == BestLapTime)
                 {
                     return Colors.Green;
                 }
@@ -178,14 +254,44 @@ namespace PostItNoteRacing.Plugin
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
 
+        protected void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_lastFiveLaps != null)
+                {
+                    _lastFiveLaps.CollectionChanged -= OnLastFiveLapsCollectionChanged;
+                }
+            }
+        }
+
+        private void OnLastFiveLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (BestFiveLaps.Count < 5 || LastFiveLapsAverage < BestFiveLapsAverage)
+            {
+                BestFiveLaps.Clear();
+
+                BestFiveLaps.AddRange(LastFiveLaps);
+            }
+        }
+
         private void OnLastLapTimeChanged()
         {
-            if (_lastFiveLaps.Count == 5)
+            if (LastFiveLaps.Count == 5)
             {
-                _lastFiveLaps.RemoveAt(4);
+                LastFiveLaps.RemoveAt(4);
             }
 
-            _lastFiveLaps.Insert(0, LastLapTime);
+            LastFiveLaps.Insert(0, LastLapTime);
         }
+
+        #region Interface: IDispose
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }
