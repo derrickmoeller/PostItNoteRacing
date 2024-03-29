@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Colors.cs" />
+    <Compile Include="Session.cs" />
     <Compile Include="Team.cs" />
     <Compile Include="License.cs" />
     <Compile Include="CarClass.cs" />

@@ -15,3 +15,9 @@ function sc_GetPropertyFromLivePosition(livePosition, propertyName) {
 
     return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 }
+
+function sc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
+    let leaderboardPosition = getplayerleaderboardposition() + relativePosition;
+
+    return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
+}
