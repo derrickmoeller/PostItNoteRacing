@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin
 {
@@ -80,8 +82,25 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
+        public int StrengthOfField => GetStrengthOfField(Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
+
+        public string StrengthOfFieldString => $"{StrengthOfField / 1000D:0.0k}";
+
         public List<Team> Teams { get; set; }
 
         public string TextColor { get; set; }
+
+        private static int GetStrengthOfField(IEnumerable<int> iRatings)
+        {
+            double sum = 0;
+            double weight = 1600 / Math.Log(2);
+
+            foreach (var iRating in iRatings)
+            {
+                sum += Math.Pow(2, -iRating / 1600D);
+            }
+
+            return (int)Math.Round(weight * Math.Log(iRatings.Count() / sum));
+        }
     }
 }

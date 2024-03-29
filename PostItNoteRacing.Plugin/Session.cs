@@ -60,7 +60,7 @@ namespace PostItNoteRacing.Plugin
         {
             Description = StatusDatabase.SessionTypeName;
 
-            if (counter % 6 == 0)
+            if (counter % 6 == 0) // 0, 6, 12, 18, 24, 30, 36, 42, 48, 54
             {
                 foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
                 {
@@ -114,8 +114,6 @@ namespace PostItNoteRacing.Plugin
                     team.IsInPit = opponent.IsCarInPit;
                     team.IsPlayer = opponent.IsPlayer;
                     team.LeaderboardPosition = i + 1;
-                    team.LivePosition = -1;
-                    team.LivePositionInClass = -1;
 
                     var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
                     if (driver == null)
@@ -138,35 +136,10 @@ namespace PostItNoteRacing.Plugin
                         driver.IsActive = true;
                     }
                 }
-            
-                foreach (var carClass in CarClasses)
-                {
-                    foreach (var team in carClass.Teams)
-                    {
-                        if (Description == "Race")
-                        {
-                            team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
-                            team.LivePositionInClass = carClass.Teams.Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
-                        }
-                        else
-                        {
-                            if (team.BestLapTime != TimeSpan.Zero)
-                            {
-                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
-                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
-                            }
-                            else
-                            {
-                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePosition != -1) + 1;
-                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePositionInClass != -1) + 1;
-                            }
-                        }
+            }
 
-                        team.DeltaToBest = team.BestLapTime != TimeSpan.Zero ? (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime != TimeSpan.Zero).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
-                        team.DeltaToBestFive = team.BestFiveLapsAverage != TimeSpan.Zero ? (team.BestFiveLapsAverage - carClass.Teams.Where(x => x.BestFiveLapsAverage != TimeSpan.Zero).Min(x => x.BestFiveLapsAverage)).TotalSeconds : default(double?);
-                    }
-                }
-
+            if (counter % 6 == 1) // 1, 7, 13, 19, 25, 31, 37, 43, 49, 55
+            {
                 var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
                 foreach (var carClass in CarClasses)
@@ -175,6 +148,9 @@ namespace PostItNoteRacing.Plugin
 
                     foreach (var team in carClass.Teams.OrderBy(x => x.LivePositionInClass))
                     {
+                        team.DeltaToBest = team.BestLapTime != TimeSpan.Zero ? (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime != TimeSpan.Zero).Min(x => x.BestLapTime)).TotalSeconds : default(double?);
+                        team.DeltaToBestFive = team.BestFiveLapsAverage != TimeSpan.Zero ? (team.BestFiveLapsAverage - carClass.Teams.Where(x => x.BestFiveLapsAverage != TimeSpan.Zero).Min(x => x.BestFiveLapsAverage)).TotalSeconds : default(double?);
+
                         if (leader != null)
                         {
                             team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader);
@@ -228,10 +204,6 @@ namespace PostItNoteRacing.Plugin
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayerString", team.GapToPlayerString);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_Interval", team.Interval);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalString", team.IntervalString);
-                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
-                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingChange", team.Drivers.Single(x => x.IsActive).IRatingChange);
-                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
-                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsConnected", team.IsConnected);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsInPit", team.IsInPit);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsPlayer", team.IsPlayer);
@@ -251,7 +223,6 @@ namespace PostItNoteRacing.Plugin
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerColor", Description == "Race" ? team.RelativeGapToPlayerColor : Colors.White);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_ShortName", team.Drivers.Single(x => x.IsActive).ShortName);
-                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamIRating", team.IRating);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamLapsCompleted", team.LapsCompleted);
                         SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamName", team.Name);
                         SetSimHubProperty($"Drivers_Live_{team.LivePosition:D2}_LeaderboardPosition", team.LeaderboardPosition);
@@ -259,7 +230,52 @@ namespace PostItNoteRacing.Plugin
                 }
             }
 
-            if (counter % 15 == 0)
+            if (counter % 15 == 0) // 0, 15, 30, 45
+            {
+                var iRacingData = StatusDatabase.GetRawDataObject() as DataSampleEx;
+                if (iRacingData != null)
+                {
+                    iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
+
+                    SetSimHubProperty("Player_Incidents", Convert.ToInt32(rawIncidents));
+                }
+            }
+
+            if (counter % 60 == 0) // 0
+            {
+                foreach (var team in CarClasses.SelectMany(x => x.Teams))
+                {
+                    team.LivePosition = -1;
+                    team.LivePositionInClass = -1;
+                }
+
+                foreach (var carClass in CarClasses)
+                {
+                    foreach (var team in carClass.Teams)
+                    {
+                        if (Description == "Race")
+                        {
+                            team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
+                            team.LivePositionInClass = carClass.Teams.Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
+                        }
+                        else
+                        {
+                            if (team.BestLapTime != TimeSpan.Zero)
+                            {
+                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
+                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime < team.BestLapTime && x.BestLapTime != TimeSpan.Zero) + 1;
+                            }
+                            else
+                            {
+                                team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePosition != -1) + 1;
+                                team.LivePositionInClass = carClass.Teams.Count(x => x.BestLapTime != TimeSpan.Zero || x.LivePositionInClass != -1) + 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (counter % 60 == 2) // 2
             {
                 foreach (var carClass in CarClasses)
                 {
@@ -287,21 +303,17 @@ namespace PostItNoteRacing.Plugin
                             {
                                 team.Drivers.Single().IRatingChange = (int)iRatingChange;
                             }
+
+                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
+                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingChange", team.Drivers.Single(x => x.IsActive).IRatingChange);
+                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
+                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
+                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamIRating", team.IRating);
                         }
                     }
 
-                    int strengthOfField = GetStrengthOfField(carClass.Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
-
-                    SetSimHubProperty($"Class_{carClass.Index:D2}_SoF", strengthOfField);
-                    SetSimHubProperty($"Class_{carClass.Index:D2}_SoFString", $"{strengthOfField / 1000D:0.0k}");
-                }
-
-                var iRacingData = StatusDatabase.GetRawDataObject() as DataSampleEx;
-                if (iRacingData != null)
-                {
-                    iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
-
-                    SetSimHubProperty("Player_Incidents", Convert.ToInt32(rawIncidents));
+                    SetSimHubProperty($"Class_{carClass.Index:D2}_SoF", carClass.StrengthOfField);
+                    SetSimHubProperty($"Class_{carClass.Index:D2}_SoFString", carClass.StrengthOfFieldString);
                 }
             }
 
@@ -357,18 +369,6 @@ namespace PostItNoteRacing.Plugin
                 }
 
                 return Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count());
-            }
-
-            int GetStrengthOfField(IEnumerable<int> iRatings)
-            {
-                double sum = 0;
-
-                foreach (var iRating in  iRatings)
-                {
-                    sum += Math.Pow(2, -iRating / 1600D);
-                }
-
-                return (int)Math.Round(_weight * Math.Log(iRatings.Count() / sum));
             }
         }
 
