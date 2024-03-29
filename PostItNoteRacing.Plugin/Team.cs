@@ -6,7 +6,10 @@ namespace PostItNoteRacing.Plugin
 {
     internal class Team
     {
+        private readonly List<TimeSpan> _lastFiveLaps = new List<TimeSpan>();
+
         private int _lapsCompleted = 0;
+        private TimeSpan _lastLapTime;
 
         public string BestLapColor
         {
@@ -97,6 +100,21 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
+        public TimeSpan LastFiveLapsAverage
+        {
+            get
+            {
+                if (_lastFiveLaps.Any() == false)
+                {
+                    return TimeSpan.Zero;
+                }
+                else
+                {
+                    return TimeSpan.FromSeconds(_lastFiveLaps.Average(x => x.TotalSeconds));
+                }
+            }
+        }
+
         public string LastLapColor
         {
             get
@@ -116,7 +134,18 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        public TimeSpan LastLapTime { get; set; }
+        public TimeSpan LastLapTime
+        {
+            get { return _lastLapTime; }
+            set
+            {
+                if (_lastLapTime != value)
+                {
+                    _lastLapTime = value;
+                    OnLastLapTimeChanged();
+                }
+            }
+        }
 
         public int LeaderboardPosition { get; set; } = -1;
 
@@ -148,5 +177,15 @@ namespace PostItNoteRacing.Plugin
         }
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
+
+        private void OnLastLapTimeChanged()
+        {
+            if (_lastFiveLaps.Count == 5)
+            {
+                _lastFiveLaps.RemoveAt(4);
+            }
+
+            _lastFiveLaps.Insert(0, LastLapTime);
+        }
     }
 }

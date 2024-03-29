@@ -233,6 +233,7 @@ namespace PostItNoteRacing.Plugin
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsInPit", team.IsInPit);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IsPlayer", team.IsPlayer);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive).LapsCompleted);
+                    SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastFiveLapsAverage", team.LastFiveLapsAverage);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapColor", team.LastLapColor);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapTime", team.LastLapTime);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive).License.Color);
@@ -364,6 +365,7 @@ namespace PostItNoteRacing.Plugin
                 SetSimHubProperty($"Drivers_{i:D2}_IsInPit", false);
                 SetSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
                 SetSimHubProperty($"Drivers_{i:D2}_LapsCompleted", 0);
+                SetSimHubProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
@@ -426,6 +428,7 @@ namespace PostItNoteRacing.Plugin
                 AddSimHubProperty($"Drivers_{i:D2}_IsInPit", false);
                 AddSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
                 AddSimHubProperty($"Drivers_{i:D2}_LapsCompleted", 0);
+                AddSimHubProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_LastLapColor", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_LicenseColor", String.Empty);
