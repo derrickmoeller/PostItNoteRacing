@@ -279,9 +279,10 @@ namespace PostItNoteRacing.Plugin
             {
                 foreach (var carClass in CarClasses)
                 {
-                    if (Description == "Race")
+                    
+                    foreach (var team in carClass.Teams.Where(x => x.IRating > 0))
                     {
-                        foreach (var team in carClass.Teams.Where(x => x.IRating > 0))
+                        if (Description == "Race")
                         {
                             var iRatingChange = GetIRatingChange(team.IRating.Value, team.LivePositionInClass, carClass.Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
 
@@ -304,12 +305,13 @@ namespace PostItNoteRacing.Plugin
                                 team.Drivers.Single().IRatingChange = (int)iRatingChange;
                             }
 
-                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
                             SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingChange", team.Drivers.Single(x => x.IsActive).IRatingChange);
-                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
-                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
-                            SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamIRating", team.IRating);
                         }
+
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRating", team.Drivers.Single(x => x.IsActive).IRating);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingLicenseCombinedString", team.Drivers.Single(x => x.IsActive).IRatingLicenseCombinedString);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_IRatingString", team.Drivers.Single(x => x.IsActive).IRatingString);
+                        SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamIRating", team.IRating);
                     }
 
                     SetSimHubProperty($"Class_{carClass.Index:D2}_SoF", carClass.StrengthOfField);
@@ -402,8 +404,8 @@ namespace PostItNoteRacing.Plugin
                 SetSimHubProperty($"Drivers_{i:D2}_IntervalString", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_IRating", 0);
                 SetSimHubProperty($"Drivers_{i:D2}_IRatingChange", 0);
-                SetSimHubProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_IRatingLicenseCombinedString", String.Empty);
+                SetSimHubProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_IsConnected", false);
                 SetSimHubProperty($"Drivers_{i:D2}_IsInPit", false);
                 SetSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
@@ -487,8 +489,8 @@ namespace PostItNoteRacing.Plugin
                 AddSimHubProperty($"Drivers_{i:D2}_IntervalString", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_IRating", 0);
                 AddSimHubProperty($"Drivers_{i:D2}_IRatingChange", 0);
-                AddSimHubProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_IRatingLicenseCombinedString", String.Empty);
+                AddSimHubProperty($"Drivers_{i:D2}_IRatingString", String.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_IsConnected", false);
                 AddSimHubProperty($"Drivers_{i:D2}_IsInPit", false);
                 AddSimHubProperty($"Drivers_{i:D2}_IsPlayer", false);
