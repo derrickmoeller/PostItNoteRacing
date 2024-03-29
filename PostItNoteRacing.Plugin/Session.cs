@@ -4,6 +4,7 @@ using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace PostItNoteRacing.Plugin
 {
@@ -472,7 +473,7 @@ namespace PostItNoteRacing.Plugin
             }
 
             AddSimHubProperty("Player_Incidents", 0);
-            AddSimHubProperty("Version", "1.0.2.0");
+            AddSimHubProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
             void AddSimHubProperty(string propertyName, dynamic defaultValue) => _pluginManager.AddProperty(propertyName, _pluginType, defaultValue);
         }
