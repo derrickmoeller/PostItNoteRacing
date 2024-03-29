@@ -10,6 +10,7 @@ namespace PostItNoteRacing.Plugin
     [PluginName("PostItNoteRacing")]
     public class PostItNoteRacing : IDataPlugin
     {
+        private short _counter;
         private Session _session;
 
         #region Interface: IDataPlugin
@@ -19,10 +20,17 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
+                _counter++;
+
+                if (_counter > 59)
+                {
+                    _counter = 0;
+                }
+
                 if (data.GameRunning && data.NewData != null)
                 {
                     _session.StatusDatabase = data.NewData;
-                    _session.Refresh();
+                    _session.Refresh(_counter);
                 }
                 else
                 {

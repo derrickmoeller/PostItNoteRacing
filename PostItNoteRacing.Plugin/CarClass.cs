@@ -10,6 +10,8 @@ namespace PostItNoteRacing.Plugin
         private const string LightYellow = "#FFDA59";
         private const string VeryLightViolet = "#AE6BFF";
         private const string VividCyan = "#33CEFF";
+
+        private string _name;
         
         public static ReadOnlyCollection<string> Colors =
             new ReadOnlyCollection<string>(new[]
@@ -39,7 +41,44 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                switch (value)
+                {
+                    case "Nissan GTP":
+                        _name = "GTP";
+                        break;
+                    case "Dallara P217":
+                    case "HPD ARX-01c":
+                        _name = "LMP2";
+                        break;
+                    case "Ligier JS P320":
+                        _name = "LMP3";
+                        break;
+                    case "GT1 Class":
+                        _name = "GT1";
+                        break;
+                    case "Ford GT":
+                        _name = "GT2";
+                        break;
+                    case "IMSA23":
+                        _name = "GTD";
+                        break;
+                    case "GT4 Class":
+                        _name = "GT4";
+                        break;
+                    case "Audi 90 GTO":
+                        _name = "GTO";
+                        break;
+                    default:
+                        _name = value;
+                        break;
+                }
+            }
+        }
 
         public List<Team> Teams { get; set; }
 
