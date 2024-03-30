@@ -444,7 +444,7 @@ namespace PostItNoteRacing.Plugin
         {
             foreach (var carClass in CarClasses)
             {
-                SetSimHubProperty($"Class_{carClass.Index}_OpponentCount", carClass.Teams.Count);
+                SetSimHubProperty($"Class_{carClass.Index:D2}_OpponentCount", carClass.Teams.Count);
 
                 foreach (var team in carClass.Teams)
                 {
