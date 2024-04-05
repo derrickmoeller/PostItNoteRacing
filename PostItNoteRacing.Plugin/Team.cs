@@ -87,6 +87,8 @@ namespace PostItNoteRacing.Plugin
 
         public double? CurrentLapHighPrecision { get; set; }
 
+        public TimeSpan? CurrentLapTime { get; set; }
+
         public double? DeltaToBest { get; set; }
 
         public double? DeltaToBestFive { get; set; }
@@ -144,15 +146,7 @@ namespace PostItNoteRacing.Plugin
                 if (_lapsCompleted != value)
                 {
                     _lapsCompleted = value;
-                }
-
-                if (Drivers.Sum(x => x.LapsCompleted) != LapsCompleted)
-                {
-                    var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
-                    if (driver != null)
-                    {
-                        driver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
-                    }
+                    OnLapsCompletedChanged();
                 }
             }
         }
@@ -237,11 +231,11 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (GapToPlayer < 0 && (GapToPlayerString.EndsWith("L") || RelativeGapToPlayer >= 0))
+                if (GapToPlayer < 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer >= 0))
                 {
                     return Colors.Orange;
                 }
-                else if (GapToPlayer > 0 && (GapToPlayerString.EndsWith("L") || RelativeGapToPlayer <= 0))
+                else if (GapToPlayer > 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer <= 0))
                 {
                     return Colors.Blue;
                 }
@@ -261,6 +255,18 @@ namespace PostItNoteRacing.Plugin
                 if (_lastFiveLaps != null)
                 {
                     _lastFiveLaps.CollectionChanged -= OnLastFiveLapsCollectionChanged;
+                }
+            }
+        }
+
+        private void OnLapsCompletedChanged()
+        {
+            if (LapsCompleted != Drivers.Sum(x => x.LapsCompleted))
+            {
+                var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
+                if (driver != null)
+                {
+                    driver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
                 }
             }
         }
