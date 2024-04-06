@@ -1,0 +1,8 @@
+﻿<UserControl x:Class="PostItNoteRacing.Plugin.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins" >
+    <StackPanel>
+        <ui:ControlsEditor FriendlyName="Reset Estimated Laps" ActionName="PostItNoteRacing.ResetEstimatedLaps" />
+    </StackPanel>
+</UserControl>

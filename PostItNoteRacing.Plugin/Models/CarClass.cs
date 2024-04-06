@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin
+namespace PostItNoteRacing.Plugin.Models
 {
     internal class CarClass
     {
@@ -86,7 +86,7 @@ namespace PostItNoteRacing.Plugin
 
         public string StrengthOfFieldString => $"{StrengthOfField / 1000D:0.0k}";
 
-        public List<Team> Teams { get; set; }
+        public List<Team> Teams { get; } = new List<Team>();
 
         public string TextColor { get; set; }
 

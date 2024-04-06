@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin
+namespace PostItNoteRacing.Plugin.Models
 {
     internal class Driver
     {

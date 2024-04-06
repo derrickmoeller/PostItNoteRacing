@@ -1,14 +1,18 @@
 ﻿using GameReaderCommon;
+using PostItNoteRacing.Plugin.Models;
+using PostItNoteRacing.Plugin.Views;
 using SimHub;
 using SimHub.Plugins;
 using System;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PostItNoteRacing.Plugin
 {
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Properties for iRacing")]
     [PluginName("PostItNoteRacing")]
-    public class PostItNoteRacing : IDataPlugin, IDisposable
+    public class PostItNoteRacing : IDataPlugin, IDisposable, IWPFSettingsV2
     {
         private short _counter;
         private Session _session;
@@ -22,8 +26,20 @@ namespace PostItNoteRacing.Plugin
         }
 
         #region Interface: IDataPlugin
+        /// <summary>
+        /// Instance of the current plugin manager
+        /// </summary>
         public PluginManager PluginManager { get; set; }
 
+        /// <summary>
+        /// Called one time per game data update, contains all normalized game data,
+        /// raw data are intentionnally "hidden" under a generic object type (A plugin SHOULD NOT USE IT)
+        ///
+        /// This method is on the critical path, it must execute as fast as possible and avoid throwing any error
+        ///
+        /// </summary>
+        /// <param name="pluginManager"></param>
+        /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager _, ref GameData data)
         {
             try
@@ -75,11 +91,23 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
+        /// <summary>
+        /// Called at plugin manager stop, close/dispose anything needed here !
+        /// Plugins are rebuilt at game change
+        /// </summary>
+        /// <param name="pluginManager"></param>
         public void End(PluginManager _)
         {
             Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
+
+            _session?.Dispose();
         }
 
+        /// <summary>
+        /// Called once after plugins startup
+        /// Plugins are rebuilt at game change
+        /// </summary>
+        /// <param name="pluginManager"></param>
         public void Init(PluginManager pluginManager)
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
@@ -94,6 +122,28 @@ namespace PostItNoteRacing.Plugin
             Dispose(true);
 
             GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        #region Interface: IWPFSettingsV2
+        /// <summary>
+        /// Gets a short plugin title to show in left menu. Return null if you want to use the title as defined in PluginName attribute.
+        /// </summary>
+        public string LeftMenuTitle => "Post-It Note Racing";
+
+        /// <summary>
+        /// Gets the left menu icon. Icon must be 24x24 and compatible with black and white display.
+        /// </summary>
+        public ImageSource PictureIcon => this.ToIcon(Properties.Resources.MenuIcon);
+
+        /// <summary>
+        /// Returns the settings control, return null if no settings control is required
+        /// </summary>
+        /// <param name="pluginManager"></param>
+        /// <returns></returns>
+        public Control GetWPFSettingsControl(PluginManager _)
+        {
+            return new SettingsView(this);
         }
         #endregion
     }

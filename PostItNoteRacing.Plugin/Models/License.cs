@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PostItNoteRacing.Plugin
+namespace PostItNoteRacing.Plugin.Models
 {
     internal class License
     {

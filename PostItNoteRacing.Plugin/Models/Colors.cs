@@ -1,4 +1,4 @@
-﻿namespace PostItNoteRacing.Plugin
+﻿namespace PostItNoteRacing.Plugin.Models
 {
     internal static class Colors
     {

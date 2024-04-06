@@ -4,13 +4,14 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin
+namespace PostItNoteRacing.Plugin.Models
 {
     internal class Team : IDisposable
     {
-        private int _lapsCompleted = 0;
+        private Lap _bestLap;
+        private Lap _currentLap;
         private ObservableCollection<TimeSpan> _lastFiveLaps;
-        private TimeSpan _lastLapTime;
+        private Lap _lastLap;
 
         private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
 
@@ -28,13 +29,13 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        public TimeSpan BestFiveLapsAverage
+        public TimeSpan? BestFiveLapsAverage
         {
             get
             {
                 if (BestFiveLaps.Any() == false)
                 {
-                    return TimeSpan.Zero;
+                    return null;
                 }
                 else
                 {
@@ -47,7 +48,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (DeltaToBestFive == 0)
+                if (BestFiveLapsAverage > TimeSpan.Zero && DeltaToBestFive == 0)
                 {
                     return Colors.Purple;
                 }
@@ -58,6 +59,19 @@ namespace PostItNoteRacing.Plugin
                 else
                 {
                     return Colors.White;
+                }
+            }
+        }
+
+        public Lap BestLap
+        {
+            get { return _bestLap; }
+            set
+            {
+                if (_bestLap != value)
+                {
+                    _bestLap = value;
+                    OnBestLapChanged();
                 }
             }
         }
@@ -66,7 +80,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (DeltaToBest == 0)
+                if (BestLapTime > TimeSpan.Zero && DeltaToBest == 0)
                 {
                     return Colors.Purple;
                 }
@@ -81,27 +95,98 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        public TimeSpan BestLapTime { get; set; }
+        public TimeSpan? BestLapTime { get; set; }
 
         public string CarNumber { get; set; }
 
+        public Lap CurrentLap
+        {
+            get { return _currentLap; }
+            set
+            {
+                if (_currentLap != value)
+                {
+                    OnCurrentLapChanging();
+                    _currentLap = value;
+                    OnCurrentLapChanged();
+                }
+            }
+        }
+
         public double? CurrentLapHighPrecision { get; set; }
 
-        public TimeSpan? CurrentLapTime { get; set; }
+        public double DeltaToBest { get; set; }
 
-        public double? DeltaToBest { get; set; }
+        public double DeltaToBestFive { get; set; }
 
-        public double? DeltaToBestFive { get; set; }
+        public double DeltaToPlayerBest { get; set; }
 
-        public double? DeltaToPlayerBest { get; set; }
+        public double DeltaToPlayerBestFive { get; set; }
 
-        public double? DeltaToPlayerBestFive { get; set; }
+        public double DeltaToPlayerLast { get; set; }
 
-        public double? DeltaToPlayerLast { get; set; }
-
-        public double? DeltaToPlayerLastFive { get; set; }
+        public double DeltaToPlayerLastFive { get; set; }
 
         public List<Driver> Drivers { get; } = new List<Driver>();
+
+        public double EstimatedDelta => (EstimatedLapTime - BestLap?.Time)?.TotalSeconds ?? 0D;
+
+        public string EstimatedLapColor
+        {
+            get
+            {
+                if (EstimatedLapTime <= BestLap?.Time)
+                {
+                    if (DeltaToBest + EstimatedDelta < 0)
+                    {
+                        return Colors.Purple;
+                    }
+                    else
+                    {
+                        return Colors.Green;
+                    }
+                }
+                else if (EstimatedLapTime != null)
+                {
+                    return Colors.Yellow;
+                }
+                else
+                {
+                    return Colors.Gray;
+                }
+            }
+        }
+
+        public TimeSpan? EstimatedLapTime
+        {
+            get
+            {
+                if (BestLap != null && CurrentLap.MiniSectors.Any())
+                {
+                    var miniSector = CurrentLap.MiniSectors.OrderByDescending(x => x.TrackPosition).First();
+                    var nextSector = BestLap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = BestLap.Time, TrackPosition = 1 };
+                    var lastSector = BestLap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
+
+                    var interpolatedValue = GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks);
+
+                    return BestLap.Time + (miniSector.Time - TimeSpan.FromTicks(interpolatedValue));
+
+                    long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
+                    {
+                        if ((x1 - x0) == 0)
+                        {
+                            return (y0 + y1) / 2;
+                        }
+
+                        return (long)(y0 + (x - x0) * (y1 - y0) / (x1 - x0));
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
 
         public double? GapToLeader { get; set; }
 
@@ -138,26 +223,15 @@ namespace PostItNoteRacing.Plugin
 
         public bool? IsPlayer { get; set; }
 
-        public int LapsCompleted
-        {
-            get { return _lapsCompleted; }
-            set
-            {
-                if (_lapsCompleted != value)
-                {
-                    _lapsCompleted = value;
-                    OnLapsCompletedChanged();
-                }
-            }
-        }
+        public int LapsCompleted => (int)(CurrentLapHighPrecision ?? 0D);
 
-        public TimeSpan LastFiveLapsAverage
+        public TimeSpan? LastFiveLapsAverage
         {
             get
             {
                 if (LastFiveLaps.Any() == false)
                 {
-                    return TimeSpan.Zero;
+                    return null;
                 }
                 else
                 {
@@ -170,7 +244,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (LastFiveLapsAverage != TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
+                if (LastFiveLapsAverage > TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
                 {
                     return Colors.Green;
                 }
@@ -181,6 +255,19 @@ namespace PostItNoteRacing.Plugin
                 else
                 {
                     return Colors.White;
+                }
+            }
+        }
+
+        public Lap LastLap
+        {
+            get { return _lastLap; }
+            set
+            {
+                if (_lastLap != value)
+                {
+                    _lastLap = value;
+                    OnLastLapChanged();
                 }
             }
         }
@@ -189,7 +276,7 @@ namespace PostItNoteRacing.Plugin
         {
             get
             {
-                if (LastLapTime != TimeSpan.Zero && LastLapTime == BestLapTime)
+                if (LastLap?.Time > TimeSpan.Zero && LastLap.Time == BestLapTime)
                 {
                     return Colors.Green;
                 }
@@ -200,19 +287,6 @@ namespace PostItNoteRacing.Plugin
                 else
                 {
                     return Colors.White;
-                }
-            }
-        }
-
-        public TimeSpan LastLapTime
-        {
-            get { return _lastLapTime; }
-            set
-            {
-                if (_lastLapTime != value)
-                {
-                    _lastLapTime = value;
-                    OnLastLapTimeChanged();
                 }
             }
         }
@@ -259,7 +333,15 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        private void OnLapsCompletedChanged()
+        private void OnBestLapChanged()
+        {
+            if (BestLap?.Time < (BestLapTime ?? TimeSpan.MaxValue))
+            {
+                BestLapTime = BestLap.Time;
+            }
+        }
+
+        private void OnCurrentLapChanged()
         {
             if (LapsCompleted != Drivers.Sum(x => x.LapsCompleted))
             {
@@ -269,6 +351,11 @@ namespace PostItNoteRacing.Plugin
                     driver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
                 }
             }
+        }
+
+        private void OnCurrentLapChanging()
+        {
+            LastLap = CurrentLap;
         }
 
         private void OnLastFiveLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -281,14 +368,22 @@ namespace PostItNoteRacing.Plugin
             }
         }
 
-        private void OnLastLapTimeChanged()
+        private void OnLastLapChanged()
         {
-            if (LastFiveLaps.Count == 5)
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
             {
-                LastFiveLaps.RemoveAt(4);
+                BestLap = LastLap;
             }
 
-            LastFiveLaps.Insert(0, LastLapTime);
+            if (LastLap.Number > 0)
+            {
+                if (LastFiveLaps.Count == 5)
+                {
+                    LastFiveLaps.RemoveAt(4);
+                }
+
+                LastFiveLaps.Insert(0, LastLap.Time);
+            }
         }
 
         #region Interface: IDispose
