@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PostItNoteRacing.Plugin.EventArgs;
+using System;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
@@ -6,6 +7,21 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Driver
     {
         private static readonly char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
+        private Lap _bestLap;
+
+        public Lap BestLap
+        {
+            get { return _bestLap; }
+            set
+            {
+                if (_bestLap != value)
+                {
+                    _bestLap = value;
+                    OnBestLapChanged();
+                }
+            }
+        }
 
         public double? IRating { get; set; }
 
@@ -36,6 +52,13 @@ namespace PostItNoteRacing.Plugin.Models
                     return null;
                 }
             }
+        }
+
+        public event EventHandler<LapChangedEventArgs> BestLapChanged;
+
+        private void OnBestLapChanged()
+        {
+            BestLapChanged?.Invoke(this, new LapChangedEventArgs(BestLap?.Time));
         }
     }
 }

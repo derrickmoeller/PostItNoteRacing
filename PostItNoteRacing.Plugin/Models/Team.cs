@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PostItNoteRacing.Plugin.EventArgs;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -8,20 +9,20 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class Team : IDisposable
     {
-        private Lap _bestLap;
         private Lap _currentLap;
-        private ObservableCollection<TimeSpan> _lastFiveLaps;
+        private ObservableCollection<Driver> _drivers;
+        private ObservableCollection<Lap> _lastFiveLaps;
         private Lap _lastLap;
 
         private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
 
-        private ObservableCollection<TimeSpan> LastFiveLaps
+        private ObservableCollection<Lap> LastFiveLaps
         {
             get
             {
                 if (_lastFiveLaps == null)
                 {
-                    _lastFiveLaps = new ObservableCollection<TimeSpan>();
+                    _lastFiveLaps = new ObservableCollection<Lap>();
                     _lastFiveLaps.CollectionChanged += OnLastFiveLapsCollectionChanged;
                 }
 
@@ -59,19 +60,6 @@ namespace PostItNoteRacing.Plugin.Models
                 else
                 {
                     return Colors.White;
-                }
-            }
-        }
-
-        public Lap BestLap
-        {
-            get { return _bestLap; }
-            set
-            {
-                if (_bestLap != value)
-                {
-                    _bestLap = value;
-                    OnBestLapChanged();
                 }
             }
         }
@@ -127,15 +115,29 @@ namespace PostItNoteRacing.Plugin.Models
 
         public double DeltaToPlayerLastFive { get; set; }
 
-        public List<Driver> Drivers { get; } = new List<Driver>();
+        public ObservableCollection<Driver> Drivers
+        {
+            get
+            {
+                if (_drivers == null)
+                {
+                    _drivers = new ObservableCollection<Driver>();
+                    _drivers.CollectionChanged += OnDriversCollectionChanged;
+                }
 
-        public double EstimatedDelta => (EstimatedLapTime - BestLap?.Time)?.TotalSeconds ?? 0D;
+                return _drivers;
+            }
+        }
+
+        public double EstimatedDelta => (EstimatedLapTime - Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)?.TotalSeconds ?? 0D;
 
         public string EstimatedLapColor
         {
             get
             {
-                if (EstimatedLapTime <= BestLap?.Time)
+                var estimatedLapTime = EstimatedLapTime;
+
+                if (estimatedLapTime <= Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)
                 {
                     if (DeltaToBest + EstimatedDelta < 0)
                     {
@@ -146,7 +148,7 @@ namespace PostItNoteRacing.Plugin.Models
                         return Colors.Green;
                     }
                 }
-                else if (EstimatedLapTime != null)
+                else if (estimatedLapTime != null)
                 {
                     return Colors.Yellow;
                 }
@@ -161,15 +163,17 @@ namespace PostItNoteRacing.Plugin.Models
         {
             get
             {
-                if (BestLap != null && CurrentLap.MiniSectors.Any())
+                var bestLap = Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
+
+                if (bestLap != null && CurrentLap.MiniSectors.Any())
                 {
                     var miniSector = CurrentLap.MiniSectors.OrderByDescending(x => x.TrackPosition).First();
-                    var nextSector = BestLap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = BestLap.Time, TrackPosition = 1 };
-                    var lastSector = BestLap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
+                    var nextSector = bestLap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = bestLap.Time, TrackPosition = 1 };
+                    var lastSector = bestLap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
 
                     var interpolatedValue = GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks);
 
-                    return BestLap.Time + (miniSector.Time - TimeSpan.FromTicks(interpolatedValue));
+                    return bestLap.Time + (miniSector.Time - TimeSpan.FromTicks(interpolatedValue));
 
                     long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
                     {
@@ -235,7 +239,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
                 else
                 {
-                    return TimeSpan.FromSeconds(LastFiveLaps.Average(x => x.TotalSeconds));
+                    return TimeSpan.FromSeconds(LastFiveLaps.Average(x => x.Time.TotalSeconds));
                 }
             }
         }
@@ -326,18 +330,15 @@ namespace PostItNoteRacing.Plugin.Models
         {
             if (disposing)
             {
+                if (_drivers != null)
+                {
+                    _drivers.CollectionChanged -= OnDriversCollectionChanged;
+                }
+
                 if (_lastFiveLaps != null)
                 {
                     _lastFiveLaps.CollectionChanged -= OnLastFiveLapsCollectionChanged;
                 }
-            }
-        }
-
-        private void OnBestLapChanged()
-        {
-            if (BestLap?.Time < (BestLapTime ?? TimeSpan.MaxValue))
-            {
-                BestLapTime = BestLap.Time;
             }
         }
 
@@ -358,31 +359,60 @@ namespace PostItNoteRacing.Plugin.Models
             LastLap = CurrentLap;
         }
 
+        private void OnDriverBestLapChanged(object sender, LapChangedEventArgs e)
+        {
+            if (e.LapTime < (BestLapTime ?? TimeSpan.MaxValue))
+            {
+                BestLapTime = e.LapTime;
+            }
+        }
+
+        private void OnDriversCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null && e.OldItems.Count != 0)
+            {
+                foreach (Driver driver in e.OldItems)
+                {
+                    driver.BestLapChanged -= OnDriverBestLapChanged;
+                }
+            }
+
+            if (e.NewItems != null && e.NewItems.Count != 0)
+            {
+                foreach (Driver driver in e.NewItems)
+                {
+                    driver.BestLapChanged += OnDriverBestLapChanged;
+                }
+            }
+        }
+
         private void OnLastFiveLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (BestFiveLaps.Count < 5 || LastFiveLapsAverage < BestFiveLapsAverage)
+            if (BestFiveLaps.Count < LastFiveLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.Number > 1) || LastFiveLapsAverage < BestFiveLapsAverage)
             {
                 BestFiveLaps.Clear();
 
-                BestFiveLaps.AddRange(LastFiveLaps);
+                BestFiveLaps.AddRange(LastFiveLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.Number > 1).Select(x => x.Time));
             }
         }
 
         private void OnLastLapChanged()
         {
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
+            var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
+
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (driver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
-                BestLap = LastLap;
+                driver.BestLap = LastLap;
             }
 
             if (LastLap.Number > 0)
             {
-                if (LastFiveLaps.Count == 5)
+                if (LastFiveLaps.Count() == 5)
                 {
                     LastFiveLaps.RemoveAt(4);
                 }
 
-                LastFiveLaps.Insert(0, LastLap.Time);
+                LastFiveLaps.Insert(0, LastLap);
             }
         }
 

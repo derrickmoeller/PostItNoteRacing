@@ -68,6 +68,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventArgs\LapChangedEventArgs.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Models\Colors.cs" />
     <Compile Include="Models\MiniSector.cs" />
     <Compile Include="Models\Lap.cs" />
