@@ -221,11 +221,11 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
         
-        public bool? IsConnected { get; set; }
+        public bool IsConnected { get; set; }
 
-        public bool? IsInPit { get; set; }
+        public bool IsInPit { get; set; }
 
-        public bool? IsPlayer { get; set; }
+        public bool IsPlayer { get; set; }
 
         public int LapsCompleted => (int)(CurrentLapHighPrecision ?? 0D);
 
@@ -271,7 +271,7 @@ namespace PostItNoteRacing.Plugin.Models
                 if (_lastLap != value)
                 {
                     _lastLap = value;
-                    OnLastLapChanged();
+                    OnLastLapChanged(Drivers.SingleOrDefault(x => x.IsActive == true));
                 }
             }
         }
@@ -346,10 +346,10 @@ namespace PostItNoteRacing.Plugin.Models
         {
             if (LapsCompleted != Drivers.Sum(x => x.LapsCompleted))
             {
-                var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
-                if (driver != null)
+                var activeDriver = Drivers.SingleOrDefault(x => x.IsActive == true);
+                if (activeDriver != null)
                 {
-                    driver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
+                    activeDriver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
                 }
             }
         }
@@ -396,13 +396,11 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void OnLastLapChanged()
+        private void OnLastLapChanged(Driver activeDriver)
         {
-            var driver = Drivers.SingleOrDefault(x => x.IsActive == true);
-
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (driver?.BestLap?.Time ?? TimeSpan.MaxValue))
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
-                driver.BestLap = LastLap;
+                activeDriver.BestLap = LastLap;
             }
 
             if (LastLap.Number > 0)

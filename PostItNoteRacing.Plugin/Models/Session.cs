@@ -297,6 +297,7 @@ namespace PostItNoteRacing.Plugin.Models
                             Time = opponent.CurrentLapTime ?? TimeSpan.Zero
                         },
                         CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
+                        IsInPit = opponent.IsCarInPitLane,
                         Name = opponent.TeamName,
                         RelativeGapToPlayer = opponent.RelativeGapToPlayer
                     };
@@ -306,10 +307,12 @@ namespace PostItNoteRacing.Plugin.Models
                 else if (opponent.IsConnected == true)
                 {
                     team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
+                    team.IsInPit = opponent.IsCarInPitLane;
                     team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                 }
                 else if (opponent.IsConnected == false)
                 {
+                    team.IsInPit = true;
                     team.RelativeGapToPlayer = null;
                 }
 
@@ -317,7 +320,6 @@ namespace PostItNoteRacing.Plugin.Models
                 team.GapToLeader = opponent.GaptoClassLeader ?? 0;
                 team.GapToPlayer = opponent.GaptoPlayer;
                 team.IsConnected = opponent.IsConnected;
-                team.IsInPit = opponent.IsCarInPit;
                 team.IsPlayer = opponent.IsPlayer;
 
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
