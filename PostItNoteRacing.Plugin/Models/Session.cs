@@ -47,21 +47,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private bool IsQualifying
-        {
-            get
-            {
-                switch (Description.ToUpper())
-                {
-                    case "LONE QUALIFY":
-                    case "OPEN QUALIFY":
-                    case "QUALIFY":
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
+        private bool IsMultiClass => CarClasses.Count > 1;
 
         private bool IsPractice
         {
@@ -72,6 +58,22 @@ namespace PostItNoteRacing.Plugin.Models
                     case "OFFLINE TESTING":
                     case "OPEN PRACTICE":
                     case "PRACTICE":
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        private bool IsQualifying
+        {
+            get
+            {
+                switch (Description.ToUpper())
+                {
+                    case "LONE QUALIFY":
+                    case "OPEN QUALIFY":
+                    case "QUALIFY":
                         return true;
                     default:
                         return false;
@@ -463,6 +465,7 @@ namespace PostItNoteRacing.Plugin.Models
 
             SetSimHubProperty("Player_Incidents", 0);
             SetSimHubProperty("Session_Description", String.Empty);
+            SetSimHubProperty("Session_IsMultiClass", false);
         }
 
         public void WriteSimHubData()
@@ -556,7 +559,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubProperties()
         {
-            AddAction("ResetEstimatedLaps", ResetEstimatedLaps);
+            AddSimHubAction("ResetEstimatedLaps", ResetEstimatedLaps);
 
             for (int i = 1; i <= 63; i++)
             {
@@ -630,9 +633,10 @@ namespace PostItNoteRacing.Plugin.Models
 
             AddSimHubProperty("Player_Incidents", 0);
             AddSimHubProperty("Session_Description", String.Empty);
+            AddSimHubProperty("Session_IsMultiClass", false);
             AddSimHubProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-            void AddAction(string actionName, Action<PluginManager, string> action) => _pluginManager.AddAction(actionName, _pluginType, action);
+            void AddSimHubAction(string actionName, Action<PluginManager, string> action) => _pluginManager.AddAction(actionName, _pluginType, action);
 
             void AddSimHubProperty(string propertyName, dynamic defaultValue) => _pluginManager.AddProperty(propertyName, _pluginType, defaultValue);
         }
@@ -646,6 +650,8 @@ namespace PostItNoteRacing.Plugin.Models
                     team.Dispose();
                 }
             }
+
+            SetSimHubProperty("Session_IsMultiClass", IsMultiClass);
         }
 
         private void OnDescriptionChanged()

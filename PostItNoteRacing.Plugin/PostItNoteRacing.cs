@@ -10,7 +10,7 @@ using System.Windows.Media;
 namespace PostItNoteRacing.Plugin
 {
     [PluginAuthor("Derrick Moeller")]
-    [PluginDescription("Properties for iRacing")]
+    [PluginDescription("Additional Properties")]
     [PluginName("PostItNoteRacing")]
     public class PostItNoteRacing : IDataPlugin, IDisposable, IWPFSettingsV2
     {
