@@ -6,13 +6,15 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class Driver
     {
-        private static readonly char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+        private static readonly char[] Digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
         private Lap _bestLap;
 
+        public event EventHandler<LapChangedEventArgs> BestLapChanged;
+
         public Lap BestLap
         {
-            get { return _bestLap; }
+            get => _bestLap;
             set
             {
                 if (_bestLap != value)
@@ -45,7 +47,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (Name != null)
                 {
-                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {String.Join(" ", Name.Split(' ').Skip(1)).TrimEnd(digits)}";
+                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {string.Join(" ", Name.Split(' ').Skip(1)).TrimEnd(Digits)}";
                 }
                 else
                 {
@@ -53,8 +55,6 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
         }
-
-        public event EventHandler<LapChangedEventArgs> BestLapChanged;
 
         private void OnBestLapChanged()
         {

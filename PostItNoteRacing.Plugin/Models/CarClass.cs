@@ -14,15 +14,15 @@ namespace PostItNoteRacing.Plugin.Models
         private const string VividCyan = "#33CEFF";
 
         private string _name;
-        
-        public static ReadOnlyCollection<string> Colors =
+
+        public static ReadOnlyCollection<string> Colors { get; } =
             new ReadOnlyCollection<string>(new[]
             {
                 LightYellow,
                 VividCyan,
                 LightPink,
                 VeryLightViolet,
-                LightLimeGreen
+                LightLimeGreen,
             });
 
         public string Color { get; set; }
@@ -45,7 +45,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string Name
         {
-            get { return _name; }
+            get => _name;
             set
             {
                 switch (value)

@@ -14,22 +14,6 @@ namespace PostItNoteRacing.Plugin.Models
         private ObservableCollection<Lap> _lastFiveLaps;
         private Lap _lastLap;
 
-        private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
-
-        private ObservableCollection<Lap> LastFiveLaps
-        {
-            get
-            {
-                if (_lastFiveLaps == null)
-                {
-                    _lastFiveLaps = new ObservableCollection<Lap>();
-                    _lastFiveLaps.CollectionChanged += OnLastFiveLapsCollectionChanged;
-                }
-
-                return _lastFiveLaps;
-            }
-        }
-
         public TimeSpan? BestFiveLapsAverage
         {
             get
@@ -89,7 +73,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         public Lap CurrentLap
         {
-            get { return _currentLap; }
+            get => _currentLap;
             set
             {
                 if (_currentLap != value)
@@ -182,7 +166,7 @@ namespace PostItNoteRacing.Plugin.Models
                             return (y0 + y1) / 2;
                         }
 
-                        return (long)(y0 + (x - x0) * (y1 - y0) / (x1 - x0));
+                        return (long)(y0 + ((x - x0) * (y1 - y0) / (x1 - x0)));
                     }
                 }
                 else
@@ -220,7 +204,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
         }
-        
+
         public bool IsConnected { get; set; }
 
         public bool IsInPit { get; set; }
@@ -265,7 +249,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         public Lap LastLap
         {
-            get { return _lastLap; }
+            get => _lastLap;
             set
             {
                 if (_lastLap != value)
@@ -325,6 +309,22 @@ namespace PostItNoteRacing.Plugin.Models
         }
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
+
+        private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
+
+        private ObservableCollection<Lap> LastFiveLaps
+        {
+            get
+            {
+                if (_lastFiveLaps == null)
+                {
+                    _lastFiveLaps = new ObservableCollection<Lap>();
+                    _lastFiveLaps.CollectionChanged += OnLastFiveLapsCollectionChanged;
+                }
+
+                return _lastFiveLaps;
+            }
+        }
 
         protected void Dispose(bool disposing)
         {
@@ -414,7 +414,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        #region Interface: IDispose
+        #region Interface: IDisposable
         public void Dispose()
         {
             Dispose(true);

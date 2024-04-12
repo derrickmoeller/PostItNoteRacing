@@ -26,8 +26,9 @@ namespace PostItNoteRacing.Plugin
         }
 
         #region Interface: IDataPlugin
+
         /// <summary>
-        /// Instance of the current plugin manager
+        /// Gets or sets instance of the current plugin manager.
         /// </summary>
         public PluginManager PluginManager { get; set; }
 
@@ -35,10 +36,9 @@ namespace PostItNoteRacing.Plugin
         /// Called one time per game data update, contains all normalized game data,
         /// raw data are intentionnally "hidden" under a generic object type (A plugin SHOULD NOT USE IT)
         ///
-        /// This method is on the critical path, it must execute as fast as possible and avoid throwing any error
-        ///
+        /// This method is on the critical path, it must execute as fast as possible and avoid throwing any error.
         /// </summary>
-        /// <param name="pluginManager"></param>
+        /// <param name="_">Discarded parameter.</param>
         /// <param name="data">Current game data, including current and previous data frame.</param>
         public void DataUpdate(PluginManager _, ref GameData data)
         {
@@ -55,27 +55,32 @@ namespace PostItNoteRacing.Plugin
                 {
                     _session.StatusDatabase = data.NewData;
 
-                    if (_counter % 4 == 0) // 0, 4, 8, 12, 16...
+                    // 0, 4, 8, 12, 16...
+                    if (_counter % 4 == 0)
                     {
                         _session.GetGameData();
                     }
 
-                    if (_counter % 60 == 0) // 0
+                    // 0
+                    if (_counter % 60 == 0)
                     {
                         _session.CalculateLivePositions();
                     }
 
-                    if (_counter % 2 == 1) // 1, 3, 5, 7, 9...
+                    // 1, 3, 5, 7, 9...
+                    if (_counter % 2 == 1)
                     {
                         _session.WriteSimHubData();
                     }
 
-                    if (_counter % 4 == 2) // 2, 6, 10, 14, 18...
+                    // 2, 6, 10, 14, 18...
+                    if (_counter % 4 == 2)
                     {
                         _session.CalculateGaps();
                     }
 
-                    if (_counter % 60 == 30 && data.GameName == "IRacing") // 30
+                    // 30
+                    if (_counter % 60 == 30 && data.GameName == "IRacing")
                     {
                         _session.CalculateIRating();
                     }
@@ -92,10 +97,10 @@ namespace PostItNoteRacing.Plugin
         }
 
         /// <summary>
-        /// Called at plugin manager stop, close/dispose anything needed here !
-        /// Plugins are rebuilt at game change
+        /// Called at plugin manager stop, close/dispose anything needed here!
+        /// Plugins are rebuilt at game change.
         /// </summary>
-        /// <param name="pluginManager"></param>
+        /// <param name="_">Discarded parameter.</param>
         public void End(PluginManager _)
         {
             Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
@@ -105,9 +110,9 @@ namespace PostItNoteRacing.Plugin
 
         /// <summary>
         /// Called once after plugins startup
-        /// Plugins are rebuilt at game change
+        /// Plugins are rebuilt at game change.
         /// </summary>
-        /// <param name="pluginManager"></param>
+        /// <param name="pluginManager">Plugin manager.</param>
         public void Init(PluginManager pluginManager)
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
@@ -116,7 +121,7 @@ namespace PostItNoteRacing.Plugin
         }
         #endregion
 
-        #region Interface: IDispose
+        #region Interface: IDisposable
         public void Dispose()
         {
             Dispose(true);
@@ -126,6 +131,7 @@ namespace PostItNoteRacing.Plugin
         #endregion
 
         #region Interface: IWPFSettingsV2
+
         /// <summary>
         /// Gets a short plugin title to show in left menu. Return null if you want to use the title as defined in PluginName attribute.
         /// </summary>
@@ -137,10 +143,10 @@ namespace PostItNoteRacing.Plugin
         public ImageSource PictureIcon => this.ToIcon(Properties.Resources.MenuIcon);
 
         /// <summary>
-        /// Returns the settings control, return null if no settings control is required
+        /// Returns the settings control, return null if no settings control is required.
         /// </summary>
-        /// <param name="pluginManager"></param>
-        /// <returns></returns>
+        /// <param name="_">Discarded parameter.</param>
+        /// <returns>Settings control.</returns>
         public Control GetWPFSettingsControl(PluginManager _)
         {
             return new SettingsView(this);

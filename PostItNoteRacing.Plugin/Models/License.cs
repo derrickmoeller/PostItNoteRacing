@@ -1,14 +1,12 @@
-﻿using System;
-
-namespace PostItNoteRacing.Plugin.Models
+﻿namespace PostItNoteRacing.Plugin.Models
 {
     internal class License
     {
-        private const string blue = "#FF0153DB";
-        private const string green = "#FF00C702";
-        private const string orange = "#FFFC8A27";
-        private const string red = "#FFB40800";
-        private const string yellow = "#FFFEEC04";
+        private const string Blue = "#FF0153DB";
+        private const string Green = "#FF00C702";
+        private const string Orange = "#FFFC8A27";
+        private const string Red = "#FFB40800";
+        private const string Yellow = "#FFFEEC04";
 
         public string Color
         {
@@ -17,22 +15,22 @@ namespace PostItNoteRacing.Plugin.Models
                 switch (ShortString)
                 {
                     case "A":
-                        return blue;
+                        return Blue;
                     case "B":
-                        return green;
+                        return Green;
                     case "C":
-                        return yellow;
+                        return Yellow;
                     case "D":
-                        return orange;
+                        return Orange;
                     case "R":
-                        return red;
+                        return Red;
                     default:
                         return Colors.White;
                 }
             }
         }
 
-        public string ShortString => (String ?? String.Empty).Split(' ')[0];
+        public string ShortString => (String ?? string.Empty).Split(' ')[0];
 
         public string String { get; set; }
 
@@ -42,8 +40,8 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 switch (Color)
                 {
-                    case blue:
-                    case red:
+                    case Blue:
+                    case Red:
                         return Colors.White;
                     default:
                         return Colors.Black;

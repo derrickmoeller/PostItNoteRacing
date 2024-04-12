@@ -5,6 +5,11 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class Lap
     {
+        public Lap(int number)
+        {
+            Number = number;
+        }
+
         public bool IsInLap { get; set; }
 
         public bool IsOutLap { get; set; }
@@ -14,10 +19,5 @@ namespace PostItNoteRacing.Plugin.Models
         public int Number { get; }
 
         public TimeSpan Time { get; set; }
-
-        public Lap(int number)
-        {
-            Number = number;
-        }
     }
 }

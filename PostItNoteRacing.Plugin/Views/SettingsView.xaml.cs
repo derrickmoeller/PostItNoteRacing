@@ -3,12 +3,10 @@
 namespace PostItNoteRacing.Plugin.Views
 {
     /// <summary>
-    /// Interaction logic for SettingsView.xaml
+    /// Interaction logic for SettingsView.xaml.
     /// </summary>
     public partial class SettingsView : UserControl
     {
-        public PostItNoteRacing Plugin { get; }
-
         public SettingsView()
         {
             InitializeComponent();
@@ -19,5 +17,7 @@ namespace PostItNoteRacing.Plugin.Views
         {
             Plugin = plugin;
         }
+
+        public PostItNoteRacing Plugin { get; }
     }
 }
