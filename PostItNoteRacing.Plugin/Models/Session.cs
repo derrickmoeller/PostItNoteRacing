@@ -327,7 +327,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
                 if (driver == null)
                 {
-                    driver = new Driver
+                    driver = new Driver(team.IsPlayer)
                     {
                         IRating = opponent.IRacing_IRating,
                         IsActive = true,
@@ -396,6 +396,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 SetSimHubProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_BestFiveLapsColor", string.Empty);
+                SetSimHubProperty($"Drivers_{i:D2}_BestLapColor", string.Empty);
                 SetSimHubProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 SetSimHubProperty($"Drivers_{i:D2}_CarNumber", -1);
                 SetSimHubProperty($"Drivers_{i:D2}_ClassColor", string.Empty);
@@ -488,6 +489,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsAverage", team.BestFiveLapsAverage ?? TimeSpan.Zero);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsColor", team.BestFiveLapsColor);
+                    SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapColor", team.Drivers.Single(x => x.IsActive == true).BestLapColor);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapTime", team.Drivers.Single(x => x.IsActive == true).BestLap?.Time ?? TimeSpan.Zero);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_CarNumber", team.CarNumber);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_ClassColor", carClass.Color);
@@ -504,7 +506,7 @@ namespace PostItNoteRacing.Plugin.Models
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLastFive", team.DeltaToPlayerLastFive);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedDelta", team.EstimatedDelta);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapColor", team.EstimatedLapColor);
-                    SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapTime", team.EstimatedLapTime);
+                    SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapTime", team.EstimatedLapTime ?? TimeSpan.Zero);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeader", team.GapToLeader);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeaderString", team.GapToLeaderString);
                     SetSimHubProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayer", team.GapToPlayer);
@@ -564,6 +566,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 AddSimHubProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_BestFiveLapsColor", string.Empty);
+                AddSimHubProperty($"Drivers_{i:D2}_BestLapColor", string.Empty);
                 AddSimHubProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 AddSimHubProperty($"Drivers_{i:D2}_CarNumber", -1);
                 AddSimHubProperty($"Drivers_{i:D2}_ClassColor", string.Empty);

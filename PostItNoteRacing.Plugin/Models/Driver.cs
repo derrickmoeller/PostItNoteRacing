@@ -10,6 +10,18 @@ namespace PostItNoteRacing.Plugin.Models
 
         private Lap _bestLap;
 
+        public Driver(bool isPlayer)
+        {
+            if (isPlayer == true)
+            {
+                BestLapColor = Colors.Yellow;
+            }
+            else
+            {
+                BestLapColor = Colors.White;
+            }
+        }
+
         public event EventHandler<LapChangedEventArgs> BestLapChanged;
 
         public Lap BestLap
@@ -24,6 +36,8 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
         }
+
+        public string BestLapColor { get; set; }
 
         public double? IRating { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using PostItNoteRacing.Plugin.EventArgs;
+using PostItNoteRacing.Plugin.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,7 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Team : IDisposable
     {
         private Lap _currentLap;
+        private double _deltaToBest;
         private ObservableCollection<Driver> _drivers;
         private ObservableCollection<Lap> _lastFiveLaps;
         private Lap _lastLap;
@@ -87,7 +89,18 @@ namespace PostItNoteRacing.Plugin.Models
 
         public double? CurrentLapHighPrecision { get; set; }
 
-        public double DeltaToBest { get; set; }
+        public double DeltaToBest
+        {
+            get => _deltaToBest;
+            set
+            {
+                if (_deltaToBest != value)
+                {
+                    _deltaToBest = value;
+                    OnDeltaToBestChanged();
+                }
+            }
+        }
 
         public double DeltaToBestFive { get; set; }
 
@@ -138,7 +151,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
                 else
                 {
-                    return Colors.Gray;
+                    return Colors.White;
                 }
             }
         }
@@ -234,7 +247,14 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (LastFiveLapsAverage > TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
                 {
-                    return Colors.Green;
+                    if (DeltaToBestFive == 0)
+                    {
+                        return Colors.Purple;
+                    }
+                    else
+                    {
+                        return Colors.Green;
+                    }
                 }
                 else if (IsPlayer == true)
                 {
@@ -266,7 +286,14 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (LastLap?.Time > TimeSpan.Zero && LastLap.Time == BestLapTime)
                 {
-                    return Colors.Green;
+                    if (DeltaToBest == 0)
+                    {
+                        return Colors.Purple;
+                    }
+                    else
+                    {
+                        return Colors.Green;
+                    }
                 }
                 else if (IsPlayer == true)
                 {
@@ -359,11 +386,46 @@ namespace PostItNoteRacing.Plugin.Models
             LastLap = CurrentLap;
         }
 
+        private void OnDeltaToBestChanged()
+        {
+            if (BestLapColor == Colors.Purple)
+            {
+                Drivers.Single(x => x.IsActive == true).BestLapColor = BestLapColor;
+
+                if (IsPlayer == true)
+                {
+                    Drivers.Where(x => x.IsActive == false).ForEach(x => x.BestLapColor = Colors.Yellow);
+                }
+                else
+                {
+                    Drivers.Where(x => x.IsActive == false).ForEach(x => x.BestLapColor = Colors.White);
+                }
+            }
+            else
+            {
+                Drivers.ForEach(x => x.BestLapColor = BestLapColor);
+            }
+        }
+
         private void OnDriverBestLapChanged(object sender, LapChangedEventArgs e)
         {
             if (e.LapTime < (BestLapTime ?? TimeSpan.MaxValue))
             {
                 BestLapTime = e.LapTime;
+
+                if (BestLapColor == Colors.Purple)
+                {
+                    Drivers.Single(x => x.IsActive == true).BestLapColor = BestLapColor;
+
+                    if (IsPlayer == true)
+                    {
+                        Drivers.Where(x => x.IsActive == false).ForEach(x => x.BestLapColor = Colors.Yellow);
+                    }
+                    else
+                    {
+                        Drivers.Where(x => x.IsActive == false).ForEach(x => x.BestLapColor = Colors.White);
+                    }
+                }
             }
         }
 
