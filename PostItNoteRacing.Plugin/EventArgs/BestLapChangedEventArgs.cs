@@ -2,9 +2,9 @@
 
 namespace PostItNoteRacing.Plugin.EventArgs
 {
-    internal class LapChangedEventArgs : System.EventArgs
+    internal class BestLapChangedEventArgs
     {
-        public LapChangedEventArgs(TimeSpan? lapTime)
+        public BestLapChangedEventArgs(TimeSpan? lapTime)
         {
             LapTime = lapTime;
         }

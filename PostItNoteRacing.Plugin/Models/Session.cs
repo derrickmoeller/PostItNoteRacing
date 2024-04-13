@@ -289,7 +289,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                 if (team == null)
                 {
-                    team = new Team
+                    team = new Team(carClass)
                     {
                         CarNumber = opponent.CarNumber,
                         CurrentLap = new Lap(opponent.CurrentLap.Value)
@@ -327,7 +327,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
                 if (driver == null)
                 {
-                    driver = new Driver(team.IsPlayer)
+                    driver = new Driver(carClass, team.IsPlayer)
                     {
                         IRating = opponent.IRacing_IRating,
                         IsActive = true,

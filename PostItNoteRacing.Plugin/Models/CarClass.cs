@@ -1,11 +1,14 @@
-﻿using System;
+﻿using PostItNoteRacing.Plugin.EventArgs;
+using PostItNoteRacing.Plugin.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class CarClass
+    internal class CarClass : INotifyBestLapChanged
     {
         private const string LightLimeGreen = "#53FF77";
         private const string LightPink = "#FF5888";
@@ -13,7 +16,9 @@ namespace PostItNoteRacing.Plugin.Models
         private const string VeryLightViolet = "#AE6BFF";
         private const string VividCyan = "#33CEFF";
 
+        private TimeSpan? _bestLapTime;
         private string _name;
+        private ObservableCollection<Team> _teams;
 
         public static ReadOnlyCollection<string> Colors { get; } =
             new ReadOnlyCollection<string>(new[]
@@ -86,9 +91,34 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string StrengthOfFieldString => $"{StrengthOfField / 1000D:0.0k}";
 
-        public List<Team> Teams { get; } = new List<Team>();
+        public ObservableCollection<Team> Teams
+        {
+            get
+            {
+                if (_teams == null)
+                {
+                    _teams = new ObservableCollection<Team>();
+                    _teams.CollectionChanged += OnTeamsCollectionChanged;
+                }
+
+                return _teams;
+            }
+        }
 
         public string TextColor { get; set; }
+
+        private TimeSpan? BestLapTime
+        {
+            get => _bestLapTime;
+            set
+            {
+                if (_bestLapTime != value)
+                {
+                    _bestLapTime = value;
+                    OnBestLapTimeChanged();
+                }
+            }
+        }
 
         private static int GetStrengthOfField(IEnumerable<int> iRatings)
         {
@@ -102,5 +132,41 @@ namespace PostItNoteRacing.Plugin.Models
 
             return (int)Math.Round(weight * Math.Log(iRatings.Count() / sum));
         }
+
+        private void OnBestLapTimeChanged()
+        {
+            BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLapTime));
+        }
+
+        private void OnTeamBestLapChanged(object sender, BestLapChangedEventArgs e)
+        {
+            if (e.LapTime < (BestLapTime ?? TimeSpan.MaxValue))
+            {
+                BestLapTime = e.LapTime;
+            }
+        }
+
+        private void OnTeamsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems != null && e.OldItems.Count != 0)
+            {
+                foreach (Team team in e.OldItems)
+                {
+                    team.BestLapChanged -= OnTeamBestLapChanged;
+                }
+            }
+
+            if (e.NewItems != null && e.NewItems.Count != 0)
+            {
+                foreach (Team team in e.NewItems)
+                {
+                    team.BestLapChanged += OnTeamBestLapChanged;
+                }
+            }
+        }
+
+        #region Interface: INotifyBestLapChanged
+        public event EventHandler<BestLapChangedEventArgs> BestLapChanged;
+        #endregion
     }
 }
