@@ -296,6 +296,7 @@ namespace PostItNoteRacing.Plugin.Models
                         {
                             IsInLap = false,
                             IsOutLap = opponent.IsCarInPitLane,
+                            IsValid = opponent.LapValid,
                             Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
                         },
                         CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
@@ -363,11 +364,17 @@ namespace PostItNoteRacing.Plugin.Models
                         {
                             IsInLap = false,
                             IsOutLap = opponent.IsCarInPitLane,
+                            IsValid = opponent.LapValid,
                             Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
                         };
                     }
                     else
                     {
+                        if (team.CurrentLap.IsValid == true)
+                        {
+                            team.CurrentLap.IsValid = opponent.LapValid;
+                        }
+
                         team.CurrentLap.Time = opponent.CurrentLapTime ?? TimeSpan.Zero;
 
                         team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= opponent.TrackPositionPercent);

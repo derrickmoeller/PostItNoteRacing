@@ -432,17 +432,17 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnLastFiveLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (BestFiveLaps.Count < LastFiveLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.Number > 1) || LastFiveLapsAverage < BestFiveLapsAverage)
+            if (BestFiveLaps.Count < LastFiveLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1) || LastFiveLapsAverage < BestFiveLapsAverage)
             {
                 BestFiveLaps.Clear();
 
-                BestFiveLaps.AddRange(LastFiveLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.Number > 1).Select(x => x.Time));
+                BestFiveLaps.AddRange(LastFiveLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1).Select(x => x.Time));
             }
         }
 
         private void OnLastLapChanged(Driver activeDriver)
         {
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsValid == true && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 activeDriver.BestLap = LastLap;
             }

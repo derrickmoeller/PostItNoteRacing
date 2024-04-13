@@ -14,6 +14,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         public bool IsOutLap { get; set; }
 
+        public bool IsValid { get; set; }
+
         public List<MiniSector> MiniSectors { get; } = new List<MiniSector>();
 
         public int Number { get; }
