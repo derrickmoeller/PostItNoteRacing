@@ -1,5 +1,6 @@
 ﻿using GameReaderCommon;
 using PostItNoteRacing.Plugin.Models;
+using PostItNoteRacing.Plugin.ViewModels;
 using PostItNoteRacing.Plugin.Views;
 using SimHub;
 using SimHub.Plugins;
@@ -16,6 +17,7 @@ namespace PostItNoteRacing.Plugin
     {
         private short _counter;
         private Session _session;
+        private Settings _settings;
 
         protected void Dispose(bool disposing)
         {
@@ -73,10 +75,16 @@ namespace PostItNoteRacing.Plugin
                         _session.WriteSimHubData();
                     }
 
-                    // 2, 6, 10, 14, 18...
-                    if (_counter % 4 == 2)
+                    // 2, 8, 14, 20, 26...
+                    if (_counter % 6 == 2)
                     {
                         _session.CalculateGaps();
+                    }
+
+                    // 4, 10, 16, 22, 28...
+                    if (_counter % 6 == 4)
+                    {
+                        _session.CalculateEstimatedLaps();
                     }
 
                     // 30
@@ -105,6 +113,8 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
 
+            this.SaveCommonSettings("GeneralSettings", _settings);
+
             _session?.Dispose();
         }
 
@@ -117,7 +127,9 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
-            _session = new Session(pluginManager, typeof(PostItNoteRacing));
+            _settings = this.ReadCommonSettings("GeneralSettings", () => new Settings());
+
+            _session = new Session(pluginManager, typeof(PostItNoteRacing), _settings);
         }
         #endregion
 
@@ -149,7 +161,10 @@ namespace PostItNoteRacing.Plugin
         /// <returns>Settings control.</returns>
         public Control GetWPFSettingsControl(PluginManager _)
         {
-            return new SettingsView(this);
+            return new SettingsView
+            {
+                DataContext = new SettingsViewModel(_settings),
+            };
         }
         #endregion
     }

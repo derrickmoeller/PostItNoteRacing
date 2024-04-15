@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
@@ -16,10 +17,12 @@ namespace PostItNoteRacing.Plugin.Models
 
         public bool IsValid { get; set; }
 
+        public MiniSector LastMiniSector => MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault();
+
         public List<MiniSector> MiniSectors { get; } = new List<MiniSector>();
 
         public int Number { get; }
 
-        public TimeSpan Time { get; set; }
+        public TimeSpan Time => LastMiniSector?.Time ?? TimeSpan.Zero;
     }
 }

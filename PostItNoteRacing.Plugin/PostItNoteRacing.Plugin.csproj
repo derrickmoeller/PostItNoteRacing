@@ -34,6 +34,12 @@
     <DocumentationFile>bin\Release\PostItNoteRacing.Plugin.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AvalonDock, Version=4.72.1.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dirkster.AvalonDock.4.72.1\lib\net40\AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="AvalonDock.Themes.VS2013, Version=4.72.1.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dirkster.AvalonDock.Themes.VS2013.4.72.1\lib\net40\AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
     <Reference Include="GameReaderCommon">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\GameReaderCommon.dll</HintPath>
       <Private>False</Private>
@@ -48,6 +54,9 @@
     </Reference>
     <Reference Include="log4net, Version=2.0.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.15\lib\net45\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -66,8 +75,17 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
+    <Reference Include="WoteverCommon">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\WoteverCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="WoteverLocalization">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\WoteverLocalization.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventArgs\BestLapChangedEventArgs.cs" />
@@ -77,6 +95,7 @@
     <Compile Include="Models\Colors.cs" />
     <Compile Include="Models\MiniSector.cs" />
     <Compile Include="Models\Lap.cs" />
+    <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -89,6 +108,7 @@
     <Compile Include="Models\Driver.cs" />
     <Compile Include="PostItNoteRacing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>

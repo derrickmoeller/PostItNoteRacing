@@ -123,9 +123,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             get
             {
-                var estimatedLapTime = EstimatedLapTime;
-
-                if (estimatedLapTime <= Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)
+                if (EstimatedLapTime <= Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)
                 {
                     if (DeltaToBest + EstimatedDelta < 0)
                     {
@@ -136,7 +134,7 @@ namespace PostItNoteRacing.Plugin.Models
                         return Colors.Green;
                     }
                 }
-                else if (estimatedLapTime != null)
+                else if (EstimatedLapTime != null)
                 {
                     return Colors.Yellow;
                 }
@@ -147,48 +145,17 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public TimeSpan? EstimatedLapTime
-        {
-            get
-            {
-                var bestLap = Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
+        public TimeSpan? EstimatedLapTime { get; set; }
 
-                if (bestLap != null && CurrentLap.MiniSectors.Any())
-                {
-                    var miniSector = CurrentLap.MiniSectors.OrderByDescending(x => x.TrackPosition).First();
-                    var nextSector = bestLap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = bestLap.Time, TrackPosition = 1 };
-                    var lastSector = bestLap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
-
-                    var interpolatedValue = GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks);
-
-                    return bestLap.Time + (miniSector.Time - TimeSpan.FromTicks(interpolatedValue));
-
-                    long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
-                    {
-                        if ((x1 - x0) == 0)
-                        {
-                            return (y0 + y1) / 2;
-                        }
-
-                        return (long)(y0 + ((x - x0) * (y1 - y0) / (x1 - x0)));
-                    }
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        public double? GapToLeader { get; set; }
+        public double GapToLeader { get; set; }
 
         public string GapToLeaderString { get; set; }
 
-        public double? GapToPlayer { get; set; }
+        public double GapToPlayer { get; set; }
 
         public string GapToPlayerString { get; set; }
 
-        public double? Interval { get; set; }
+        public double Interval { get; set; }
 
         public string IntervalString { get; set; }
 
@@ -238,7 +205,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (LastFiveLapsAverage > TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
                 {
-                    if (DeltaToBestFive == 0)
+                    if (BestFiveLapsColor == Colors.Purple)
                     {
                         return Colors.Purple;
                     }
@@ -277,7 +244,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (LastLap?.Time > TimeSpan.Zero && LastLap.Time == BestLapTime)
                 {
-                    if (DeltaToBest == 0)
+                    if (BestLapColor == Colors.Purple)
                     {
                         return Colors.Purple;
                     }
