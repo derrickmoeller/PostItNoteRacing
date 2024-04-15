@@ -4,9 +4,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
-    <StackPanel>
-        <ui:ControlsEditor FriendlyName="Reset Estimated Laps" ActionName="PostItNoteRacing.ResetEstimatedLaps" />
-        <styles:SHToggleCheckbox Content="Enable estimated laps." IsChecked="{Binding EnableEstimatedLaps}" />
-        <styles:SHToggleCheckbox Content="Enable real gap calculations." IsChecked="{Binding EnableRealGaps}" />
-    </StackPanel>
+    <UniformGrid>
+        <styles:SHSubSection Title="Actions">
+            <ui:ControlsEditor ActionName="PostItNoteRacing.ResetEstimatedLaps" FriendlyName="Reset Estimated Laps" VerticalAlignment="Top" />
+        </styles:SHSubSection>
+        <styles:SHSubSection Title="Toggles">
+            <StackPanel>
+                <styles:SHToggleCheckbox Content="Enable estimated laps (requires restart)." IsChecked="{Binding EnableEstimatedLaps}" />
+                <styles:SHToggleCheckbox Content="Enable real gap calculations." IsChecked="{Binding EnableRealGaps}" />
+            </StackPanel>
+        </styles:SHSubSection>
+    </UniformGrid>
 </UserControl>

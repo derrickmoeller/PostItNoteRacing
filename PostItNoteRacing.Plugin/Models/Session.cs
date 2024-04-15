@@ -110,24 +110,27 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateEstimatedLaps()
         {
-            Parallel.ForEach(CarClasses, carClass =>
+            if (_settings.EnableEstimatedLaps)
             {
-                foreach (var team in carClass.Teams)
+                Parallel.ForEach(CarClasses, carClass =>
                 {
-                    var bestLap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
-
-                    if (bestLap != null && team.CurrentLap.MiniSectors.Any())
+                    foreach (var team in carClass.Teams)
                     {
-                        var miniSector = team.CurrentLap.LastMiniSector;
+                        var bestLap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
 
-                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedSectorTime(miniSector, bestLap));
+                        if (bestLap != null && team.CurrentLap.MiniSectors.Any())
+                        {
+                            var miniSector = team.CurrentLap.LastMiniSector;
+
+                            team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedSectorTime(miniSector, bestLap));
+                        }
+                        else
+                        {
+                            team.EstimatedLapTime = null;
+                        }
                     }
-                    else
-                    {
-                        team.EstimatedLapTime = null;
-                    }
-                }
-            });
+                });
+            }
         }
 
         public void CalculateGaps()
