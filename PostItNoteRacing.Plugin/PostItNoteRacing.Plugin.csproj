@@ -96,14 +96,14 @@
     <Compile Include="Models\Colors.cs" />
     <Compile Include="Models\MiniSector.cs" />
     <Compile Include="Models\Lap.cs" />
-    <Compile Include="Models\Booleans.cs" />
+    <Compile Include="Models\Utility.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Models\Session.cs" />
+    <Compile Include="Models\Telemetry.cs" />
     <Compile Include="Models\Team.cs" />
     <Compile Include="Models\License.cs" />
     <Compile Include="Models\CarClass.cs" />

@@ -12,19 +12,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             _settings = settings;
         }
 
-        public bool EnableBooleans
-        {
-            get => _settings.EnableBooleans;
-            set
-            {
-                if (_settings.EnableBooleans != value)
-                {
-                    _settings.EnableBooleans = value;
-                    OnPropertyChanged(nameof(EnableBooleans));
-                }
-            }
-        }
-
         public bool EnableEstimatedLapTimes
         {
             get => _settings.EnableEstimatedLapTimes;
@@ -38,19 +25,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public bool EnableExtraProperties
-        {
-            get => _settings.EnableExtraProperties;
-            set
-            {
-                if (_settings.EnableExtraProperties != value)
-                {
-                    _settings.EnableExtraProperties = value;
-                    OnPropertyChanged(nameof(EnableExtraProperties));
-                }
-            }
-        }
-
         public bool EnableGapCalculations
         {
             get => _settings.EnableGapCalculations;
@@ -60,6 +34,84 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 {
                     _settings.EnableGapCalculations = value;
                     OnPropertyChanged(nameof(EnableGapCalculations));
+                }
+            }
+        }
+
+        public bool EnableTelemetry
+        {
+            get => _settings.EnableTelemetry;
+            set
+            {
+                if (_settings.EnableTelemetry != value)
+                {
+                    _settings.EnableTelemetry = value;
+                    OnPropertyChanged(nameof(EnableTelemetry));
+                }
+            }
+        }
+
+        public bool EnableUtility
+        {
+            get => _settings.EnableUtility;
+            set
+            {
+                if (_settings.EnableUtility != value)
+                {
+                    _settings.EnableUtility = value;
+                    OnPropertyChanged(nameof(EnableUtility));
+                }
+            }
+        }
+
+        public int IntegerAMax
+        {
+            get => _settings.IntegerAMax;
+            set
+            {
+                if (_settings.IntegerAMax != value)
+                {
+                    _settings.IntegerAMax = value;
+                    OnPropertyChanged(nameof(IntegerAMax));
+                }
+            }
+        }
+
+        public int IntegerBMax
+        {
+            get => _settings.IntegerBMax;
+            set
+            {
+                if (_settings.IntegerBMax != value)
+                {
+                    _settings.IntegerBMax = value;
+                    OnPropertyChanged(nameof(IntegerBMax));
+                }
+            }
+        }
+
+        public int IntegerCMax
+        {
+            get => _settings.IntegerCMax;
+            set
+            {
+                if (_settings.IntegerCMax != value)
+                {
+                    _settings.IntegerCMax = value;
+                    OnPropertyChanged(nameof(IntegerCMax));
+                }
+            }
+        }
+
+        public int IntegerDMax
+        {
+            get => _settings.IntegerDMax;
+            set
+            {
+                if (_settings.IntegerDMax != value)
+                {
+                    _settings.IntegerDMax = value;
+                    OnPropertyChanged(nameof(IntegerDMax));
                 }
             }
         }

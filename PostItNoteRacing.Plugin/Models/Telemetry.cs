@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class Session : IDisposable
+    internal class Telemetry : IDisposable
     {
         private readonly IModifySimHub _modifySimHub;
         private readonly Settings _settings;
@@ -21,7 +21,7 @@ namespace PostItNoteRacing.Plugin.Models
         private ObservableCollection<CarClass> _carClasses;
         private string _description;
 
-        public Session(IModifySimHub modifySimHub, Settings settings)
+        public Telemetry(IModifySimHub modifySimHub, Settings settings)
         {
             _modifySimHub = modifySimHub;
             _settings = settings;
@@ -277,6 +277,7 @@ namespace PostItNoteRacing.Plugin.Models
                     if (player != null)
                     {
                         team.GapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer;
 
                         if (player.CurrentLapHighPrecision > team.CurrentLapHighPrecision)
                         {
@@ -335,6 +336,7 @@ namespace PostItNoteRacing.Plugin.Models
                             if (lap != null)
                             {
                                 double gapToPlayer = 0D;
+                                double relativeGapToPlayer = 0D;
 
                                 var laps = player.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
                                 if (laps < -1)
@@ -368,11 +370,13 @@ namespace PostItNoteRacing.Plugin.Models
                                 }
 
                                 team.GapToPlayer = gapToPlayer;
+                                team.RelativeGapToPlayer = relativeGapToPlayer;
                             }
                         }
                         else if (player.CurrentLapHighPrecision == team.CurrentLapHighPrecision)
                         {
                             team.GapToPlayer = 0D;
+                            team.RelativeGapToPlayer = 0D;
                         }
                     }
                 }
@@ -549,12 +553,10 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
                         team.IsInPit = opponent.IsCarInPitLane;
-                        team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                     }
                     else if (opponent.IsConnected == false)
                     {
                         team.IsInPit = true;
-                        team.RelativeGapToPlayer = null;
                     }
 
                     team.Drivers.ForEach(x => x.IsActive = false);
@@ -573,6 +575,7 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         team.GapToLeader = opponent.GaptoClassLeader ?? 0;
                         team.GapToPlayer = opponent.GaptoPlayer ?? 0;
+                        team.RelativeGapToPlayer = opponent.IsConnected ? opponent.RelativeGapToPlayer : null;
                     }
 
                     var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);

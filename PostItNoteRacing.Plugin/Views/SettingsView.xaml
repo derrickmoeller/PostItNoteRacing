@@ -4,23 +4,72 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
-    <UniformGrid>
-        <styles:SHSubSection Title="Actions">
+    <styles:SHTabControl>
+        <styles:SHTabItem Header="Telemetry">
             <StackPanel>
-                <ui:ControlsEditor ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
-                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanA" FriendlyName="Toggle Boolean A" />
-                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanB" FriendlyName="Toggle Boolean B" />
-                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanC" FriendlyName="Toggle Boolean C" />
-                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanD" FriendlyName="Toggle Boolean D" />
+                <styles:SHToggleCheckbox Content="Enable telemetry properties (requires restart)." HorizontalAlignment="Center" IsChecked="{Binding EnableTelemetry}" />
+                <Grid IsEnabled="{Binding EnableTelemetry}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <styles:SHSubSection Grid.Column="0" Title="Actions">
+                        <StackPanel>
+                            <ui:ControlsEditor ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
+                        </StackPanel>
+                    </styles:SHSubSection>
+                    <styles:SHSubSection Grid.Column="1" Title="Toggles">
+                        <StackPanel>
+                            <styles:SHToggleCheckbox Content="Enable estimated lap times.*" IsChecked="{Binding EnableEstimatedLapTimes}" />
+                            <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors.*" IsChecked="{Binding EnableGapCalculations}" />
+                        </StackPanel>
+                    </styles:SHSubSection>
+                </Grid>
+                <Label Content="*CPU intensive task." HorizontalAlignment="Right" />
             </StackPanel>
-        </styles:SHSubSection>
-        <styles:SHSubSection Title="Toggles">
+        </styles:SHTabItem>
+        <styles:SHTabItem Header="Utility">
             <StackPanel>
-                <styles:SHToggleCheckbox Content="Enable booleans (requires restart)." IsChecked="{Binding EnableBooleans}" />
-                <styles:SHToggleCheckbox Content="Enable extra properties (requires restart)." IsChecked="{Binding EnableExtraProperties}" />
-                <styles:SHToggleCheckbox Content="Enable estimated lap times." IsChecked="{Binding EnableEstimatedLapTimes}" IsEnabled="{Binding EnableExtraProperties}" />
-                <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" IsEnabled="{Binding EnableExtraProperties}" />
+                <styles:SHToggleCheckbox Content="Enable utility properties (requires restart)." HorizontalAlignment="Center" IsChecked="{Binding EnableUtility}" />
+                <Grid IsEnabled="{Binding EnableUtility}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <styles:SHSubSection Grid.Column="0" Title="Booleans">
+                        <StackPanel>
+                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanA" FriendlyName="Toggle Boolean A" />
+                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanB" FriendlyName="Toggle Boolean B" />
+                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanC" FriendlyName="Toggle Boolean C" />
+                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanD" FriendlyName="Toggle Boolean D" />
+                        </StackPanel>
+                    </styles:SHSubSection>
+                    <styles:SHSubSection Grid.Column="1" Title="Integers">
+                        <UniformGrid Columns="2">
+                            <ui:TitledSlider Title="Integer A" Maximum="100" Minimum="2" Value="{Binding IntegerAMax}" />
+                            <StackPanel>
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerA" FriendlyName="Increment Integer A" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerA" FriendlyName="Decrement Integer A" />
+                            </StackPanel>
+                            <ui:TitledSlider Title="Integer B" Maximum="100" Minimum="2" Value="{Binding IntegerBMax}" />
+                            <StackPanel>
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerB" FriendlyName="Increment Integer B" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerB" FriendlyName="Decrement Integer B" />
+                            </StackPanel>
+                            <ui:TitledSlider Title="Integer C" Maximum="100" Minimum="2" Value="{Binding IntegerCMax}" />
+                            <StackPanel>
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerC" FriendlyName="Increment Integer C" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerC" FriendlyName="Decrement Integer C" />
+                            </StackPanel>
+                            <ui:TitledSlider Title="Integer D" Maximum="100" Minimum="2" Value="{Binding IntegerDMax}" />
+                            <StackPanel>
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerD" FriendlyName="Increment Integer D" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerD" FriendlyName="Decrement Integer D" />
+                            </StackPanel>
+                        </UniformGrid>
+                    </styles:SHSubSection>
+                </Grid>
             </StackPanel>
-        </styles:SHSubSection>
-    </UniformGrid>
+        </styles:SHTabItem>
+    </styles:SHTabControl>
 </UserControl>

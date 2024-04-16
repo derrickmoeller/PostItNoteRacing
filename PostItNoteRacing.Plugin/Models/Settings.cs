@@ -5,12 +5,20 @@
     /// </summary>
     internal class Settings
     {
-        public bool EnableBooleans { get; set; } = false;
-
         public bool EnableEstimatedLapTimes { get; set; } = false;
 
-        public bool EnableExtraProperties { get; set; } = true;
-
         public bool EnableGapCalculations { get; set; } = false;
+
+        public bool EnableTelemetry { get; set; } = true;
+
+        public bool EnableUtility { get; set; } = false;
+
+        public int IntegerAMax { get; set; } = 10;
+
+        public int IntegerBMax { get; set; } = 10;
+
+        public int IntegerCMax { get; set; } = 10;
+
+        public int IntegerDMax { get; set; } = 10;
     }
 }

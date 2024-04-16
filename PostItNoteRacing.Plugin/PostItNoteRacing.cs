@@ -18,14 +18,14 @@ namespace PostItNoteRacing.Plugin
     public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
     {
         private short _counter;
-        private Session _session;
         private Settings _settings;
+        private Telemetry _telemetry;
 
         protected void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _session?.Dispose();
+                _telemetry?.Dispose();
             }
         }
 
@@ -48,7 +48,7 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
-                if (_session != null)
+                if (_telemetry != null)
                 {
                     _counter++;
 
@@ -59,59 +59,59 @@ namespace PostItNoteRacing.Plugin
 
                     if (data.GameRunning && data.NewData != null)
                     {
-                        _session.StatusDatabase = data.NewData;
+                        _telemetry.StatusDatabase = data.NewData;
 
                         // 0, 4, 8, 12, 16...
                         if (_counter % 4 == 0)
                         {
-                            _session.GetGameData();
+                            _telemetry.GetGameData();
                         }
 
                         // 0
                         if (_counter % 60 == 0)
                         {
-                            _session.CalculateLivePositions();
+                            _telemetry.CalculateLivePositions();
                         }
 
                         // 0, 30
                         if (_counter % 30 == 0)
                         {
-                            _session.GenerateMiniSectors();
+                            _telemetry.GenerateMiniSectors();
                         }
 
                         // 1, 3, 5, 7, 9...
                         if (_counter % 2 == 1)
                         {
-                            _session.WriteSimHubData();
+                            _telemetry.WriteSimHubData();
                         }
 
                         // 0, 6, 12, 18, 24...
                         if (_counter % 6 == 0 && _settings.EnableGapCalculations)
                         {
-                            _session.CalculateGaps();
+                            _telemetry.CalculateGaps();
                         }
 
                         // 2, 8, 14, 20, 26...
                         if (_counter % 6 == 2)
                         {
-                            _session.CalculateDeltas();
+                            _telemetry.CalculateDeltas();
                         }
 
                         // 4, 10, 16, 22, 28...
                         if (_counter % 6 == 4 && _settings.EnableEstimatedLapTimes)
                         {
-                            _session.CalculateEstimatedLapTimes();
+                            _telemetry.CalculateEstimatedLapTimes();
                         }
 
                         // 30
                         if (_counter % 60 == 30 && data.GameName == "IRacing")
                         {
-                            _session.CalculateIRating();
+                            _telemetry.CalculateIRating();
                         }
                     }
                     else
                     {
-                        _session.Reset();
+                        _telemetry.Reset();
                     }
                 }
             }
@@ -132,7 +132,7 @@ namespace PostItNoteRacing.Plugin
 
             this.SaveCommonSettings("GeneralSettings", _settings);
 
-            _session?.Dispose();
+            _telemetry?.Dispose();
         }
 
         /// <summary>
@@ -146,14 +146,14 @@ namespace PostItNoteRacing.Plugin
 
             _settings = this.ReadCommonSettings("GeneralSettings", () => new Settings());
 
-            if (_settings.EnableBooleans)
+            if (_settings.EnableTelemetry)
             {
-                _ = new Booleans(this);
+                _telemetry = new Telemetry(this, _settings);
             }
 
-            if (_settings.EnableExtraProperties)
+            if (_settings.EnableUtility)
             {
-                _session = new Session(this, _settings);
+                _ = new Utility(this, _settings);
             }
 
             (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
