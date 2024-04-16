@@ -1,10 +1,12 @@
 ﻿using GameReaderCommon;
+using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.ViewModels;
 using PostItNoteRacing.Plugin.Views;
 using SimHub;
 using SimHub.Plugins;
 using System;
+using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -13,7 +15,7 @@ namespace PostItNoteRacing.Plugin
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Additional Properties")]
     [PluginName("PostItNoteRacing")]
-    public class PostItNoteRacing : IDataPlugin, IDisposable, IWPFSettingsV2
+    public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
     {
         private short _counter;
         private Session _session;
@@ -46,56 +48,71 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
-                _counter++;
-
-                if (_counter > 59)
+                if (_session != null)
                 {
-                    _counter = 0;
-                }
+                    _counter++;
 
-                if (data.GameRunning && data.NewData != null)
-                {
-                    _session.StatusDatabase = data.NewData;
-
-                    // 0, 4, 8, 12, 16...
-                    if (_counter % 4 == 0)
+                    if (_counter > 59)
                     {
-                        _session.GetGameData();
+                        _counter = 0;
                     }
 
-                    // 0
-                    if (_counter % 60 == 0)
+                    if (data.GameRunning && data.NewData != null)
                     {
-                        _session.CalculateLivePositions();
-                    }
+                        _session.StatusDatabase = data.NewData;
 
-                    // 1, 3, 5, 7, 9...
-                    if (_counter % 2 == 1)
-                    {
-                        _session.WriteSimHubData();
-                    }
+                        // 0, 4, 8, 12, 16...
+                        if (_counter % 4 == 0)
+                        {
+                            _session.GetGameData();
+                        }
 
-                    // 2, 8, 14, 20, 26...
-                    if (_counter % 6 == 2)
-                    {
-                        _session.CalculateGaps();
-                    }
+                        // 0
+                        if (_counter % 60 == 0)
+                        {
+                            _session.CalculateLivePositions();
+                        }
 
-                    // 4, 10, 16, 22, 28...
-                    if (_counter % 6 == 4)
-                    {
-                        _session.CalculateEstimatedLaps();
-                    }
+                        // 0, 30
+                        if (_counter % 30 == 0)
+                        {
+                            _session.GenerateMiniSectors();
+                        }
 
-                    // 30
-                    if (_counter % 60 == 30 && data.GameName == "IRacing")
-                    {
-                        _session.CalculateIRating();
+                        // 1, 3, 5, 7, 9...
+                        if (_counter % 2 == 1)
+                        {
+                            _session.WriteSimHubData();
+                        }
+
+                        // 0, 6, 12, 18, 24...
+                        if (_counter % 6 == 0 && _settings.EnableGapCalculations)
+                        {
+                            _session.CalculateGaps();
+                        }
+
+                        // 2, 8, 14, 20, 26...
+                        if (_counter % 6 == 2)
+                        {
+                            _session.CalculateDeltas();
+                        }
+
+                        // 4, 10, 16, 22, 28...
+                        if (_counter % 6 == 4 && _settings.EnableEstimatedLapTimes)
+                        {
+                            _session.CalculateEstimatedLapTimes();
+                        }
+
+                        // 30
+                        if (_counter % 60 == 30 && data.GameName == "IRacing")
+                        {
+                            _session.CalculateIRating();
+                        }
                     }
-                }
-                else
-                {
-                    _session.Reset();
+                    else
+                    {
+                        _session.Reset();
+                    }
                 }
             }
             catch (Exception ex)
@@ -129,7 +146,17 @@ namespace PostItNoteRacing.Plugin
 
             _settings = this.ReadCommonSettings("GeneralSettings", () => new Settings());
 
-            _session = new Session(pluginManager, typeof(PostItNoteRacing), _settings);
+            if (_settings.EnableBooleans)
+            {
+                _ = new Booleans(this);
+            }
+
+            if (_settings.EnableExtraProperties)
+            {
+                _session = new Session(this, _settings);
+            }
+
+            (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }
         #endregion
 
@@ -140,6 +167,16 @@ namespace PostItNoteRacing.Plugin
 
             GC.SuppressFinalize(this);
         }
+        #endregion
+
+        #region Interface: IModifySimHub
+        void IModifySimHub.AddAction(string actionName, Action<PluginManager, string> action) => PluginManager.AddAction<PostItNoteRacing>(actionName, action);
+
+        void IModifySimHub.AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
+
+        dynamic IModifySimHub.GetProperty(string propertyName) => PluginManager.GetPropertyValue<PostItNoteRacing>(propertyName);
+
+        void IModifySimHub.SetProperty(string propertyName, dynamic value) => PluginManager.SetPropertyValue<PostItNoteRacing>(propertyName, value);
         #endregion
 
         #region Interface: IWPFSettingsV2

@@ -12,28 +12,54 @@ namespace PostItNoteRacing.Plugin.ViewModels
             _settings = settings;
         }
 
-        public bool EnableEstimatedLaps
+        public bool EnableBooleans
         {
-            get => _settings.EnableEstimatedLaps;
+            get => _settings.EnableBooleans;
             set
             {
-                if (_settings.EnableEstimatedLaps != value)
+                if (_settings.EnableBooleans != value)
                 {
-                    _settings.EnableEstimatedLaps = value;
-                    OnPropertyChanged(nameof(EnableEstimatedLaps));
+                    _settings.EnableBooleans = value;
+                    OnPropertyChanged(nameof(EnableBooleans));
                 }
             }
         }
 
-        public bool EnableRealGaps
+        public bool EnableEstimatedLapTimes
         {
-            get => _settings.EnableRealGaps;
+            get => _settings.EnableEstimatedLapTimes;
             set
             {
-                if (_settings.EnableRealGaps != value)
+                if (_settings.EnableEstimatedLapTimes != value)
                 {
-                    _settings.EnableRealGaps = value;
-                    OnPropertyChanged(nameof(EnableRealGaps));
+                    _settings.EnableEstimatedLapTimes = value;
+                    OnPropertyChanged(nameof(EnableEstimatedLapTimes));
+                }
+            }
+        }
+
+        public bool EnableExtraProperties
+        {
+            get => _settings.EnableExtraProperties;
+            set
+            {
+                if (_settings.EnableExtraProperties != value)
+                {
+                    _settings.EnableExtraProperties = value;
+                    OnPropertyChanged(nameof(EnableExtraProperties));
+                }
+            }
+        }
+
+        public bool EnableGapCalculations
+        {
+            get => _settings.EnableGapCalculations;
+            set
+            {
+                if (_settings.EnableGapCalculations != value)
+                {
+                    _settings.EnableGapCalculations = value;
+                    OnPropertyChanged(nameof(EnableGapCalculations));
                 }
             }
         }

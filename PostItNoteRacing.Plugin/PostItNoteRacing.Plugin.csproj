@@ -91,10 +91,12 @@
     <Compile Include="EventArgs\BestLapChangedEventArgs.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Interfaces\IModifySimHub.cs" />
     <Compile Include="Interfaces\INotifyBestLapChanged.cs" />
     <Compile Include="Models\Colors.cs" />
     <Compile Include="Models\MiniSector.cs" />
     <Compile Include="Models\Lap.cs" />
+    <Compile Include="Models\Booleans.cs" />
     <Compile Include="Models\Settings.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

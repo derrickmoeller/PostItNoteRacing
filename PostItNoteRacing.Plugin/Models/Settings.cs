@@ -5,8 +5,12 @@
     /// </summary>
     internal class Settings
     {
-        public bool EnableEstimatedLaps { get; set; } = false;
+        public bool EnableBooleans { get; set; } = false;
 
-        public bool EnableRealGaps { get; set; } = false;
+        public bool EnableEstimatedLapTimes { get; set; } = false;
+
+        public bool EnableExtraProperties { get; set; } = true;
+
+        public bool EnableGapCalculations { get; set; } = false;
     }
 }

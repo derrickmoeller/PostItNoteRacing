@@ -6,12 +6,20 @@
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins">
     <UniformGrid>
         <styles:SHSubSection Title="Actions">
-            <ui:ControlsEditor ActionName="PostItNoteRacing.ResetEstimatedLaps" FriendlyName="Reset Estimated Laps" VerticalAlignment="Top" />
+            <StackPanel>
+                <ui:ControlsEditor ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
+                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanA" FriendlyName="Toggle Boolean A" />
+                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanB" FriendlyName="Toggle Boolean B" />
+                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanC" FriendlyName="Toggle Boolean C" />
+                <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanD" FriendlyName="Toggle Boolean D" />
+            </StackPanel>
         </styles:SHSubSection>
         <styles:SHSubSection Title="Toggles">
             <StackPanel>
-                <styles:SHToggleCheckbox Content="Enable estimated laps (requires restart)." IsChecked="{Binding EnableEstimatedLaps}" />
-                <styles:SHToggleCheckbox Content="Enable real gap calculations." IsChecked="{Binding EnableRealGaps}" />
+                <styles:SHToggleCheckbox Content="Enable booleans (requires restart)." IsChecked="{Binding EnableBooleans}" />
+                <styles:SHToggleCheckbox Content="Enable extra properties (requires restart)." IsChecked="{Binding EnableExtraProperties}" />
+                <styles:SHToggleCheckbox Content="Enable estimated lap times." IsChecked="{Binding EnableEstimatedLapTimes}" IsEnabled="{Binding EnableExtraProperties}" />
+                <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" IsEnabled="{Binding EnableExtraProperties}" />
             </StackPanel>
         </styles:SHSubSection>
     </UniformGrid>
