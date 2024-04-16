@@ -481,22 +481,27 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Description = StatusDatabase.SessionTypeName;
 
-            Parallel.ForEach(StatusDatabase.Opponents.GroupBy(x => x.CarClassColor).ToList(), group =>
+            foreach (var opponent in StatusDatabase.Opponents.GroupBy(x => x.CarClassColor).Select(x => x.First()))
+            {
+                var carClass = CarClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
+                if (carClass == null)
+                {
+                    carClass = new CarClass
+                    {
+                        Color = opponent.CarClassColor,
+                        Name = opponent.CarClass,
+                        TextColor = opponent.CarClassTextColor,
+                    };
+
+                    CarClasses.Add(carClass);
+                }
+            }
+
+            Parallel.ForEach(StatusDatabase.Opponents.GroupBy(x => x.CarClassColor), group =>
             {
                 foreach (var opponent in group)
                 {
-                    var carClass = CarClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
-                    if (carClass == null)
-                    {
-                        carClass = new CarClass
-                        {
-                            Color = opponent.CarClassColor,
-                            Name = opponent.CarClass,
-                            TextColor = opponent.CarClassTextColor,
-                        };
-
-                        CarClasses.Add(carClass);
-                    }
+                    var carClass = CarClasses.Single(x => x.Color == opponent.CarClassColor);
 
                     var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                     if (team == null)
