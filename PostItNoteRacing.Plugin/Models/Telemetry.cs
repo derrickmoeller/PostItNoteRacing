@@ -205,7 +205,7 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         var miniSector = team.CurrentLap.LastMiniSector;
 
-                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedSectorTime(miniSector, bestLap));
+                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector, bestLap).Time);
                     }
                     else
                     {
@@ -247,26 +247,16 @@ namespace PostItNoteRacing.Plugin.Models
 
                             if (team.CurrentLap.MiniSectors.Any() && leader.CurrentLap.MiniSectors.Any())
                             {
-                                var miniSector = team.CurrentLap.LastMiniSector;
-                                var sectorTime = GetInterpolatedSectorTime(miniSector, lap);
+                                var leaderMiniSector = GetInterpolatedMiniSector(leader.CurrentLap.LastMiniSector, lap);
+                                var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
 
-                                if (leader.CurrentLap.LastMiniSector.TrackPosition > miniSector.TrackPosition)
+                                if (leaderMiniSector.TrackPosition > teamMiniSector.TrackPosition)
                                 {
-                                    miniSector = leader.CurrentLap.LastMiniSector;
-
-                                    sectorTime = GetInterpolatedSectorTime(miniSector, lap) - sectorTime;
-
-                                    gapToLeader += sectorTime.TotalSeconds;
+                                    gapToLeader += (leaderMiniSector.Time - teamMiniSector.Time).TotalSeconds;
                                 }
-                                else if (leader.CurrentLap.LastMiniSector.TrackPosition < miniSector.TrackPosition)
+                                else if (leaderMiniSector.TrackPosition < teamMiniSector.TrackPosition)
                                 {
-                                    gapToLeader += (lap.Time - sectorTime).TotalSeconds;
-
-                                    miniSector = leader.CurrentLap.LastMiniSector;
-
-                                    sectorTime = GetInterpolatedSectorTime(miniSector, lap);
-
-                                    gapToLeader += sectorTime.TotalSeconds;
+                                    gapToLeader += (lap.Time - (teamMiniSector.Time - leaderMiniSector.Time)).TotalSeconds;
                                 }
                             }
 
@@ -277,7 +267,6 @@ namespace PostItNoteRacing.Plugin.Models
                     if (player != null)
                     {
                         team.GapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer ?? 0D;
-                        team.RelativeGapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer;
 
                         if (player.CurrentLapHighPrecision > team.CurrentLapHighPrecision)
                         {
@@ -299,26 +288,16 @@ namespace PostItNoteRacing.Plugin.Models
 
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var miniSector = team.CurrentLap.LastMiniSector;
-                                    var sectorTime = GetInterpolatedSectorTime(miniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
 
-                                    if (player.CurrentLap.LastMiniSector.TrackPosition > miniSector.TrackPosition)
+                                    if (playerMiniSector.TrackPosition > teamMiniSector.TrackPosition)
                                     {
-                                        miniSector = player.CurrentLap.LastMiniSector;
-
-                                        sectorTime = GetInterpolatedSectorTime(miniSector, lap) - sectorTime;
-
-                                        gapToPlayer += sectorTime.TotalSeconds;
+                                        gapToPlayer += (playerMiniSector.Time - teamMiniSector.Time).TotalSeconds;
                                     }
-                                    else if (player.CurrentLap.LastMiniSector.TrackPosition < miniSector.TrackPosition)
+                                    else if (playerMiniSector.TrackPosition < teamMiniSector.TrackPosition)
                                     {
-                                        gapToPlayer += (lap.Time - sectorTime).TotalSeconds;
-
-                                        miniSector = player.CurrentLap.LastMiniSector;
-
-                                        sectorTime = GetInterpolatedSectorTime(miniSector, lap);
-
-                                        gapToPlayer += sectorTime.TotalSeconds;
+                                        gapToPlayer += (lap.Time - (teamMiniSector.Time - playerMiniSector.Time)).TotalSeconds;
                                     }
                                 }
 
@@ -336,7 +315,6 @@ namespace PostItNoteRacing.Plugin.Models
                             if (lap != null)
                             {
                                 double gapToPlayer = 0D;
-                                double relativeGapToPlayer = 0D;
 
                                 var laps = player.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
                                 if (laps < -1)
@@ -346,37 +324,25 @@ namespace PostItNoteRacing.Plugin.Models
 
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var miniSector = player.CurrentLap.LastMiniSector;
-                                    var sectorTime = GetInterpolatedSectorTime(miniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
 
-                                    if (team.CurrentLap.LastMiniSector.TrackPosition > miniSector.TrackPosition)
+                                    if (teamMiniSector.TrackPosition > playerMiniSector.TrackPosition)
                                     {
-                                        miniSector = team.CurrentLap.LastMiniSector;
-
-                                        sectorTime = GetInterpolatedSectorTime(miniSector, lap) - sectorTime;
-
-                                        gapToPlayer -= sectorTime.TotalSeconds;
+                                        gapToPlayer -= (teamMiniSector.Time - playerMiniSector.Time).TotalSeconds;
                                     }
-                                    else if (team.CurrentLap.LastMiniSector.TrackPosition < miniSector.TrackPosition)
+                                    else if (teamMiniSector.TrackPosition < playerMiniSector.TrackPosition)
                                     {
-                                        gapToPlayer -= (lap.Time - sectorTime).TotalSeconds;
-
-                                        miniSector = team.CurrentLap.LastMiniSector;
-
-                                        sectorTime = GetInterpolatedSectorTime(miniSector, lap);
-
-                                        gapToPlayer -= sectorTime.TotalSeconds;
+                                        gapToPlayer -= (lap.Time - (playerMiniSector.Time - teamMiniSector.Time)).TotalSeconds;
                                     }
                                 }
 
                                 team.GapToPlayer = gapToPlayer;
-                                team.RelativeGapToPlayer = relativeGapToPlayer;
                             }
                         }
                         else if (player.CurrentLapHighPrecision == team.CurrentLapHighPrecision)
                         {
                             team.GapToPlayer = 0D;
-                            team.RelativeGapToPlayer = 0D;
                         }
                     }
                 }
@@ -553,10 +519,12 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
                         team.IsInPit = opponent.IsCarInPitLane;
+                        team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                     }
                     else if (opponent.IsConnected == false)
                     {
                         team.IsInPit = true;
+                        team.RelativeGapToPlayer = null;
                     }
 
                     team.Drivers.ForEach(x => x.IsActive = false);
@@ -575,7 +543,6 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         team.GapToLeader = opponent.GaptoClassLeader ?? 0;
                         team.GapToPlayer = opponent.GaptoPlayer ?? 0;
-                        team.RelativeGapToPlayer = opponent.IsConnected ? opponent.RelativeGapToPlayer : null;
                     }
 
                     var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
@@ -780,12 +747,16 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private static TimeSpan GetInterpolatedSectorTime(MiniSector miniSector, Lap lap)
+        private static MiniSector GetInterpolatedMiniSector(MiniSector miniSector, Lap lap)
         {
             var nextSector = lap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
             var lastSector = lap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
 
-            return TimeSpan.FromTicks(GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks));
+            return new MiniSector
+            {
+                Time = TimeSpan.FromTicks(GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks)),
+                TrackPosition = miniSector.TrackPosition,
+            };
 
             long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
             {
