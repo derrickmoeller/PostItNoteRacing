@@ -407,20 +407,23 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateLivePositions()
         {
+            foreach (var (team, i) in CarClasses.SelectMany(x => x.Teams).OrderByDescending(x => x.CurrentLapHighPrecision).Select((team, i) => (team, i)))
+            {
+                if (IsRace == true)
+                {
+                    team.LivePosition = i + 1;
+                }
+                else
+                {
+                    team.LivePosition = team.LeaderboardPosition;
+                }
+            }
+
             foreach (var carClass in CarClasses)
             {
                 foreach (var team in carClass.Teams)
                 {
-                    if (IsRace == true)
-                    {
-                        team.LivePosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
-                        team.LivePositionInClass = carClass.Teams.Count(x => x.CurrentLapHighPrecision > team.CurrentLapHighPrecision) + 1;
-                    }
-                    else
-                    {
-                        team.LivePosition = team.LeaderboardPosition;
-                        team.LivePositionInClass = carClass.Teams.Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
-                    }
+                    team.LivePositionInClass = carClass.Teams.Count(x => x.LivePosition <= team.LivePosition);
                 }
             }
         }
@@ -478,7 +481,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Description = StatusDatabase.SessionTypeName;
 
-            Parallel.ForEach(StatusDatabase.Opponents.GroupBy(x => x.CarClassColor), group =>
+            Parallel.ForEach(StatusDatabase.Opponents.GroupBy(x => x.CarClassColor).ToList(), group =>
             {
                 foreach (var opponent in group)
                 {
