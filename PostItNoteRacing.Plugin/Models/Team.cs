@@ -367,7 +367,10 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnCurrentLapChanging()
         {
-            LastLap = CurrentLap;
+            if (CurrentLap?.Number > 0)
+            {
+                LastLap = CurrentLap;
+            }
         }
 
         private void OnDriverBestLapChanged(object sender, BestLapChangedEventArgs e)

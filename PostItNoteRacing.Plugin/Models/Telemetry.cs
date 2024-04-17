@@ -230,7 +230,7 @@ namespace PostItNoteRacing.Plugin.Models
                         team.GapToLeader = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoClassLeader ?? 0D;
 
                         var lap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
-                        if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false)
+                        if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
                         {
                             lap = team.LastLap;
                         }
@@ -267,11 +267,12 @@ namespace PostItNoteRacing.Plugin.Models
                     if (player != null)
                     {
                         team.GapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer;
 
                         if (player.CurrentLapHighPrecision > team.CurrentLapHighPrecision)
                         {
                             var lap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
-                            if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false)
+                            if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
                             {
                                 lap = team.LastLap;
                             }
@@ -307,9 +308,9 @@ namespace PostItNoteRacing.Plugin.Models
                         else if (player.CurrentLapHighPrecision < team.CurrentLapHighPrecision)
                         {
                             var lap = player.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
-                            if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false)
+                            if (lap == null && player.LastLap?.IsInLap == false && player.LastLap?.IsOutLap == false && player.LastLap?.Time > TimeSpan.Zero)
                             {
-                                lap = team.LastLap;
+                                lap = player.LastLap;
                             }
 
                             if (lap != null)
@@ -343,6 +344,59 @@ namespace PostItNoteRacing.Plugin.Models
                         else if (player.CurrentLapHighPrecision == team.CurrentLapHighPrecision)
                         {
                             team.GapToPlayer = 0D;
+                        }
+
+                        if (team.RelativeGapToPlayer > 0)
+                        {
+                            var lap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
+                            if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
+                            {
+                                lap = team.LastLap;
+                            }
+
+                            if (lap != null)
+                            {
+                                if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
+                                {
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+
+                                    if (playerMiniSector.TrackPosition > teamMiniSector.TrackPosition)
+                                    {
+                                        team.RelativeGapToPlayer = (playerMiniSector.Time - teamMiniSector.Time).TotalSeconds;
+                                    }
+                                    else if (playerMiniSector.TrackPosition < teamMiniSector.TrackPosition)
+                                    {
+                                        team.RelativeGapToPlayer = (lap.Time - (teamMiniSector.Time - playerMiniSector.Time)).TotalSeconds;
+                                    }
+                                }
+                            }
+                        }
+                        else if (team.RelativeGapToPlayer < 0)
+                        {
+                            var lap = player.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
+                            if (lap == null && player.LastLap?.IsInLap == false && player.LastLap?.IsOutLap == false && player.LastLap?.Time > TimeSpan.Zero)
+                            {
+                                lap = player.LastLap;
+                            }
+
+                            if (lap != null)
+                            {
+                                if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
+                                {
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+
+                                    if (teamMiniSector.TrackPosition > playerMiniSector.TrackPosition)
+                                    {
+                                        team.RelativeGapToPlayer = -(teamMiniSector.Time - playerMiniSector.Time).TotalSeconds;
+                                    }
+                                    else if (teamMiniSector.TrackPosition < playerMiniSector.TrackPosition)
+                                    {
+                                        team.RelativeGapToPlayer = -(lap.Time - (playerMiniSector.Time - teamMiniSector.Time)).TotalSeconds;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -518,7 +572,6 @@ namespace PostItNoteRacing.Plugin.Models
                             CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                             IsInPit = opponent.IsCarInPitLane,
                             Name = opponent.TeamName,
-                            RelativeGapToPlayer = opponent.RelativeGapToPlayer,
                         };
 
                         carClass.Teams.Add(team);
@@ -527,12 +580,10 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
                         team.IsInPit = opponent.IsCarInPitLane;
-                        team.RelativeGapToPlayer = opponent.RelativeGapToPlayer;
                     }
                     else if (opponent.IsConnected == false)
                     {
                         team.IsInPit = true;
-                        team.RelativeGapToPlayer = null;
                     }
 
                     team.Drivers.ForEach(x => x.IsActive = false);
@@ -549,8 +600,9 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (_settings.EnableGapCalculations == false)
                     {
-                        team.GapToLeader = opponent.GaptoClassLeader ?? 0;
-                        team.GapToPlayer = opponent.GaptoPlayer ?? 0;
+                        team.GapToLeader = opponent.GaptoClassLeader ?? 0D;
+                        team.GapToPlayer = opponent.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = opponent.IsConnected ? opponent.RelativeGapToPlayer : null;
                     }
 
                     var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
