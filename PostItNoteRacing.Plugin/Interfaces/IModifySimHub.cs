@@ -9,6 +9,8 @@ namespace PostItNoteRacing.Plugin.Interfaces
 
         void AddProperty(string propertyName, dynamic defaultValue);
 
+        void AttachDelegate<T>(string propertyName, Func<T> valueProvider);
+
         dynamic GetProperty(string propertyName);
 
         void SetProperty(string propertyName, dynamic value);

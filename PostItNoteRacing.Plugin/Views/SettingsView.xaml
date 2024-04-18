@@ -10,13 +10,25 @@
                 <styles:SHToggleCheckbox Content="Enable telemetry properties (requires restart)." HorizontalAlignment="Center" IsChecked="{Binding EnableTelemetry}" />
                 <Grid IsEnabled="{Binding EnableTelemetry}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <styles:SHSubSection Grid.Column="0" Title="Actions">
-                        <StackPanel>
-                            <ui:ControlsEditor ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <ui:ControlsEditor Grid.Column="1" Grid.Row="0" ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
+                            <ui:TitledSlider Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Title="Last N Laps" Maximum="100" Minimum="2" Value="{Binding LastNLaps}" />
+                            <ui:ControlsEditor Grid.Column="1" Grid.Row="1" ActionName="PostItNoteRacing.IncrementLastNLaps" FriendlyName="Increment Last N Laps" />
+                            <ui:ControlsEditor Grid.Column="1" Grid.Row="2" ActionName="PostItNoteRacing.DecrementLastNLaps" FriendlyName="Decrement Last N Laps" />
+                        </Grid>
                     </styles:SHSubSection>
                     <styles:SHSubSection Grid.Column="1" Title="Toggles">
                         <StackPanel>
@@ -46,22 +58,22 @@
                     </styles:SHSubSection>
                     <styles:SHSubSection Grid.Column="1" Title="Integers">
                         <UniformGrid Columns="2">
-                            <ui:TitledSlider Title="Integer A" Maximum="100" Minimum="2" Value="{Binding IntegerAMax}" />
+                            <ui:TitledSlider Title="Integer A (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerAMax}" />
                             <StackPanel>
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerA" FriendlyName="Increment Integer A" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerA" FriendlyName="Decrement Integer A" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer B" Maximum="100" Minimum="2" Value="{Binding IntegerBMax}" />
+                            <ui:TitledSlider Title="Integer B (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerBMax}" />
                             <StackPanel>
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerB" FriendlyName="Increment Integer B" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerB" FriendlyName="Decrement Integer B" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer C" Maximum="100" Minimum="2" Value="{Binding IntegerCMax}" />
+                            <ui:TitledSlider Title="Integer C (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerCMax}" />
                             <StackPanel>
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerC" FriendlyName="Increment Integer C" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerC" FriendlyName="Decrement Integer C" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer D" Maximum="100" Minimum="2" Value="{Binding IntegerDMax}" />
+                            <ui:TitledSlider Title="Integer D (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerDMax}" />
                             <StackPanel>
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerD" FriendlyName="Increment Integer D" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerD" FriendlyName="Decrement Integer D" />

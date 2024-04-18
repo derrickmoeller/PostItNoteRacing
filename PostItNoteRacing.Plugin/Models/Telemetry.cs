@@ -2,6 +2,7 @@
 using IRacingReader;
 using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
+using PostItNoteRacing.Plugin.ViewModels;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,13 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Telemetry : IDisposable
     {
         private readonly IModifySimHub _modifySimHub;
-        private readonly Settings _settings;
+        private readonly SettingsViewModel _settings;
         private readonly double _weight = 1600 / Math.Log(2);
 
         private ObservableCollection<CarClass> _carClasses;
         private string _description;
 
-        public Telemetry(IModifySimHub modifySimHub, Settings settings)
+        public Telemetry(IModifySimHub modifySimHub, SettingsViewModel settings)
         {
             _modifySimHub = modifySimHub;
             _settings = settings;
@@ -118,7 +119,7 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (var team in carClass.Teams.OrderBy(x => x.LivePositionInClass))
                 {
                     team.DeltaToBest = (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime > TimeSpan.Zero).Min(x => x.BestLapTime))?.TotalSeconds ?? 0D;
-                    team.DeltaToBestFive = (team.BestFiveLapsAverage - carClass.Teams.Where(x => x.BestFiveLapsAverage > TimeSpan.Zero).Min(x => x.BestFiveLapsAverage))?.TotalSeconds ?? 0D;
+                    team.DeltaToBestN = (team.BestNLapsAverage - carClass.Teams.Where(x => x.BestNLapsAverage > TimeSpan.Zero).Min(x => x.BestNLapsAverage))?.TotalSeconds ?? 0D;
 
                     if (leader != null)
                     {
@@ -128,9 +129,9 @@ namespace PostItNoteRacing.Plugin.Models
                     if (player != null)
                     {
                         team.DeltaToPlayerBest = (team.BestLapTime - player.BestLapTime)?.TotalSeconds ?? 0D;
-                        team.DeltaToPlayerBestFive = (team.BestFiveLapsAverage - player.BestFiveLapsAverage)?.TotalSeconds ?? 0D;
+                        team.DeltaToPlayerBestN = (team.BestNLapsAverage - player.BestNLapsAverage)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerLast = (team.LastLap?.Time - player.LastLap?.Time)?.TotalSeconds ?? 0D;
-                        team.DeltaToPlayerLastFive = (team.LastFiveLapsAverage - player.LastFiveLapsAverage)?.TotalSeconds ?? 0D;
+                        team.DeltaToPlayerLastN = (team.LastNLapsAverage - player.LastNLapsAverage)?.TotalSeconds ?? 0D;
                         team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer);
                     }
 
@@ -560,7 +561,7 @@ namespace PostItNoteRacing.Plugin.Models
                     var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                     if (team == null)
                     {
-                        team = new Team(carClass)
+                        team = new Team(carClass, _settings)
                         {
                             CarNumber = opponent.CarNumber,
                             CurrentLap = new Lap(opponent.CurrentLap.Value)
@@ -642,8 +643,8 @@ namespace PostItNoteRacing.Plugin.Models
 
             for (int i = 1; i <= 63; i++)
             {
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_BestFiveLapsColor", string.Empty);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_BestNLapsAverage", TimeSpan.Zero);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_BestNLapsColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_BestLapColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_CarNumber", -1);
@@ -654,11 +655,11 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_CurrentLapTime", TimeSpan.Zero);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToBest", 0);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToBestFive", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToBestN", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerBestFive", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerBestN", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerLastFive", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_DeltaToPlayerLastN", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedDelta", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedLapColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedLapTime", TimeSpan.Zero);
@@ -676,8 +677,8 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IsInPit", false);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IsPlayer", false);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LapsCompleted", 0);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
-                _modifySimHub.SetProperty($"Drivers_{i:D2}_LastFiveLapsColor", string.Empty);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_LastNLapsAverage", TimeSpan.Zero);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_LastNLapsColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LastLapColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LicenseColor", string.Empty);
@@ -736,8 +737,8 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     _modifySimHub.SetProperty($"Class_{carClass.Index:D2}_{team.LivePositionInClass:D2}_LeaderboardPosition", team.LeaderboardPosition);
 
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsAverage", team.BestFiveLapsAverage ?? TimeSpan.Zero);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestFiveLapsColor", team.BestFiveLapsColor);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestNLapsAverage", team.BestNLapsAverage ?? TimeSpan.Zero);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestNLapsColor", team.BestNLapsColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapColor", team.Drivers.Single(x => x.IsActive == true).BestLapColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_BestLapTime", team.Drivers.Single(x => x.IsActive == true).BestLap?.Time ?? TimeSpan.Zero);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_CarNumber", team.CarNumber);
@@ -748,11 +749,11 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_CurrentLapHighPrecision", team.CurrentLapHighPrecision);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_CurrentLapTime", team.CurrentLap.Time);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBest", team.DeltaToBest);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBestFive", team.DeltaToBestFive);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToBestN", team.DeltaToBestN);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBest", team.DeltaToPlayerBest);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBestFive", team.DeltaToPlayerBestFive);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerBestN", team.DeltaToPlayerBestN);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLast", team.DeltaToPlayerLast);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLastFive", team.DeltaToPlayerLastFive);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_DeltaToPlayerLastN", team.DeltaToPlayerLastN);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedDelta", team.EstimatedDelta);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapColor", team.EstimatedLapColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapTime", team.EstimatedLapTime ?? TimeSpan.Zero);
@@ -766,8 +767,8 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsInPit", team.IsInPit);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsPlayer", team.IsPlayer);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LapsCompleted", team.Drivers.Single(x => x.IsActive == true).LapsCompleted);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastFiveLapsAverage", team.LastFiveLapsAverage ?? TimeSpan.Zero);
-                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastFiveLapsColor", team.LastFiveLapsColor);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastNLapsAverage", team.LastNLapsAverage ?? TimeSpan.Zero);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastNLapsColor", team.LastNLapsColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapColor", team.LastLapColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapTime", team.LastLap?.Time ?? TimeSpan.Zero);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive == true).License.Color);
@@ -831,6 +832,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubActions()
         {
+            _modifySimHub.AddAction("IncrementLastNLaps", (a, b) => _settings.LastNLaps++);
+            _modifySimHub.AddAction("DecrementLastNLaps", (a, b) => _settings.LastNLaps--);
             _modifySimHub.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
@@ -838,8 +841,8 @@ namespace PostItNoteRacing.Plugin.Models
         {
             for (int i = 1; i <= 63; i++)
             {
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_BestFiveLapsAverage", TimeSpan.Zero);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_BestFiveLapsColor", string.Empty);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_BestNLapsAverage", TimeSpan.Zero);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_BestNLapsColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_BestLapColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_BestLapTime", TimeSpan.Zero);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_CarNumber", -1);
@@ -850,11 +853,11 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_CurrentLapHighPrecision", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_CurrentLapTime", TimeSpan.Zero);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToBest", 0);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToBestFive", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToBestN", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerBest", 0);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerBestFive", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerBestN", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerLast", 0);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerLastFive", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_DeltaToPlayerLastN", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedDelta", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedLapColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedLapTime", TimeSpan.Zero);
@@ -872,8 +875,8 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IsInPit", false);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IsPlayer", false);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LapsCompleted", 0);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_LastFiveLapsAverage", TimeSpan.Zero);
-                _modifySimHub.AddProperty($"Drivers_{i:D2}_LastFiveLapsColor", string.Empty);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_LastNLapsAverage", TimeSpan.Zero);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_LastNLapsColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LastLapColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LicenseColor", string.Empty);
@@ -911,6 +914,7 @@ namespace PostItNoteRacing.Plugin.Models
             _modifySimHub.AddProperty("Player_Incidents", 0);
             _modifySimHub.AddProperty("Session_Description", string.Empty);
             _modifySimHub.AddProperty("Session_IsMultiClass", false);
+            _modifySimHub.AttachDelegate("Settings_LastNLaps", () => _settings.LastNLaps);
         }
 
         private void OnCarClassesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

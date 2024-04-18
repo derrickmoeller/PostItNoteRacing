@@ -1,122 +1,148 @@
 ﻿using PostItNoteRacing.Plugin.Models;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
     internal class SettingsViewModel : INotifyPropertyChanged
     {
-        private readonly Settings _settings;
-
         public SettingsViewModel(Settings settings)
         {
-            _settings = settings;
+            Entity = settings;
         }
 
         public bool EnableEstimatedLapTimes
         {
-            get => _settings.EnableEstimatedLapTimes;
+            get => Entity.EnableEstimatedLapTimes;
             set
             {
-                if (_settings.EnableEstimatedLapTimes != value)
+                if (Entity.EnableEstimatedLapTimes != value)
                 {
-                    _settings.EnableEstimatedLapTimes = value;
-                    OnPropertyChanged(nameof(EnableEstimatedLapTimes));
+                    Entity.EnableEstimatedLapTimes = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public bool EnableGapCalculations
         {
-            get => _settings.EnableGapCalculations;
+            get => Entity.EnableGapCalculations;
             set
             {
-                if (_settings.EnableGapCalculations != value)
+                if (Entity.EnableGapCalculations != value)
                 {
-                    _settings.EnableGapCalculations = value;
-                    OnPropertyChanged(nameof(EnableGapCalculations));
+                    Entity.EnableGapCalculations = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public bool EnableTelemetry
         {
-            get => _settings.EnableTelemetry;
+            get => Entity.EnableTelemetry;
             set
             {
-                if (_settings.EnableTelemetry != value)
+                if (Entity.EnableTelemetry != value)
                 {
-                    _settings.EnableTelemetry = value;
-                    OnPropertyChanged(nameof(EnableTelemetry));
+                    Entity.EnableTelemetry = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public bool EnableUtility
         {
-            get => _settings.EnableUtility;
+            get => Entity.EnableUtility;
             set
             {
-                if (_settings.EnableUtility != value)
+                if (Entity.EnableUtility != value)
                 {
-                    _settings.EnableUtility = value;
-                    OnPropertyChanged(nameof(EnableUtility));
+                    Entity.EnableUtility = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public int IntegerAMax
         {
-            get => _settings.IntegerAMax;
+            get => Entity.IntegerAMax;
             set
             {
-                if (_settings.IntegerAMax != value)
+                if (Entity.IntegerAMax != value)
                 {
-                    _settings.IntegerAMax = value;
-                    OnPropertyChanged(nameof(IntegerAMax));
+                    Entity.IntegerAMax = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public int IntegerBMax
         {
-            get => _settings.IntegerBMax;
+            get => Entity.IntegerBMax;
             set
             {
-                if (_settings.IntegerBMax != value)
+                if (Entity.IntegerBMax != value)
                 {
-                    _settings.IntegerBMax = value;
-                    OnPropertyChanged(nameof(IntegerBMax));
+                    Entity.IntegerBMax = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public int IntegerCMax
         {
-            get => _settings.IntegerCMax;
+            get => Entity.IntegerCMax;
             set
             {
-                if (_settings.IntegerCMax != value)
+                if (Entity.IntegerCMax != value)
                 {
-                    _settings.IntegerCMax = value;
-                    OnPropertyChanged(nameof(IntegerCMax));
+                    Entity.IntegerCMax = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         public int IntegerDMax
         {
-            get => _settings.IntegerDMax;
+            get => Entity.IntegerDMax;
             set
             {
-                if (_settings.IntegerDMax != value)
+                if (Entity.IntegerDMax != value)
                 {
-                    _settings.IntegerDMax = value;
-                    OnPropertyChanged(nameof(IntegerDMax));
+                    Entity.IntegerDMax = value;
+                    NotifyPropertyChanged();
                 }
             }
         }
 
-        private void OnPropertyChanged(string propertyName)
+        public int LastNLaps
+        {
+            get => Entity.LastNLaps;
+            set
+            {
+                if (Entity.LastNLaps != value)
+                {
+                    if (value < 2)
+                    {
+                        Entity.LastNLaps = 100;
+                    }
+                    else if (value > 100)
+                    {
+                        Entity.LastNLaps = 2;
+                    }
+                    else
+                    {
+                        Entity.LastNLaps = value;
+                    }
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        internal Settings Entity { get; }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

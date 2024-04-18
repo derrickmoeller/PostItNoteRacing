@@ -18,7 +18,7 @@ namespace PostItNoteRacing.Plugin
     public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
     {
         private short _counter;
-        private Settings _settings;
+        private SettingsViewModel _settings;
         private Telemetry _telemetry;
 
         protected void Dispose(bool disposing)
@@ -130,7 +130,7 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
 
-            this.SaveCommonSettings("GeneralSettings", _settings);
+            this.SaveCommonSettings("GeneralSettings", _settings.Entity);
 
             _telemetry?.Dispose();
         }
@@ -144,7 +144,7 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
-            _settings = this.ReadCommonSettings("GeneralSettings", () => new Settings());
+            _settings = new SettingsViewModel(this.ReadCommonSettings("GeneralSettings", () => new Settings()));
 
             if (_settings.EnableTelemetry)
             {
@@ -153,7 +153,7 @@ namespace PostItNoteRacing.Plugin
 
             if (_settings.EnableUtility)
             {
-                _ = new Utility(this, _settings);
+                _ = new Utility(this, _settings.Entity);
             }
 
             (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -173,6 +173,8 @@ namespace PostItNoteRacing.Plugin
         void IModifySimHub.AddAction(string actionName, Action<PluginManager, string> action) => PluginManager.AddAction<PostItNoteRacing>(actionName, action);
 
         void IModifySimHub.AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
+
+        void IModifySimHub.AttachDelegate<T>(string propertyName, Func<T> valueProvider) => PluginManager.AttachDelegate(propertyName, typeof(PostItNoteRacing), valueProvider);
 
         dynamic IModifySimHub.GetProperty(string propertyName) => PluginManager.GetPropertyValue<PostItNoteRacing>(propertyName);
 
@@ -200,7 +202,7 @@ namespace PostItNoteRacing.Plugin
         {
             return new SettingsView
             {
-                DataContext = new SettingsViewModel(_settings),
+                DataContext = _settings,
             };
         }
         #endregion

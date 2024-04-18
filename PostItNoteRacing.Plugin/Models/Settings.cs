@@ -20,5 +20,7 @@
         public int IntegerCMax { get; set; } = 10;
 
         public int IntegerDMax { get; set; } = 10;
+
+        public int LastNLaps { get; set; } = 5;
     }
 }

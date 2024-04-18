@@ -1,9 +1,11 @@
 ﻿using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
+using PostItNoteRacing.Plugin.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
@@ -11,39 +13,43 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Team : IDisposable, INotifyBestLapChanged
     {
         private readonly INotifyBestLapChanged _carClass;
+        private readonly SettingsViewModel _settings;
 
         private TimeSpan? _bestLapTime;
         private Lap _currentLap;
         private ObservableCollection<Driver> _drivers;
-        private ObservableCollection<Lap> _lastFiveLaps;
+        private ObservableCollection<Lap> _lastNLaps;
         private Lap _lastLap;
 
-        public Team(INotifyBestLapChanged carClass)
+        public Team(INotifyBestLapChanged carClass, SettingsViewModel settings)
         {
             _carClass = carClass;
+            _settings = settings;
+
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
+            _settings.PropertyChanged += OnSettingsPropertyChanged;
         }
 
-        public TimeSpan? BestFiveLapsAverage
+        public TimeSpan? BestNLapsAverage
         {
             get
             {
-                if (BestFiveLaps.Any() == false)
+                if (BestNLaps.Any() == false)
                 {
                     return null;
                 }
                 else
                 {
-                    return TimeSpan.FromSeconds(BestFiveLaps.Average(x => x.TotalSeconds));
+                    return TimeSpan.FromSeconds(BestNLaps.Average(x => x.TotalSeconds));
                 }
             }
         }
 
-        public string BestFiveLapsColor
+        public string BestNLapsColor
         {
             get
             {
-                if (BestFiveLapsAverage > TimeSpan.Zero && DeltaToBestFive == 0)
+                if (BestNLapsAverage > TimeSpan.Zero && DeltaToBestN == 0)
                 {
                     return Colors.Purple;
                 }
@@ -93,15 +99,15 @@ namespace PostItNoteRacing.Plugin.Models
 
         public double DeltaToBest { get; set; }
 
-        public double DeltaToBestFive { get; set; }
+        public double DeltaToBestN { get; set; }
 
         public double DeltaToPlayerBest { get; set; }
 
-        public double DeltaToPlayerBestFive { get; set; }
+        public double DeltaToPlayerBestN { get; set; }
 
         public double DeltaToPlayerLast { get; set; }
 
-        public double DeltaToPlayerLastFive { get; set; }
+        public double DeltaToPlayerLastN { get; set; }
 
         public ObservableCollection<Driver> Drivers
         {
@@ -184,28 +190,28 @@ namespace PostItNoteRacing.Plugin.Models
 
         public int LapsCompleted => (int)(CurrentLapHighPrecision ?? 0D);
 
-        public TimeSpan? LastFiveLapsAverage
+        public TimeSpan? LastNLapsAverage
         {
             get
             {
-                if (LastFiveLaps.Any() == false)
+                if (LastNLaps.Any() == false)
                 {
                     return null;
                 }
                 else
                 {
-                    return TimeSpan.FromSeconds(LastFiveLaps.Average(x => x.Time.TotalSeconds));
+                    return TimeSpan.FromSeconds(LastNLaps.Average(x => x.Time.TotalSeconds));
                 }
             }
         }
 
-        public string LastFiveLapsColor
+        public string LastNLapsColor
         {
             get
             {
-                if (LastFiveLapsAverage > TimeSpan.Zero && LastFiveLapsAverage == BestFiveLapsAverage)
+                if (LastNLapsAverage > TimeSpan.Zero && LastNLapsAverage == BestNLapsAverage)
                 {
-                    if (BestFiveLapsColor == Colors.Purple)
+                    if (BestNLapsColor == Colors.Purple)
                     {
                         return Colors.Purple;
                     }
@@ -295,19 +301,19 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
 
-        private List<TimeSpan> BestFiveLaps { get; } = new List<TimeSpan>();
+        private List<TimeSpan> BestNLaps { get; } = new List<TimeSpan>();
 
-        private ObservableCollection<Lap> LastFiveLaps
+        private ObservableCollection<Lap> LastNLaps
         {
             get
             {
-                if (_lastFiveLaps == null)
+                if (_lastNLaps == null)
                 {
-                    _lastFiveLaps = new ObservableCollection<Lap>();
-                    _lastFiveLaps.CollectionChanged += OnLastFiveLapsCollectionChanged;
+                    _lastNLaps = new ObservableCollection<Lap>();
+                    _lastNLaps.CollectionChanged += OnLastNLapsCollectionChanged;
                 }
 
-                return _lastFiveLaps;
+                return _lastNLaps;
             }
         }
 
@@ -325,9 +331,14 @@ namespace PostItNoteRacing.Plugin.Models
                     _drivers.CollectionChanged -= OnDriversCollectionChanged;
                 }
 
-                if (_lastFiveLaps != null)
+                if (_lastNLaps != null)
                 {
-                    _lastFiveLaps.CollectionChanged -= OnLastFiveLapsCollectionChanged;
+                    _lastNLaps.CollectionChanged -= OnLastNLapsCollectionChanged;
+                }
+
+                if (_settings != null)
+                {
+                    _settings.PropertyChanged -= OnSettingsPropertyChanged;
                 }
             }
         }
@@ -400,16 +411,6 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void OnLastFiveLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (BestFiveLaps.Count < LastFiveLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1) || LastFiveLapsAverage < BestFiveLapsAverage)
-            {
-                BestFiveLaps.Clear();
-
-                BestFiveLaps.AddRange(LastFiveLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1).Select(x => x.Time));
-            }
-        }
-
         private void OnLastLapChanged(Driver activeDriver)
         {
             if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsValid == true && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
@@ -419,12 +420,44 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (LastLap.Number > 0)
             {
-                if (LastFiveLaps.Count() == 5)
+                if (LastNLaps.Count() == _settings.LastNLaps)
                 {
-                    LastFiveLaps.RemoveAt(4);
+                    LastNLaps.RemoveAt(_settings.LastNLaps - 1);
                 }
 
-                LastFiveLaps.Insert(0, LastLap);
+                LastNLaps.Insert(0, LastLap);
+            }
+        }
+
+        private void OnLastNLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (BestNLaps.Count < LastNLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1) || LastNLapsAverage < BestNLapsAverage)
+            {
+                BestNLaps.Clear();
+
+                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1).Select(x => x.Time));
+            }
+        }
+
+        private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.LastNLaps))
+            {
+                if (BestNLaps.Count() > _settings.LastNLaps)
+                {
+                    foreach (var lap in BestNLaps.Skip(_settings.LastNLaps).ToList())
+                    {
+                        BestNLaps.Remove(lap);
+                    }
+                }
+
+                if (LastNLaps.Count() > _settings.LastNLaps)
+                {
+                    foreach (var lap in LastNLaps.Skip(_settings.LastNLaps).ToList())
+                    {
+                        LastNLaps.Remove(lap);
+                    }
+                }
             }
         }
 
