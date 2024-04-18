@@ -21,6 +21,6 @@
 
         public int IntegerDMax { get; set; } = 10;
 
-        public int LastNLaps { get; set; } = 5;
+        public int NLaps { get; set; } = 5;
     }
 }

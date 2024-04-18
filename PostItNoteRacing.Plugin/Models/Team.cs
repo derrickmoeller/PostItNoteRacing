@@ -420,9 +420,9 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (LastLap.Number > 0)
             {
-                if (LastNLaps.Count() == _settings.LastNLaps)
+                if (LastNLaps.Count() == _settings.NLaps)
                 {
-                    LastNLaps.RemoveAt(_settings.LastNLaps - 1);
+                    LastNLaps.RemoveAt(_settings.NLaps - 1);
                 }
 
                 LastNLaps.Insert(0, LastLap);
@@ -441,19 +441,19 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(SettingsViewModel.LastNLaps))
+            if (e.PropertyName == nameof(SettingsViewModel.NLaps))
             {
-                if (BestNLaps.Count() > _settings.LastNLaps)
+                if (BestNLaps.Count() > _settings.NLaps)
                 {
-                    foreach (var lap in BestNLaps.Skip(_settings.LastNLaps).ToList())
+                    foreach (var lap in BestNLaps.Skip(_settings.NLaps).ToList())
                     {
                         BestNLaps.Remove(lap);
                     }
                 }
 
-                if (LastNLaps.Count() > _settings.LastNLaps)
+                if (LastNLaps.Count() > _settings.NLaps)
                 {
-                    foreach (var lap in LastNLaps.Skip(_settings.LastNLaps).ToList())
+                    foreach (var lap in LastNLaps.Skip(_settings.NLaps).ToList())
                     {
                         LastNLaps.Remove(lap);
                     }

@@ -115,30 +115,34 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public int LastNLaps
+        public int NLaps
         {
-            get => Entity.LastNLaps;
+            get => Entity.NLaps;
             set
             {
-                if (Entity.LastNLaps != value)
+                if (Entity.NLaps != value)
                 {
-                    if (value < 2)
+                    if (value < NLapsMinimum)
                     {
-                        Entity.LastNLaps = 100;
+                        Entity.NLaps = NLapsMaximum;
                     }
-                    else if (value > 100)
+                    else if (value > NLapsMaximum)
                     {
-                        Entity.LastNLaps = 2;
+                        Entity.NLaps = NLapsMinimum;
                     }
                     else
                     {
-                        Entity.LastNLaps = value;
+                        Entity.NLaps = value;
                     }
 
                     NotifyPropertyChanged();
                 }
             }
         }
+
+        public int NLapsMaximum { get; } = 50;
+
+        public int NLapsMinimum { get; } = 2;
 
         internal Settings Entity { get; }
 

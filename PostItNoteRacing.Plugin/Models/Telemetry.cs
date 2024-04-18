@@ -832,8 +832,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubActions()
         {
-            _modifySimHub.AddAction("IncrementLastNLaps", (a, b) => _settings.LastNLaps++);
-            _modifySimHub.AddAction("DecrementLastNLaps", (a, b) => _settings.LastNLaps--);
+            _modifySimHub.AddAction("IncrementNLaps", (a, b) => _settings.NLaps++);
+            _modifySimHub.AddAction("DecrementNLaps", (a, b) => _settings.NLaps--);
             _modifySimHub.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
@@ -914,7 +914,7 @@ namespace PostItNoteRacing.Plugin.Models
             _modifySimHub.AddProperty("Player_Incidents", 0);
             _modifySimHub.AddProperty("Session_Description", string.Empty);
             _modifySimHub.AddProperty("Session_IsMultiClass", false);
-            _modifySimHub.AttachDelegate("Settings_LastNLaps", () => _settings.LastNLaps);
+            _modifySimHub.AttachDelegate("Settings_NLaps", () => _settings.NLaps);
         }
 
         private void OnCarClassesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
