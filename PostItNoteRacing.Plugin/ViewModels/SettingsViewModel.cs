@@ -68,9 +68,22 @@ namespace PostItNoteRacing.Plugin.ViewModels
             get => Entity.IntegerAMax;
             set
             {
-                if (Entity.IntegerAMax != value)
+                if (Entity.IntegerAMax != value && Entity.IntegerAMin <= value)
                 {
                     Entity.IntegerAMax = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int IntegerAMin
+        {
+            get => Entity.IntegerAMin;
+            set
+            {
+                if (Entity.IntegerAMin != value && Entity.IntegerAMax >= value)
+                {
+                    Entity.IntegerAMin = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -81,9 +94,22 @@ namespace PostItNoteRacing.Plugin.ViewModels
             get => Entity.IntegerBMax;
             set
             {
-                if (Entity.IntegerBMax != value)
+                if (Entity.IntegerBMax != value && Entity.IntegerBMin <= value)
                 {
                     Entity.IntegerBMax = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int IntegerBMin
+        {
+            get => Entity.IntegerBMin;
+            set
+            {
+                if (Entity.IntegerBMin != value && Entity.IntegerBMax >= value)
+                {
+                    Entity.IntegerBMin = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -94,9 +120,22 @@ namespace PostItNoteRacing.Plugin.ViewModels
             get => Entity.IntegerCMax;
             set
             {
-                if (Entity.IntegerCMax != value)
+                if (Entity.IntegerCMax != value && Entity.IntegerCMin <= value)
                 {
                     Entity.IntegerCMax = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int IntegerCMin
+        {
+            get => Entity.IntegerCMin;
+            set
+            {
+                if (Entity.IntegerCMin != value && Entity.IntegerCMax >= value)
+                {
+                    Entity.IntegerCMin = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -107,13 +146,30 @@ namespace PostItNoteRacing.Plugin.ViewModels
             get => Entity.IntegerDMax;
             set
             {
-                if (Entity.IntegerDMax != value)
+                if (Entity.IntegerDMax != value && Entity.IntegerDMin <= value)
                 {
                     Entity.IntegerDMax = value;
                     NotifyPropertyChanged();
                 }
             }
         }
+
+        public int IntegerDMin
+        {
+            get => Entity.IntegerDMin;
+            set
+            {
+                if (Entity.IntegerDMin != value && Entity.IntegerDMax >= value)
+                {
+                    Entity.IntegerDMin = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int IntegersMaximum { get; } = 255;
+
+        public int IntegersMinimum { get; } = 0;
 
         public int NLaps
         {

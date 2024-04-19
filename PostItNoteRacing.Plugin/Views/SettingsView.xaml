@@ -63,25 +63,37 @@
                     </styles:SHSubSection>
                     <styles:SHSubSection Grid.Column="1" Title="Integers">
                         <UniformGrid Columns="2">
-                            <ui:TitledSlider Title="Integer A (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerAMax}" />
                             <StackPanel>
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerA" FriendlyName="Increment Integer A" />
+                                <ui:TitledSlider Title="Integer A (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerAMin}" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerA" FriendlyName="Decrement Integer A" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer B (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerBMax}" />
                             <StackPanel>
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerB" FriendlyName="Increment Integer B" />
+                                <ui:TitledSlider Title="Integer A (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerAMax}" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerA" FriendlyName="Increment Integer A" />
+                            </StackPanel>
+                            <StackPanel>
+                                <ui:TitledSlider Title="Integer B (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerBMin}" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerB" FriendlyName="Decrement Integer B" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer C (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerCMax}" />
                             <StackPanel>
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerC" FriendlyName="Increment Integer C" />
+                                <ui:TitledSlider Title="Integer B (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerBMax}" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerB" FriendlyName="Increment Integer B" />
+                            </StackPanel>
+                            <StackPanel>
+                                <ui:TitledSlider Title="Integer C (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerCMin}" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerC" FriendlyName="Decrement Integer C" />
                             </StackPanel>
-                            <ui:TitledSlider Title="Integer D (Maximum)" Maximum="100" Minimum="2" Value="{Binding IntegerDMax}" />
                             <StackPanel>
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerD" FriendlyName="Increment Integer D" />
+                                <ui:TitledSlider Title="Integer C (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerCMax}" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerC" FriendlyName="Increment Integer C" />
+                            </StackPanel>
+                            <StackPanel>
+                                <ui:TitledSlider Title="Integer D (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerDMin}" />
                                 <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerD" FriendlyName="Decrement Integer D" />
+                            </StackPanel>
+                            <StackPanel>
+                                <ui:TitledSlider Title="Integer D (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerDMax}" />
+                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerD" FriendlyName="Increment Integer D" />
                             </StackPanel>
                         </UniformGrid>
                     </styles:SHSubSection>

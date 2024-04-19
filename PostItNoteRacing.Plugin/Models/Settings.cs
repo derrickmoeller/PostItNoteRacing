@@ -15,11 +15,19 @@
 
         public int IntegerAMax { get; set; } = 10;
 
+        public int IntegerAMin { get; set; } = 1;
+
         public int IntegerBMax { get; set; } = 10;
+
+        public int IntegerBMin { get; set; } = 1;
 
         public int IntegerCMax { get; set; } = 10;
 
+        public int IntegerCMin { get; set; } = 1;
+
         public int IntegerDMax { get; set; } = 10;
+
+        public int IntegerDMin { get; set; } = 1;
 
         public int NLaps { get; set; } = 5;
     }
