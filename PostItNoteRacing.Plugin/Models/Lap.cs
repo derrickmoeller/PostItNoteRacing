@@ -9,13 +9,19 @@ namespace PostItNoteRacing.Plugin.Models
         public Lap(int number)
         {
             Number = number;
+
+            MiniSectors.Add(new MiniSector
+            {
+                Time = TimeSpan.Zero,
+                TrackPosition = 0,
+            });
         }
 
-        public bool IsInLap { get; set; }
+        public bool IsDirty { get; set; } = false;
+
+        public bool IsInLap { get; set; } = false;
 
         public bool IsOutLap { get; set; }
-
-        public bool IsValid { get; set; }
 
         public MiniSector LastMiniSector => MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault();
 

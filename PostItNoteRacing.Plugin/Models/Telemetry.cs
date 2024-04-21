@@ -206,7 +206,7 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         var miniSector = team.CurrentLap.LastMiniSector;
 
-                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector, bestLap).Time);
+                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, bestLap).Time);
                     }
                     else
                     {
@@ -248,8 +248,8 @@ namespace PostItNoteRacing.Plugin.Models
 
                             if (team.CurrentLap.MiniSectors.Any() && leader.CurrentLap.MiniSectors.Any())
                             {
-                                var leaderMiniSector = GetInterpolatedMiniSector(leader.CurrentLap.LastMiniSector, lap);
-                                var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+                                var leaderMiniSector = GetInterpolatedMiniSector(leader.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
 
                                 if (leaderMiniSector.TrackPosition > teamMiniSector.TrackPosition)
                                 {
@@ -290,8 +290,8 @@ namespace PostItNoteRacing.Plugin.Models
 
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
-                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
 
                                     if (playerMiniSector.TrackPosition > teamMiniSector.TrackPosition)
                                     {
@@ -326,8 +326,8 @@ namespace PostItNoteRacing.Plugin.Models
 
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
-                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
 
                                     if (teamMiniSector.TrackPosition > playerMiniSector.TrackPosition)
                                     {
@@ -359,8 +359,8 @@ namespace PostItNoteRacing.Plugin.Models
                             {
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
-                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
 
                                     if (playerMiniSector.TrackPosition > teamMiniSector.TrackPosition)
                                     {
@@ -385,8 +385,8 @@ namespace PostItNoteRacing.Plugin.Models
                             {
                                 if (team.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
                                 {
-                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector, lap);
-                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector, lap);
+                                    var playerMiniSector = GetInterpolatedMiniSector(player.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                    var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
 
                                     if (teamMiniSector.TrackPosition > playerMiniSector.TrackPosition)
                                     {
@@ -507,25 +507,21 @@ namespace PostItNoteRacing.Plugin.Models
 
                                 team.CurrentLap = new Lap(opponent.CurrentLap.Value)
                                 {
-                                    IsInLap = false,
                                     IsOutLap = opponent.IsCarInPitLane,
-                                    IsValid = opponent.LapValid,
                                 };
                             }
-                            else
-                            {
-                                if (team.CurrentLap.IsValid == true)
-                                {
-                                    team.CurrentLap.IsValid = opponent.LapValid;
-                                }
 
-                                team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= opponent.TrackPositionPercent);
-                                team.CurrentLap.MiniSectors.Add(new MiniSector
-                                {
-                                    Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
-                                    TrackPosition = opponent.TrackPositionPercent.Value,
-                                });
+                            if (team.CurrentLap.IsDirty == false)
+                            {
+                                team.CurrentLap.IsDirty = opponent.LapValid == false;
                             }
+
+                            team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= opponent.TrackPositionPercent);
+                            team.CurrentLap.MiniSectors.Add(new MiniSector
+                            {
+                                Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
+                                TrackPosition = opponent.TrackPositionPercent.Value,
+                            });
                         }
                     }
                 }
@@ -566,9 +562,7 @@ namespace PostItNoteRacing.Plugin.Models
                             CarNumber = opponent.CarNumber,
                             CurrentLap = new Lap(opponent.CurrentLap.Value)
                             {
-                                IsInLap = false,
                                 IsOutLap = opponent.IsCarInPitLane,
-                                IsValid = opponent.LapValid,
                             },
                             CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                             IsInPit = opponent.IsCarInPitLane,
@@ -808,15 +802,20 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private static MiniSector GetInterpolatedMiniSector(MiniSector miniSector, Lap lap)
+        private static MiniSector GetInterpolatedMiniSector(double trackPosition, Lap lap)
         {
-            var nextSector = lap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= miniSector.TrackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
-            var lastSector = lap.MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition <= miniSector.TrackPosition) ?? new MiniSector { Time = TimeSpan.Zero, TrackPosition = 0 };
+            if (trackPosition > 1)
+            {
+                trackPosition -= 1;
+            }
+
+            var nextSector = lap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= trackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
+            var lastSector = lap.MiniSectors.OrderByDescending(x => x.TrackPosition).First(x => x.TrackPosition <= trackPosition);
 
             return new MiniSector
             {
-                Time = TimeSpan.FromTicks(GetLinearInterpolation(miniSector.TrackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks)),
-                TrackPosition = miniSector.TrackPosition,
+                Time = TimeSpan.FromTicks(GetLinearInterpolation(trackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks)),
+                TrackPosition = trackPosition,
             };
 
             long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)

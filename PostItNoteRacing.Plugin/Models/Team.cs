@@ -413,7 +413,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnLastLapChanged(Driver activeDriver)
         {
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsValid == true && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsDirty == false && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 activeDriver.BestLap = LastLap;
             }
@@ -431,11 +431,11 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnLastNLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (BestNLaps.Count < LastNLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1) || LastNLapsAverage < BestNLapsAverage)
+            if (BestNLaps.Count < LastNLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1) || LastNLapsAverage < BestNLapsAverage)
             {
                 BestNLaps.Clear();
 
-                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsValid == true && x.Number > 1).Select(x => x.Time));
+                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1).Select(x => x.Time));
             }
         }
 
