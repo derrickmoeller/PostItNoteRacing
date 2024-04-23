@@ -144,16 +144,11 @@ namespace PostItNoteRacing.Plugin
         {
             Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
 
-            _settings = new SettingsViewModel(this.ReadCommonSettings("GeneralSettings", () => new Settings()));
+            _settings = new SettingsViewModel(this, this.ReadCommonSettings("GeneralSettings", () => new Settings()));
 
             if (_settings.EnableTelemetry)
             {
                 _telemetry = new Telemetry(this, _settings);
-            }
-
-            if (_settings.EnableUtility)
-            {
-                _ = new Utility(this, _settings.Entity);
             }
 
             (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());

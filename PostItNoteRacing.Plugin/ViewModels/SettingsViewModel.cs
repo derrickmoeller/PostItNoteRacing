@@ -1,14 +1,45 @@
-﻿using PostItNoteRacing.Plugin.Models;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using PostItNoteRacing.Plugin.Interfaces;
+using PostItNoteRacing.Plugin.Models;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class SettingsViewModel : INotifyPropertyChanged
+    internal class SettingsViewModel : ViewModelBase
     {
-        public SettingsViewModel(Settings settings)
+        private ObservableCollection<BooleanPropertyViewModel> _booleanActions;
+        private ObservableCollection<IntegerPropertyViewModel> _integerActions;
+
+        public SettingsViewModel(IModifySimHub modifySimHub, Settings settings)
+            : base(modifySimHub)
         {
             Entity = settings;
+        }
+
+        public ObservableCollection<BooleanPropertyViewModel> BooleanActions
+        {
+            get
+            {
+                if (_booleanActions == null)
+                {
+                    _booleanActions = new ObservableCollection<BooleanPropertyViewModel>(Enumerable.Range(1, BooleanQuantity).Select(x => new BooleanPropertyViewModel(ModifySimHub, x)));
+                }
+
+                return _booleanActions;
+            }
+        }
+
+        public int BooleanQuantity
+        {
+            get => Entity.BooleanQuantity;
+            set
+            {
+                if (Entity.BooleanQuantity != value)
+                {
+                    Entity.BooleanQuantity = value;
+                    OnBooleanQuantityChanged();
+                }
+            }
         }
 
         public bool EnableEstimatedLapTimes
@@ -63,113 +94,30 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public int IntegerAMax
+        public ObservableCollection<IntegerPropertyViewModel> IntegerActions
         {
-            get => Entity.IntegerAMax;
-            set
+            get
             {
-                if (Entity.IntegerAMax != value && Entity.IntegerAMin <= value)
+                if (_integerActions == null)
                 {
-                    Entity.IntegerAMax = value;
-                    NotifyPropertyChanged();
+                    _integerActions = new ObservableCollection<IntegerPropertyViewModel>(Entity.IntegerActions.Select(x => new IntegerPropertyViewModel(ModifySimHub, x)));
                 }
+
+                return _integerActions;
             }
         }
 
-        public int IntegerAMin
+        public int IntegerQuantity
         {
-            get => Entity.IntegerAMin;
+            get => IntegerActions.Count;
             set
             {
-                if (Entity.IntegerAMin != value && Entity.IntegerAMax >= value)
+                if (IntegerActions.Count != value)
                 {
-                    Entity.IntegerAMin = value;
-                    NotifyPropertyChanged();
+                    OnIntegerQuantityChanging(value);
                 }
             }
         }
-
-        public int IntegerBMax
-        {
-            get => Entity.IntegerBMax;
-            set
-            {
-                if (Entity.IntegerBMax != value && Entity.IntegerBMin <= value)
-                {
-                    Entity.IntegerBMax = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegerBMin
-        {
-            get => Entity.IntegerBMin;
-            set
-            {
-                if (Entity.IntegerBMin != value && Entity.IntegerBMax >= value)
-                {
-                    Entity.IntegerBMin = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegerCMax
-        {
-            get => Entity.IntegerCMax;
-            set
-            {
-                if (Entity.IntegerCMax != value && Entity.IntegerCMin <= value)
-                {
-                    Entity.IntegerCMax = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegerCMin
-        {
-            get => Entity.IntegerCMin;
-            set
-            {
-                if (Entity.IntegerCMin != value && Entity.IntegerCMax >= value)
-                {
-                    Entity.IntegerCMin = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegerDMax
-        {
-            get => Entity.IntegerDMax;
-            set
-            {
-                if (Entity.IntegerDMax != value && Entity.IntegerDMin <= value)
-                {
-                    Entity.IntegerDMax = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegerDMin
-        {
-            get => Entity.IntegerDMin;
-            set
-            {
-                if (Entity.IntegerDMin != value && Entity.IntegerDMax >= value)
-                {
-                    Entity.IntegerDMin = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int IntegersMaximum { get; } = 255;
-
-        public int IntegersMinimum { get; } = 0;
 
         public int NLaps
         {
@@ -202,13 +150,46 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         internal Settings Entity { get; }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        private void OnBooleanQuantityChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (BooleanActions.Count > BooleanQuantity)
+            {
+                foreach (var action in BooleanActions.Skip(BooleanQuantity).ToList())
+                {
+                    BooleanActions.Remove(action);
+                }
+            }
+            else if (BooleanActions.Count < BooleanQuantity)
+            {
+                foreach (var action in Enumerable.Range(BooleanActions.Count + 1, BooleanQuantity - BooleanActions.Count).Select(x => new BooleanPropertyViewModel(ModifySimHub, x)))
+                {
+                    BooleanActions.Add(action);
+                }
+            }
+
+            NotifyPropertyChanged(nameof(BooleanQuantity));
         }
 
-        #region Interface: INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        #endregion
+        private void OnIntegerQuantityChanging(int quantity)
+        {
+            if (IntegerActions.Count > quantity)
+            {
+                foreach (var action in IntegerActions.Skip(quantity).ToList())
+                {
+                    IntegerActions.Remove(action);
+                }
+            }
+            else if (IntegerActions.Count < quantity)
+            {
+                foreach (var action in Enumerable.Range(IntegerActions.Count + 1, quantity - IntegerActions.Count).Select(x => new IntegerPropertyViewModel(ModifySimHub, new IntegerProperty(x))))
+                {
+                    IntegerActions.Add(action);
+                }
+            }
+
+            Entity.IntegerActions = IntegerActions.Select(x => x.Entity).ToList();
+
+            NotifyPropertyChanged(nameof(IntegerQuantity));
+        }
     }
 }

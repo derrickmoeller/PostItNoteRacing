@@ -46,59 +46,45 @@
             </StackPanel>
         </styles:SHTabItem>
         <styles:SHTabItem Header="Utility">
-            <StackPanel>
-                <styles:SHToggleCheckbox Content="Enable utility properties (requires restart)." HorizontalAlignment="Center" IsChecked="{Binding EnableUtility}" />
-                <Grid IsEnabled="{Binding EnableUtility}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="2*" />
-                    </Grid.ColumnDefinitions>
-                    <styles:SHSubSection Grid.Column="0" Title="Booleans">
-                        <StackPanel>
-                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanA" FriendlyName="Toggle Boolean A" />
-                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanB" FriendlyName="Toggle Boolean B" />
-                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanC" FriendlyName="Toggle Boolean C" />
-                            <ui:ControlsEditor ActionName="PostItNoteRacing.ToggleBooleanD" FriendlyName="Toggle Boolean D" />
-                        </StackPanel>
-                    </styles:SHSubSection>
-                    <styles:SHSubSection Grid.Column="1" Title="Integers">
-                        <UniformGrid Columns="2">
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer A (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerAMin}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerA" FriendlyName="Decrement Integer A" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer A (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerAMax}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerA" FriendlyName="Increment Integer A" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer B (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerBMin}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerB" FriendlyName="Decrement Integer B" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer B (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerBMax}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerB" FriendlyName="Increment Integer B" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer C (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerCMin}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerC" FriendlyName="Decrement Integer C" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer C (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerCMax}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerC" FriendlyName="Increment Integer C" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer D (Minimum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerDMin}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.DecrementIntegerD" FriendlyName="Decrement Integer D" />
-                            </StackPanel>
-                            <StackPanel>
-                                <ui:TitledSlider Title="Integer D (Maximum)" Maximum="{Binding IntegersMaximum}" Minimum="{Binding IntegersMinimum}" Value="{Binding IntegerDMax}" />
-                                <ui:ControlsEditor ActionName="PostItNoteRacing.IncrementIntegerD" FriendlyName="Increment Integer D" />
-                            </StackPanel>
-                        </UniformGrid>
-                    </styles:SHSubSection>
-                </Grid>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <styles:SHSubSection Grid.Column="0" Title="Booleans">
+                    <DockPanel>
+                        <ui:TitledSlider DockPanel.Dock="Top" Maximum="99" Minimum="0" Title="Boolean Quantity" Value="{Binding BooleanQuantity}" />
+                        <ListView ItemsSource="{Binding BooleanActions}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <ui:ControlsEditor ActionName="{Binding ToggleBoolean.Name}" FriendlyName="{Binding ToggleBoolean.FriendlyName}" />
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </DockPanel>
+                </styles:SHSubSection>
+                <styles:SHSubSection Grid.Column="1" Title="Integers">
+                    <DockPanel>
+                        <ui:TitledSlider DockPanel.Dock="Top" Maximum="99" Minimum="0" Title="Integer Quantity" Value="{Binding IntegerQuantity}" />
+                        <ListView ItemsSource="{Binding IntegerActions}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <UniformGrid Columns="2">
+                                        <StackPanel>
+                                            <ui:TitledSlider Maximum="255" Minimum="0" Title="{Binding Id, StringFormat=Integer {0:D2} (Minimum)}" Value="{Binding Minimum}" />
+                                            <ui:ControlsEditor ActionName="{Binding DecrementInteger.Name}" FriendlyName="{Binding DecrementInteger.FriendlyName}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <ui:TitledSlider Maximum="255" Minimum="0" Title="{Binding Id, StringFormat=Integer {0:D2} (Maximum)}" Value="{Binding Maximum}" />
+                                            <ui:ControlsEditor ActionName="{Binding IncrementInteger.Name}" FriendlyName="{Binding IncrementInteger.FriendlyName}" />
+                                        </StackPanel>
+                                    </UniformGrid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </DockPanel>
+                </styles:SHSubSection>
+            </Grid>
         </styles:SHTabItem>
     </styles:SHTabControl>
 </UserControl>
