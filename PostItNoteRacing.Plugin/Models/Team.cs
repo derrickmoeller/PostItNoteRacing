@@ -378,7 +378,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnCurrentLapChanging()
         {
-            if (CurrentLap?.Number > 0)
+            if (CurrentLap?.Number > 0 && CurrentLap?.Time > TimeSpan.Zero)
             {
                 LastLap = CurrentLap;
             }
