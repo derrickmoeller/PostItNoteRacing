@@ -98,7 +98,7 @@ namespace PostItNoteRacing.Plugin
                         }
 
                         // 4, 10, 16, 22, 28...
-                        if (_counter % 6 == 4 && _settings.EnableEstimatedLapTimes)
+                        if (_counter % 6 == 4)
                         {
                             _telemetry.CalculateEstimatedLapTimes();
                         }

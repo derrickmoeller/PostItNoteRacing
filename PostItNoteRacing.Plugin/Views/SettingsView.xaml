@@ -37,12 +37,10 @@
                     </styles:SHSubSection>
                     <styles:SHSubSection Grid.Column="1" Title="Toggles">
                         <StackPanel>
-                            <styles:SHToggleCheckbox Content="Enable estimated lap times.*" IsChecked="{Binding EnableEstimatedLapTimes}" />
-                            <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors.*" IsChecked="{Binding EnableGapCalculations}" />
+                            <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" />
                         </StackPanel>
                     </styles:SHSubSection>
                 </Grid>
-                <Label Content="*CPU intensive task." HorizontalAlignment="Right" />
             </StackPanel>
         </styles:SHTabItem>
         <styles:SHTabItem Header="Utility">

@@ -42,19 +42,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public bool EnableEstimatedLapTimes
-        {
-            get => Entity.EnableEstimatedLapTimes;
-            set
-            {
-                if (Entity.EnableEstimatedLapTimes != value)
-                {
-                    Entity.EnableEstimatedLapTimes = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public bool EnableGapCalculations
         {
             get => Entity.EnableGapCalculations;
@@ -76,19 +63,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 if (Entity.EnableTelemetry != value)
                 {
                     Entity.EnableTelemetry = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public bool EnableUtility
-        {
-            get => Entity.EnableUtility;
-            set
-            {
-                if (Entity.EnableUtility != value)
-                {
-                    Entity.EnableUtility = value;
                     NotifyPropertyChanged();
                 }
             }
