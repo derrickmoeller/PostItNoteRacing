@@ -7,7 +7,7 @@ The PostItNoteRacing plugin is a SimHub plugin that provides additional properti
 **Player-Class Examples**
 
 - return pc_GetPropertyFromClassPosition(7, 'DeltaToBest'); // Retrieve delta to best for 7th place in players class.
-- return pc_GetPropertyFromRelativePosition(-1, 'IRatingLicenseCombinedString'); // Retrieve irating license combined string for 1st car ahead in class.
+- return pc_GetPropertyFromRelativePosition(-1, 'IRatingLicenseCombinedString'); // Retrieve irating license combined string for 1st car ahead in players class.
 
 **Single-Class Examples**
 
