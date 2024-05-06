@@ -128,8 +128,6 @@ namespace PostItNoteRacing.Plugin
         /// <param name="_">Discarded parameter.</param>
         public void End(PluginManager _)
         {
-            Logging.Current.Info($"Stopping plugin : {nameof(PostItNoteRacing)}");
-
             this.SaveCommonSettings("GeneralSettings", _settings.Entity);
 
             _telemetry?.Dispose();
@@ -142,8 +140,6 @@ namespace PostItNoteRacing.Plugin
         /// <param name="pluginManager">Plugin manager.</param>
         public void Init(PluginManager pluginManager)
         {
-            Logging.Current.Info($"Starting plugin : {nameof(PostItNoteRacing)}");
-
             _settings = new SettingsViewModel(this, this.ReadCommonSettings("GeneralSettings", () => new Settings()));
 
             if (_settings.EnableTelemetry)

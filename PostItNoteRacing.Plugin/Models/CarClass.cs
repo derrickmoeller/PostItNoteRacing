@@ -32,14 +32,14 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string Color { get; set; }
 
-        public int? Index
+        public int Index
         {
             get
             {
                 var index = Colors.IndexOf(Color);
                 if (index == -1)
                 {
-                    return null;
+                    return 1;
                 }
                 else
                 {
