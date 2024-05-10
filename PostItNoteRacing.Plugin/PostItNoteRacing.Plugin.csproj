@@ -35,10 +35,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AvalonDock, Version=4.72.1.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dirkster.AvalonDock.4.72.1\lib\net40\AvalonDock.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\AvalonDock.dll</HintPath>
     </Reference>
     <Reference Include="AvalonDock.Themes.VS2013, Version=4.72.1.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dirkster.AvalonDock.Themes.VS2013.4.72.1\lib\net40\AvalonDock.Themes.VS2013.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\AvalonDock.Themes.VS2013.dll</HintPath>
     </Reference>
     <Reference Include="GameReaderCommon">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\GameReaderCommon.dll</HintPath>
@@ -53,10 +55,12 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\iRacingSDK.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.15\lib\net45\log4net.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\log4net.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -75,9 +79,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="WoteverCommon">
