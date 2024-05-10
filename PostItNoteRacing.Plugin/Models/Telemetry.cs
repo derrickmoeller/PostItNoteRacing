@@ -572,12 +572,9 @@ namespace PostItNoteRacing.Plugin.Models
                 team.IsConnected = opponent.IsConnected;
                 team.IsPlayer = opponent.IsPlayer;
 
-                if (team.IsPlayer == false && IsQualifying == true)
+                if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero)
                 {
-                    if (opponent.BestLapTime > TimeSpan.Zero && opponent.BestLapTime < (team.BestLapTime ?? TimeSpan.MaxValue))
-                    {
-                        team.BestLapTime = opponent.BestLapTime;
-                    }
+                    team.BestLapTime = opponent.BestLapTime;
                 }
 
                 if (_settings.EnableGapCalculations == false)
