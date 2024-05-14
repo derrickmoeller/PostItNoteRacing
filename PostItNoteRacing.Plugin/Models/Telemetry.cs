@@ -577,6 +577,11 @@ namespace PostItNoteRacing.Plugin.Models
                     team.BestLapTime = opponent.BestLapTime;
                 }
 
+                if (IsRace == true && StatusDatabase.Flag_Green == 1)
+                {
+                    team.GridPosition = carClass.Teams.Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
+                }
+
                 if (_settings.EnableGapCalculations == false)
                 {
                     team.GapToLeader = opponent.GaptoClassLeader ?? 0D;
@@ -644,6 +649,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToLeaderString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToPlayer", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToPlayerString", string.Empty);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_GridPosition", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_Interval", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IntervalString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IRating", 0);
@@ -665,6 +671,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LivePosition", -1);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_Name", string.Empty);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_PositionsGained", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", string.Empty);
@@ -738,6 +745,7 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeaderString", team.GapToLeaderString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayer", team.GapToPlayer);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayerString", team.GapToPlayerString);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GridPosition", team.GridPosition);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_Interval", team.Interval);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalString", team.IntervalString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsConnected", team.IsConnected);
@@ -755,6 +763,7 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePosition", team.LivePosition);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePositionInClass", team.LivePositionInClass);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_Name", team.Drivers.Single(x => x.IsActive == true).Name);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_PositionsGained", team.PositionsGained);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerColor", IsRace ? team.RelativeGapToPlayerColor : Colors.White);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
@@ -847,6 +856,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToLeaderString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToPlayer", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToPlayerString", string.Empty);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_GridPosition", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_Interval", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IntervalString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IRating", 0);
@@ -868,6 +878,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LivePosition", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_Name", string.Empty);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_PositionsGained", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", string.Empty);

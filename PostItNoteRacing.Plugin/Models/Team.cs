@@ -161,6 +161,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string GapToPlayerString { get; set; }
 
+        public int GridPosition { get; set; } = -1;
+
         public double Interval { get; set; }
 
         public string IntervalString { get; set; }
@@ -277,6 +279,8 @@ namespace PostItNoteRacing.Plugin.Models
         public int LivePositionInClass { get; set; } = -1;
 
         public string Name { get; set; }
+
+        public int PositionsGained => GridPosition == -1 ? 0 : GridPosition - LivePositionInClass;
 
         public double? RelativeGapToPlayer { get; set; }
 
