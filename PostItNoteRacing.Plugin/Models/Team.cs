@@ -79,7 +79,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public string CarNumber { get; set; }
+        public int CarNumber { get; set; }
 
         public Lap CurrentLap
         {

@@ -225,7 +225,7 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     if (leader != null)
                     {
-                        team.GapToLeader = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoClassLeader ?? 0D;
+                        team.GapToLeader = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoClassLeader ?? 0D;
 
                         var lap = team.Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap;
                         if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
@@ -264,8 +264,8 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (player != null)
                     {
-                        team.GapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer ?? 0D;
-                        team.RelativeGapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer;
+                        team.GapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.RelativeGapToPlayer;
 
                         if (player.CurrentLapHighPrecision > team.CurrentLapHighPrecision)
                         {
@@ -484,7 +484,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Parallel.ForEach(StatusDatabase.Opponents, opponent =>
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
                 if (team != null)
                 {
                     if (team.IsPlayer == true || IsQualifying == false)
@@ -541,12 +541,12 @@ namespace PostItNoteRacing.Plugin.Models
                     CarClasses.Add(carClass);
                 }
 
-                var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
                 if (team == null)
                 {
                     team = new Team(carClass, _settings)
                     {
-                        CarNumber = opponent.CarNumber,
+                        CarNumber = int.Parse(opponent.CarNumber),
                         CurrentLap = new Lap(opponent.CurrentLap.Value)
                         {
                             IsOutLap = opponent.IsCarInPitLane,
@@ -555,6 +555,8 @@ namespace PostItNoteRacing.Plugin.Models
                         IsInPit = opponent.IsCarInPitLane,
                         Name = opponent.TeamName,
                     };
+
+                    _modifySimHub.AttachDelegate($"Drivers_Car_{team.CarNumber:D3}_LeaderboardPosition", () => { return team.LeaderboardPosition; });
 
                     carClass.Teams.Add(team);
                 }
@@ -664,6 +666,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LastNLapsColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LastLapColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_LeaderboardPosition", -1);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LicenseColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LicenseShortString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LicenseString", string.Empty);
@@ -706,7 +709,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
                 if (team != null)
                 {
                     team.LeaderboardPosition = i + 1;
@@ -756,6 +759,7 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastNLapsColor", team.LastNLapsColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapColor", team.LastLapColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LastLapTime", team.LastLap?.Time ?? TimeSpan.Zero);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LeaderboardPosition", team.LeaderboardPosition);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseColor", team.Drivers.Single(x => x.IsActive == true).License.Color);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseShortString", team.Drivers.Single(x => x.IsActive == true).License.ShortString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LicenseString", team.Drivers.Single(x => x.IsActive == true).License.String);
@@ -871,6 +875,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LastNLapsColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LastLapColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LastLapTime", TimeSpan.Zero);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_LeaderboardPosition", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LicenseColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LicenseShortString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LicenseString", string.Empty);
