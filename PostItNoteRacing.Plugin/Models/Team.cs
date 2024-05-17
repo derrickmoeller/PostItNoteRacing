@@ -15,11 +15,13 @@ namespace PostItNoteRacing.Plugin.Models
         private readonly INotifyBestLapChanged _carClass;
         private readonly SettingsViewModel _settings;
 
+        private Driver _activeDriver;
         private TimeSpan? _bestLapTime;
         private Lap _currentLap;
         private ObservableCollection<Driver> _drivers;
         private ObservableCollection<Lap> _lastNLaps;
         private Lap _lastLap;
+        private int _leaderboardPosition = -1;
 
         public Team(INotifyBestLapChanged carClass, SettingsViewModel settings)
         {
@@ -28,6 +30,19 @@ namespace PostItNoteRacing.Plugin.Models
 
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
             _settings.PropertyChanged += OnSettingsPropertyChanged;
+        }
+
+        public Driver ActiveDriver
+        {
+            get => _activeDriver;
+            set
+            {
+                if (_activeDriver != value)
+                {
+                    _activeDriver = value;
+                    OnActiveDriverChanged();
+                }
+            }
         }
 
         public TimeSpan? BestNLapsAverage
@@ -123,13 +138,13 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public double EstimatedDelta => (EstimatedLapTime - Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)?.TotalSeconds ?? 0D;
+        public double EstimatedDelta => (EstimatedLapTime - ActiveDriver?.BestLap?.Time)?.TotalSeconds ?? 0D;
 
         public string EstimatedLapColor
         {
             get
             {
-                if (EstimatedLapTime <= Drivers.SingleOrDefault(x => x.IsActive == true)?.BestLap?.Time)
+                if (EstimatedLapTime <= ActiveDriver?.BestLap?.Time)
                 {
                     if (DeltaToBest + EstimatedDelta < 0)
                     {
@@ -179,12 +194,14 @@ namespace PostItNoteRacing.Plugin.Models
                 }
                 else
                 {
-                    return (int?)Drivers.SingleOrDefault(x => x.IsActive == true)?.IRating;
+                    return (int?)ActiveDriver?.IRating;
                 }
             }
         }
 
         public bool IsConnected { get; set; }
+
+        public bool IsDirty { get; set; }
 
         public bool IsInPit { get; set; }
 
@@ -241,7 +258,7 @@ namespace PostItNoteRacing.Plugin.Models
                 if (_lastLap != value)
                 {
                     _lastLap = value;
-                    OnLastLapChanged(Drivers.SingleOrDefault(x => x.IsActive == true));
+                    OnLastLapChanged(ActiveDriver);
                 }
             }
         }
@@ -272,7 +289,18 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public int LeaderboardPosition { get; set; } = -1;
+        public int LeaderboardPosition
+        {
+            get => _leaderboardPosition;
+            set
+            {
+                if (_leaderboardPosition != value)
+                {
+                    _leaderboardPosition = value;
+                    OnLeaderboardPositionChanged();
+                }
+            }
+        }
 
         public int LivePosition { get; set; } = -1;
 
@@ -347,6 +375,11 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
+        private void OnActiveDriverChanged()
+        {
+            IsDirty = true;
+        }
+
         private void OnBestLapTimeChanged()
         {
             BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLapTime));
@@ -370,13 +403,9 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnCurrentLapChanged()
         {
-            if (LapsCompleted != Drivers.Sum(x => x.LapsCompleted))
+            if (LapsCompleted != Drivers.Sum(x => x.LapsCompleted) && ActiveDriver != null)
             {
-                var activeDriver = Drivers.SingleOrDefault(x => x.IsActive == true);
-                if (activeDriver != null)
-                {
-                    activeDriver.LapsCompleted = LapsCompleted - Drivers.Where(x => x.IsActive == false).Sum(x => x.LapsCompleted);
-                }
+                ActiveDriver.LapsCompleted = LapsCompleted - Drivers.Where(x => x != ActiveDriver).Sum(x => x.LapsCompleted);
             }
         }
 
@@ -441,6 +470,11 @@ namespace PostItNoteRacing.Plugin.Models
 
                 BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1).Select(x => x.Time));
             }
+        }
+
+        private void OnLeaderboardPositionChanged()
+        {
+            IsDirty = true;
         }
 
         private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)

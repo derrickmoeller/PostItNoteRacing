@@ -56,8 +56,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string IRatingLicenseCombinedString => $"{License.ShortString} {IRatingString}";
 
-        public bool IsActive { get; set; }
-
         public int LapsCompleted { get; set; }
 
         public License License { get; set; }
