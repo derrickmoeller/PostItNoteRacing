@@ -15,6 +15,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         public List<IntegerProperty> IntegerActions { get; set; } = new List<IntegerProperty>();
 
+        public bool InverseGapStrings { get; set; } = false;
+
         public int NLaps { get; set; } = 5;
     }
 }

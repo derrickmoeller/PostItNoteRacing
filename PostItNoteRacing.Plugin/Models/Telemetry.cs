@@ -1,6 +1,5 @@
 ﻿using GameReaderCommon;
 using IRacingReader;
-using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.ViewModels;
 using SimHub.Plugins;
@@ -110,11 +109,12 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateDeltas()
         {
+            var leader = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == 1);
             var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
             foreach (var carClass in CarClasses)
             {
-                var leader = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == 1);
+                var classLeader = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == 1);
 
                 foreach (var team in carClass.Teams)
                 {
@@ -126,6 +126,11 @@ namespace PostItNoteRacing.Plugin.Models
                         team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader);
                     }
 
+                    if (classLeader != null)
+                    {
+                        team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader);
+                    }
+
                     if (player != null)
                     {
                         team.DeltaToPlayerBest = (team.BestLapTime - player.BestLapTime)?.TotalSeconds ?? 0D;
@@ -135,18 +140,33 @@ namespace PostItNoteRacing.Plugin.Models
                         team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer);
                     }
 
-                    if (team.LivePositionInClass == 1)
+                    if (team.LivePosition == 1)
                     {
                         team.Interval = 0d;
                         team.IntervalString = $"L{team.LapsCompleted + 1}";
                     }
                     else
                     {
-                        var teamAhead = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == team.LivePositionInClass - 1);
+                        var teamAhead = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == team.LivePosition - 1);
                         if (teamAhead != null)
                         {
                             team.Interval = team.GapToLeader - teamAhead.GapToLeader;
                             team.IntervalString = GetIntervalAsString(team, teamAhead, team.Interval);
+                        }
+                    }
+
+                    if (team.LivePositionInClass == 1)
+                    {
+                        team.IntervalInClass = 0d;
+                        team.IntervalInClassString = $"L{team.LapsCompleted + 1}";
+                    }
+                    else
+                    {
+                        var teamAhead = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == team.LivePositionInClass - 1);
+                        if (teamAhead != null)
+                        {
+                            team.IntervalInClass = team.GapToClassLeader - teamAhead.GapToClassLeader;
+                            team.IntervalInClassString = GetIntervalAsString(team, teamAhead, team.IntervalInClass);
                         }
                     }
                 }
@@ -154,24 +174,42 @@ namespace PostItNoteRacing.Plugin.Models
 
             string GetGapAsString(Team a, Team b, double? gap)
             {
-                var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
-                if (laps > 1)
+                if (_settings.InverseGapStrings == true)
                 {
-                    return $"+{(int)laps}L";
-                }
-                else if (laps < -1)
-                {
-                    return $"{(int)laps}L";
-                }
-                else
-                {
-                    if (gap != 0)
+                    var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
+                    if (laps > 1 || laps < -1)
                     {
-                        return $"{gap:-0.0;+0.0}";
+                        return $"{laps:-0:+0}L";
                     }
                     else
                     {
-                        return "0.0";
+                        if (gap != 0)
+                        {
+                            return $"{gap:-0.0;+0.0}";
+                        }
+                        else
+                        {
+                            return "0.0";
+                        }
+                    }
+                }
+                else
+                {
+                    var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
+                    if (laps > 1 || laps < -1)
+                    {
+                        return $"{laps:+0;-0}L";
+                    }
+                    else
+                    {
+                        if (gap != 0)
+                        {
+                            return $"{gap:+0.0;-0.0}";
+                        }
+                        else
+                        {
+                            return "0.0";
+                        }
                     }
                 }
             }
@@ -215,17 +253,18 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateGaps()
         {
+            var leader = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == 1);
             var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
             Parallel.ForEach(CarClasses, carClass =>
             {
-                var leader = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == 1);
+                var classLeader = carClass.Teams.SingleOrDefault(x => x.LivePositionInClass == 1);
 
                 foreach (var team in carClass.Teams.OrderBy(x => x.LivePositionInClass))
                 {
                     if (leader != null)
                     {
-                        team.GapToLeader = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoClassLeader ?? 0D;
+                        team.GapToLeader = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoLeader ?? 0D;
 
                         var lap = team.ActiveDriver?.BestLap;
                         if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
@@ -259,6 +298,45 @@ namespace PostItNoteRacing.Plugin.Models
                             }
 
                             team.GapToLeader = gapToLeader;
+                        }
+                    }
+
+                    if (classLeader != null)
+                    {
+                        team.GapToClassLeader = StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoClassLeader ?? 0D;
+
+                        var lap = team.ActiveDriver?.BestLap;
+                        if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
+                        {
+                            lap = team.LastLap;
+                        }
+
+                        if (lap != null)
+                        {
+                            double gapToClassLeader = 0D;
+
+                            var laps = classLeader.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
+                            if (laps > 1)
+                            {
+                                gapToClassLeader = (int)laps * lap.Time.TotalSeconds;
+                            }
+
+                            if (team.CurrentLap.MiniSectors.Any() && classLeader.CurrentLap.MiniSectors.Any())
+                            {
+                                var classLeaderMiniSector = GetInterpolatedMiniSector(classLeader.CurrentLap.LastMiniSector.TrackPosition, lap);
+                                var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
+
+                                if (classLeaderMiniSector.TrackPosition > teamMiniSector.TrackPosition)
+                                {
+                                    gapToClassLeader += (classLeaderMiniSector.Time - teamMiniSector.Time).TotalSeconds;
+                                }
+                                else if (classLeaderMiniSector.TrackPosition < teamMiniSector.TrackPosition)
+                                {
+                                    gapToClassLeader += (lap.Time - (teamMiniSector.Time - classLeaderMiniSector.Time)).TotalSeconds;
+                                }
+                            }
+
+                            team.GapToClassLeader = gapToClassLeader;
                         }
                     }
 
@@ -580,12 +658,14 @@ namespace PostItNoteRacing.Plugin.Models
 
                 if (IsRace == true && StatusDatabase.Flag_Green == 1)
                 {
-                    team.GridPosition = carClass.Teams.Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
+                    team.GridPosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
+                    team.GridPositionInClass = carClass.Teams.Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
                 }
 
                 if (_settings.EnableGapCalculations == false)
                 {
-                    team.GapToLeader = opponent.GaptoClassLeader ?? 0D;
+                    team.GapToClassLeader = opponent.GaptoClassLeader ?? 0D;
+                    team.GapToLeader = opponent.GaptoLeader ?? 0D;
                     team.GapToPlayer = opponent.GaptoPlayer ?? 0D;
                     team.RelativeGapToPlayer = opponent.IsConnected ? opponent.RelativeGapToPlayer : null;
                 }
@@ -643,12 +723,17 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedDelta", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedLapColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_EstimatedLapTime", TimeSpan.Zero);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToClassLeader", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToClassLeaderString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToLeader", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToLeaderString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToPlayer", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GapToPlayerString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_GridPosition", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_GridPositionInClass", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_Interval", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_IntervalInClass", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_IntervalInClassString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IntervalString", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IRating", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_IRatingChange", 0);
@@ -671,6 +756,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_Name", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_PositionsGained", 0);
+                _modifySimHub.SetProperty($"Drivers_{i:D2}_PositionsGainedInClass", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", string.Empty);
                 _modifySimHub.SetProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", string.Empty);
@@ -735,12 +821,17 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedDelta", team.EstimatedDelta);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapColor", team.EstimatedLapColor);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_EstimatedLapTime", team.EstimatedLapTime ?? TimeSpan.Zero);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToClassLeader", team.GapToClassLeader);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToClassLeaderString", team.GapToClassLeaderString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeader", team.GapToLeader);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToLeaderString", team.GapToLeaderString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayer", team.GapToPlayer);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GapToPlayerString", team.GapToPlayerString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GridPosition", team.GridPosition);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_GridPositionInClass", team.GridPositionInClass);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_Interval", team.Interval);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalInClass", team.IntervalInClass);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalInClassString", team.IntervalInClassString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IntervalString", team.IntervalString);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsConnected", team.IsConnected);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_IsInPit", team.IsInPit);
@@ -752,6 +843,7 @@ namespace PostItNoteRacing.Plugin.Models
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePosition", team.LivePosition);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_LivePositionInClass", team.LivePositionInClass);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_PositionsGained", team.PositionsGained);
+                    _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_PositionsGainedInClass", team.PositionsGainedInClass);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayer", team.RelativeGapToPlayer);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerColor", IsRace ? team.RelativeGapToPlayerColor : Colors.White);
                     _modifySimHub.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
@@ -858,12 +950,17 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedDelta", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedLapColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_EstimatedLapTime", TimeSpan.Zero);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToClassLeader", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToClassLeaderString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToLeader", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToLeaderString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToPlayer", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GapToPlayerString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_GridPosition", -1);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_GridPositionInClass", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_Interval", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_IntervalInClass", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_IntervalInClassString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IntervalString", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IRating", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_IRatingChange", 0);
@@ -886,6 +983,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_LivePositionInClass", -1);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_Name", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_PositionsGained", 0);
+                _modifySimHub.AddProperty($"Drivers_{i:D2}_PositionsGainedInClass", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayer", 0);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerColor", string.Empty);
                 _modifySimHub.AddProperty($"Drivers_{i:D2}_RelativeGapToPlayerString", string.Empty);

@@ -38,6 +38,7 @@
                     <styles:SHSubSection Grid.Column="1" Title="Toggles">
                         <StackPanel>
                             <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" />
+                            <styles:SHToggleCheckbox Content="Inverse gap strings." IsChecked="{Binding InverseGapStrings}" />
                         </StackPanel>
                     </styles:SHSubSection>
                 </Grid>

@@ -93,6 +93,19 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
+        public bool InverseGapStrings
+        {
+            get => Entity.InverseGapStrings;
+            set
+            {
+                if (Entity.InverseGapStrings != value)
+                {
+                    Entity.InverseGapStrings = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int NLaps
         {
             get => Entity.NLaps;

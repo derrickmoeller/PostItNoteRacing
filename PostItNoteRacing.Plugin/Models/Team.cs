@@ -168,6 +168,10 @@ namespace PostItNoteRacing.Plugin.Models
 
         public TimeSpan? EstimatedLapTime { get; set; }
 
+        public double GapToClassLeader { get; set; }
+
+        public string GapToClassLeaderString { get; set; }
+
         public double GapToLeader { get; set; }
 
         public string GapToLeaderString { get; set; }
@@ -178,7 +182,13 @@ namespace PostItNoteRacing.Plugin.Models
 
         public int GridPosition { get; set; } = -1;
 
+        public int GridPositionInClass { get; set; } = -1;
+
         public double Interval { get; set; }
+
+        public double IntervalInClass { get; set; }
+
+        public string IntervalInClassString { get; set; }
 
         public string IntervalString { get; set; }
 
@@ -308,7 +318,9 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string Name { get; set; }
 
-        public int PositionsGained => GridPosition == -1 ? 0 : GridPosition - LivePositionInClass;
+        public int PositionsGained => GridPosition == -1 ? 0 : GridPosition - LivePosition;
+
+        public int PositionsGainedInClass => GridPositionInClass == -1 ? 0 : GridPositionInClass - LivePositionInClass;
 
         public double? RelativeGapToPlayer { get; set; }
 
@@ -331,7 +343,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public string RelativeGapToPlayerString => $"{RelativeGapToPlayer:-0.0;+0.0}";
+        public string RelativeGapToPlayerString => _settings.InverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
         private List<TimeSpan> BestNLaps { get; } = new List<TimeSpan>();
 
