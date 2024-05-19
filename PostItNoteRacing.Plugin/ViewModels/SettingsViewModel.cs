@@ -135,6 +135,19 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         public int NLapsMinimum { get; } = 2;
 
+        public bool UseLastNLapsToEstimateLapTime
+        {
+            get => Entity.UseLastNLapsToEstimateLapTime;
+            set
+            {
+                if (Entity.UseLastNLapsToEstimateLapTime != value)
+                {
+                    Entity.UseLastNLapsToEstimateLapTime = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         internal Settings Entity { get; }
 
         private void OnBooleanQuantityChanged()

@@ -219,6 +219,20 @@ namespace PostItNoteRacing.Plugin.Models
 
         public int LapsCompleted => (int)(CurrentLapHighPrecision ?? 0D);
 
+        public ObservableCollection<Lap> LastNLaps
+        {
+            get
+            {
+                if (_lastNLaps == null)
+                {
+                    _lastNLaps = new ObservableCollection<Lap>();
+                    _lastNLaps.CollectionChanged += OnLastNLapsCollectionChanged;
+                }
+
+                return _lastNLaps;
+            }
+        }
+
         public TimeSpan? LastNLapsAverage
         {
             get
@@ -346,20 +360,6 @@ namespace PostItNoteRacing.Plugin.Models
         public string RelativeGapToPlayerString => _settings.InverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
         private List<TimeSpan> BestNLaps { get; } = new List<TimeSpan>();
-
-        private ObservableCollection<Lap> LastNLaps
-        {
-            get
-            {
-                if (_lastNLaps == null)
-                {
-                    _lastNLaps = new ObservableCollection<Lap>();
-                    _lastNLaps.CollectionChanged += OnLastNLapsCollectionChanged;
-                }
-
-                return _lastNLaps;
-            }
-        }
 
         protected void Dispose(bool disposing)
         {

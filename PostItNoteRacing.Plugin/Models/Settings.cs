@@ -18,5 +18,7 @@ namespace PostItNoteRacing.Plugin.Models
         public bool InverseGapStrings { get; set; } = false;
 
         public int NLaps { get; set; } = 5;
+
+        public bool UseLastNLapsToEstimateLapTime { get; set; } = false;
     }
 }

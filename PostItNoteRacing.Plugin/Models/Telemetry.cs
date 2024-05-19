@@ -236,17 +236,38 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Parallel.ForEach(CarClasses.SelectMany(x => x.Teams), team =>
             {
-                var bestLap = team.ActiveDriver?.BestLap;
+                var miniSector = team.CurrentLap.LastMiniSector;
 
-                if (bestLap != null && team.CurrentLap.MiniSectors.Any())
+                if (_settings.UseLastNLapsToEstimateLapTime == false)
                 {
-                    var miniSector = team.CurrentLap.LastMiniSector;
+                    var bestLap = team.ActiveDriver?.BestLap;
 
-                    team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, bestLap).Time);
+                    if (bestLap != null && team.CurrentLap.MiniSectors.Any())
+                    {
+                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, bestLap).Time);
+                    }
+                    else
+                    {
+                        team.EstimatedLapTime = null;
+                    }
                 }
                 else
                 {
-                    team.EstimatedLapTime = null;
+                    if (team.LastNLaps.Any())
+                    {
+                        var estimatedLaps = new List<TimeSpan>();
+
+                        foreach (var lap in team.LastNLaps)
+                        {
+                            estimatedLaps.Add(lap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, lap).Time));
+                        }
+
+                        team.EstimatedLapTime = TimeSpan.FromSeconds(estimatedLaps.Average(x => x.TotalSeconds));
+                    }
+                    else
+                    {
+                        team.EstimatedLapTime = null;
+                    }
                 }
             });
         }
