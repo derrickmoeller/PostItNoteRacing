@@ -3,11 +3,11 @@
 namespace PostItNoteRacing.Plugin.Views
 {
     /// <summary>
-    /// Interaction logic for SettingsView.xaml.
+    /// Interaction logic for UtilityView.xaml.
     /// </summary>
-    internal partial class SettingsView : UserControl
+    internal partial class UtilityView : UserControl
     {
-        public SettingsView()
+        public UtilityView()
         {
             InitializeComponent();
         }

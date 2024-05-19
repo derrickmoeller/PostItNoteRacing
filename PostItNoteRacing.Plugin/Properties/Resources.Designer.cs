@@ -69,5 +69,23 @@ namespace PostItNoteRacing.Plugin.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telemetry.
+        /// </summary>
+        internal static string TelemetryViewModel_DisplayName {
+            get {
+                return ResourceManager.GetString("TelemetryViewModel_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Utility.
+        /// </summary>
+        internal static string UtilityViewModel_DisplayName {
+            get {
+                return ResourceManager.GetString("UtilityViewModel_DisplayName", resourceCulture);
+            }
+        }
     }
 }

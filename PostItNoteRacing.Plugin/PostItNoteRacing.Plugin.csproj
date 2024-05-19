@@ -89,23 +89,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Converters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Common\Extensions\EnumBindingSourceExtension.cs" />
+    <Compile Include="Common\ViewModels\ViewModelBase.cs" />
+    <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />
     <Compile Include="EventArgs\BestLapChangedEventArgs.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IModifySimHub.cs" />
     <Compile Include="Interfaces\INotifyBestLapChanged.cs" />
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\IntegerProperty.cs" />
+    <Compile Include="Models\Utility.cs" />
     <Compile Include="Models\SimHubAction.cs" />
     <Compile Include="Models\Colors.cs" />
     <Compile Include="Models\MiniSector.cs" />
     <Compile Include="Models\Lap.cs" />
-    <Compile Include="Models\Settings.cs" />
+    <Compile Include="Models\Telemetry.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Models\Telemetry.cs" />
+    <Compile Include="Models\Session.cs" />
     <Compile Include="Models\Team.cs" />
     <Compile Include="Models\License.cs" />
     <Compile Include="Models\CarClass.cs" />
@@ -115,9 +122,14 @@
     <Compile Include="ViewModels\IntegerPropertyViewModel.cs" />
     <Compile Include="ViewModels\BooleanPropertyViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
-    <Compile Include="Views\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
+    <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModels\UtilityViewModel.cs" />
+    <Compile Include="ViewModels\TelemetryViewModel.cs" />
+    <Compile Include="Views\UtilityView.xaml.cs">
+      <DependentUpon>UtilityView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TelemetryView.xaml.cs">
+      <DependentUpon>TelemetryView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -133,7 +145,19 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Views\SettingsView.xaml">
+    <Page Include="MainPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainPageResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\UtilityView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\TelemetryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -142,6 +166,7 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

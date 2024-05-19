@@ -1,8 +1,7 @@
 ﻿using GameReaderCommon;
+using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
-using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.ViewModels;
-using PostItNoteRacing.Plugin.Views;
 using SimHub;
 using SimHub.Plugins;
 using System;
@@ -17,15 +16,15 @@ namespace PostItNoteRacing.Plugin
     [PluginName("PostItNoteRacing")]
     public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
     {
-        private short _counter;
-        private SettingsViewModel _settings;
-        private Telemetry _telemetry;
+        private MainPageViewModel _mainPage;
+
+        private EventHandler<NotifyDataUpdatedEventArgs> _dataUpdated;
 
         protected void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _telemetry?.Dispose();
+                _mainPage?.Dispose();
             }
         }
 
@@ -48,72 +47,7 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
-                if (_telemetry != null)
-                {
-                    _counter++;
-
-                    if (_counter > 59)
-                    {
-                        _counter = 0;
-                    }
-
-                    if (data.GameRunning && data.NewData != null)
-                    {
-                        _telemetry.StatusDatabase = data.NewData;
-
-                        // 0, 4, 8, 12, 16...
-                        if (_counter % 4 == 0)
-                        {
-                            _telemetry.GetGameData();
-                        }
-
-                        // 0
-                        if (_counter % 60 == 0)
-                        {
-                            _telemetry.CalculateLivePositions();
-                        }
-
-                        // 0, 30
-                        if (_counter % 30 == 0)
-                        {
-                            _telemetry.GenerateMiniSectors();
-                        }
-
-                        // 1, 3, 5, 7, 9...
-                        if (_counter % 2 == 1)
-                        {
-                            _telemetry.WriteSimHubData();
-                        }
-
-                        // 0, 6, 12, 18, 24...
-                        if (_counter % 6 == 0 && _settings.EnableGapCalculations)
-                        {
-                            _telemetry.CalculateGaps();
-                        }
-
-                        // 2, 8, 14, 20, 26...
-                        if (_counter % 6 == 2)
-                        {
-                            _telemetry.CalculateDeltas();
-                        }
-
-                        // 4, 10, 16, 22, 28...
-                        if (_counter % 6 == 4)
-                        {
-                            _telemetry.CalculateEstimatedLapTimes();
-                        }
-
-                        // 30
-                        if (_counter % 60 == 30 && data.GameName == "IRacing")
-                        {
-                            _telemetry.CalculateIRating();
-                        }
-                    }
-                    else
-                    {
-                        _telemetry.Reset();
-                    }
-                }
+                _dataUpdated?.Invoke(this, new NotifyDataUpdatedEventArgs(data));
             }
             catch (Exception ex)
             {
@@ -128,9 +62,7 @@ namespace PostItNoteRacing.Plugin
         /// <param name="_">Discarded parameter.</param>
         public void End(PluginManager _)
         {
-            this.SaveCommonSettings("GeneralSettings", _settings.Entity);
-
-            _telemetry?.Dispose();
+            _mainPage?.Dispose();
         }
 
         /// <summary>
@@ -140,11 +72,9 @@ namespace PostItNoteRacing.Plugin
         /// <param name="pluginManager">Plugin manager.</param>
         public void Init(PluginManager pluginManager)
         {
-            _settings = new SettingsViewModel(this, this.ReadCommonSettings("GeneralSettings", () => new Settings()));
-
-            if (_settings.EnableTelemetry)
+            if (_mainPage == null)
             {
-                _telemetry = new Telemetry(this, _settings);
+                _mainPage = new MainPageViewModel(this);
             }
 
             (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -155,12 +85,24 @@ namespace PostItNoteRacing.Plugin
         public void Dispose()
         {
             Dispose(true);
-
             GC.SuppressFinalize(this);
         }
         #endregion
 
         #region Interface: IModifySimHub
+        event EventHandler<NotifyDataUpdatedEventArgs> IModifySimHub.DataUpdated
+        {
+            add
+            {
+                _dataUpdated += value;
+            }
+
+            remove
+            {
+                _dataUpdated -= value;
+            }
+        }
+
         void IModifySimHub.AddAction(string actionName, Action<PluginManager, string> action) => PluginManager.AddAction<PostItNoteRacing>(actionName, action);
 
         void IModifySimHub.AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
@@ -168,6 +110,10 @@ namespace PostItNoteRacing.Plugin
         void IModifySimHub.AttachDelegate<T>(string propertyName, Func<T> valueProvider) => PluginManager.AttachDelegate(propertyName, typeof(PostItNoteRacing), valueProvider);
 
         dynamic IModifySimHub.GetProperty(string propertyName) => PluginManager.GetPropertyValue<PostItNoteRacing>(propertyName);
+
+        T IModifySimHub.ReadSettings<T>(string settingsName, Func<T> valueProvider) => this.ReadCommonSettings(settingsName, valueProvider);
+
+        void IModifySimHub.SaveSettings<T>(string settingsName, T settings) => this.SaveCommonSettings(settingsName, settings);
 
         void IModifySimHub.SetProperty(string propertyName, dynamic value) => PluginManager.SetPropertyValue<PostItNoteRacing>(propertyName, value);
         #endregion
@@ -191,9 +137,9 @@ namespace PostItNoteRacing.Plugin
         /// <returns>Settings control.</returns>
         public Control GetWPFSettingsControl(PluginManager _)
         {
-            return new SettingsView
+            return new MainPage
             {
-                DataContext = _settings,
+                DataContext = _mainPage,
             };
         }
         #endregion

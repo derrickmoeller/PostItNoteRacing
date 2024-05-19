@@ -13,7 +13,7 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Team : IDisposable, INotifyBestLapChanged
     {
         private readonly INotifyBestLapChanged _carClass;
-        private readonly SettingsViewModel _settings;
+        private readonly TelemetryViewModel _telemetry;
 
         private Driver _activeDriver;
         private TimeSpan? _bestLapTime;
@@ -23,13 +23,13 @@ namespace PostItNoteRacing.Plugin.Models
         private Lap _lastLap;
         private int _leaderboardPosition = -1;
 
-        public Team(INotifyBestLapChanged carClass, SettingsViewModel settings)
+        public Team(INotifyBestLapChanged carClass, TelemetryViewModel telemetry)
         {
             _carClass = carClass;
-            _settings = settings;
+            _telemetry = telemetry;
 
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
-            _settings.PropertyChanged += OnSettingsPropertyChanged;
+            _telemetry.PropertyChanged += OnTelemetryPropertyChanged;
         }
 
         public Driver ActiveDriver
@@ -357,7 +357,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public string RelativeGapToPlayerString => _settings.InverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
+        public string RelativeGapToPlayerString => _telemetry.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
         private List<TimeSpan> BestNLaps { get; } = new List<TimeSpan>();
 
@@ -380,9 +380,9 @@ namespace PostItNoteRacing.Plugin.Models
                     _lastNLaps.CollectionChanged -= OnLastNLapsCollectionChanged;
                 }
 
-                if (_settings != null)
+                if (_telemetry != null)
                 {
-                    _settings.PropertyChanged -= OnSettingsPropertyChanged;
+                    _telemetry.PropertyChanged -= OnTelemetryPropertyChanged;
                 }
             }
         }
@@ -465,9 +465,9 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (LastLap.Number > 0)
             {
-                if (LastNLaps.Count() == _settings.NLaps)
+                if (LastNLaps.Count() == _telemetry.NLaps)
                 {
-                    LastNLaps.RemoveAt(_settings.NLaps - 1);
+                    LastNLaps.RemoveAt(_telemetry.NLaps - 1);
                 }
 
                 LastNLaps.Insert(0, LastLap);
@@ -489,21 +489,21 @@ namespace PostItNoteRacing.Plugin.Models
             IsDirty = true;
         }
 
-        private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnTelemetryPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(SettingsViewModel.NLaps))
+            if (e.PropertyName == nameof(TelemetryViewModel.NLaps))
             {
-                if (BestNLaps.Count() > _settings.NLaps)
+                if (BestNLaps.Count() > _telemetry.NLaps)
                 {
-                    foreach (var lap in BestNLaps.Skip(_settings.NLaps).ToList())
+                    foreach (var lap in BestNLaps.Skip(_telemetry.NLaps).ToList())
                     {
                         BestNLaps.Remove(lap);
                     }
                 }
 
-                if (LastNLaps.Count() > _settings.NLaps)
+                if (LastNLaps.Count() > _telemetry.NLaps)
                 {
-                    foreach (var lap in LastNLaps.Skip(_settings.NLaps).ToList())
+                    foreach (var lap in LastNLaps.Skip(_telemetry.NLaps).ToList())
                     {
                         LastNLaps.Remove(lap);
                     }
