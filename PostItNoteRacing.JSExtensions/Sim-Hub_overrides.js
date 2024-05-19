@@ -1,49 +1,145 @@
 "use strict";
 
-function driverclassposition(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'LivePositionInClass');
-}
+driverclassposition = (function (original) {
+    return function (raceposition) {
+        let positionInClass = sc_GetPropertyFromLeaderboardPosition(raceposition, 'LivePositionInClass');
 
-function drivergaptoclassleader(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeader');
-}
+        if (positionInClass != null) {
+            return positionInClass;
+        }
 
-function drivergaptoclassleadercombined(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeaderString');
-}
+        return original(raceposition);
+    };
+})(driverclassposition);
 
-function drivergaptoleader(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeader');
-}
+drivergaptoclassleader = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeader');
 
-function drivergaptoleadercombined(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeaderString');
-}
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
 
-function drivergaptoplayer(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayer');
-}
+        return original(raceposition);
+    };
+})(drivergaptoclassleader);
 
-function driverpositiongain(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGained');
-}
+drivergaptoclassleadercombined = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeaderString');
 
-function driverpositiongainclass(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGainedInClass');
-}
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
 
-function driverrelativegaptoplayer(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'RelativeGapToPlayer');
-}
+        return original(raceposition);
+    };
+})(drivergaptoclassleadercombined);
 
-function driverrelativegaptoplayercombined(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayerString');
-}
+drivergaptoleader = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeader');
 
-function driverstartposition(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPosition');
-}
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
 
-function driverstartpositionclass(raceposition) {
-    return sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPositionInClass');
-}
+        return original(raceposition);
+    };
+})(drivergaptoleader);
+
+drivergaptoleadercombined = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeaderString');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(drivergaptoleadercombined);
+
+drivergaptoplayer = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayer');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(drivergaptoplayer);
+
+driverpositiongain = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGained');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverpositiongain);
+
+driverpositiongainclass = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGainedInClass');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverpositiongainclass);
+
+driverrelativegaptoplayer = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'RelativeGapToPlayer');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverrelativegaptoplayer);
+
+driverrelativegaptoplayercombined = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayerString');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverrelativegaptoplayercombined);
+
+driverstartposition = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPosition');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverstartposition);
+
+driverstartpositionclass = (function (original) {
+    return function (raceposition) {
+        let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPositionInClass');
+
+        if (gapToClassLeader != null) {
+            return gapToClassLeader;
+        }
+
+        return original(raceposition);
+    };
+})(driverstartpositionclass);
