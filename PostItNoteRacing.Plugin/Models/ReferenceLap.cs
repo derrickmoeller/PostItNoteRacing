@@ -8,6 +8,8 @@ namespace PostItNoteRacing.Plugin.Models
     {
         [Description("Personal Best Lap")]
         PersonalBest,
+        [Description("Team Best Lap")]
+        TeamBest,
         [Description("Team Best N Laps Average")]
         TeamBestN,
         [Description("Team Last Lap")]

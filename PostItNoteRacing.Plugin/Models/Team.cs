@@ -149,6 +149,9 @@ namespace PostItNoteRacing.Plugin.Models
                     case ReferenceLap.PersonalBest:
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
                         break;
+                    case ReferenceLap.TeamBest:
+                        referenceLapTime = BestLapTime;
+                        break;
                     case ReferenceLap.TeamBestN:
                         referenceLapTime = BestNLapsAverage;
                         break;
@@ -179,6 +182,9 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     case ReferenceLap.PersonalBest:
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
+                        break;
+                    case ReferenceLap.TeamBest:
+                        referenceLapTime = BestLapTime;
                         break;
                     case ReferenceLap.TeamBestN:
                         referenceLapTime = BestNLapsAverage;
