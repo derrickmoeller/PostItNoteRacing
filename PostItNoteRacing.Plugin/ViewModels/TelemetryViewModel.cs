@@ -2,7 +2,6 @@
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
 using System;
-using System.Windows;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
@@ -95,19 +94,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 if (Entity.ReferenceLap != value && Enum.IsDefined(typeof(ReferenceLap), value))
                 {
                     Entity.ReferenceLap = value;
-                    Application.Current.Dispatcher.BeginInvoke(new Action(() => NotifyPropertyChanged(nameof(ReferenceLap))));
-                }
-            }
-        }
-
-        public bool UseLastNLapsToEstimateLapTime
-        {
-            get => Entity.UseLastNLapsToEstimateLapTime;
-            set
-            {
-                if (Entity.UseLastNLapsToEstimateLapTime != value)
-                {
-                    Entity.UseLastNLapsToEstimateLapTime = value;
                     NotifyPropertyChanged();
                 }
             }

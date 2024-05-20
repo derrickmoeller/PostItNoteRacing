@@ -14,7 +14,5 @@
         public int NLaps { get; set; } = 5;
 
         public ReferenceLap ReferenceLap { get; set; } = ReferenceLap.PersonalBest;
-
-        public bool UseLastNLapsToEstimateLapTime { get; set; } = false;
     }
 }

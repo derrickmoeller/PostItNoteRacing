@@ -46,7 +46,6 @@
                 <StackPanel>
                     <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" />
                     <styles:SHToggleCheckbox Content="Enable inverse gap strings." IsChecked="{Binding EnableInverseGapStrings}" />
-                    <styles:SHToggleCheckbox Content="Use last N Laps to estimate lap time." IsChecked="{Binding UseLastNLapsToEstimateLapTime}" />
                 </StackPanel>
             </styles:SHSubSection>
         </Grid>

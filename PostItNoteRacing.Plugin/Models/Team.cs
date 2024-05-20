@@ -16,7 +16,8 @@ namespace PostItNoteRacing.Plugin.Models
         private readonly TelemetryViewModel _telemetry;
 
         private Driver _activeDriver;
-        private TimeSpan? _bestLapTime;
+        private Lap _bestLap;
+        private List<Lap> _bestNLaps;
         private Lap _currentLap;
         private ObservableCollection<Driver> _drivers;
         private ObservableCollection<Lap> _lastNLaps;
@@ -45,6 +46,32 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
+        public Lap BestLap
+        {
+            get => _bestLap;
+            set
+            {
+                if (_bestLap != value)
+                {
+                    _bestLap = value;
+                    OnBestLapChanged();
+                }
+            }
+        }
+
+        public List<Lap> BestNLaps
+        {
+            get
+            {
+                if (_bestNLaps == null)
+                {
+                    _bestNLaps = new List<Lap>();
+                }
+
+                return _bestNLaps;
+            }
+        }
+
         public TimeSpan? BestNLapsAverage
         {
             get
@@ -55,7 +82,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
                 else
                 {
-                    return TimeSpan.FromSeconds(BestNLaps.Average(x => x.TotalSeconds));
+                    return TimeSpan.FromSeconds(BestNLaps.Average(x => x.Time.TotalSeconds));
                 }
             }
         }
@@ -80,19 +107,6 @@ namespace PostItNoteRacing.Plugin.Models
         }
 
         public string BestLapColor { get; private set; }
-
-        public TimeSpan? BestLapTime
-        {
-            get => _bestLapTime;
-            set
-            {
-                if (_bestLapTime != value)
-                {
-                    _bestLapTime = value;
-                    OnBestLapTimeChanged();
-                }
-            }
-        }
 
         public int CarNumber { get; set; }
 
@@ -150,7 +164,7 @@ namespace PostItNoteRacing.Plugin.Models
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
                         break;
                     case ReferenceLap.TeamBest:
-                        referenceLapTime = BestLapTime;
+                        referenceLapTime = BestLap?.Time;
                         break;
                     case ReferenceLap.TeamBestN:
                         referenceLapTime = BestNLapsAverage;
@@ -162,7 +176,7 @@ namespace PostItNoteRacing.Plugin.Models
                         referenceLapTime = LastNLapsAverage;
                         break;
                     case ReferenceLap.ClassBest:
-                        referenceLapTime = BestLapTime - TimeSpan.FromSeconds(DeltaToBest);
+                        referenceLapTime = BestLap?.Time - TimeSpan.FromSeconds(DeltaToBest);
                         break;
                     default:
                         throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
@@ -184,7 +198,7 @@ namespace PostItNoteRacing.Plugin.Models
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
                         break;
                     case ReferenceLap.TeamBest:
-                        referenceLapTime = BestLapTime;
+                        referenceLapTime = BestLap?.Time;
                         break;
                     case ReferenceLap.TeamBestN:
                         referenceLapTime = BestNLapsAverage;
@@ -196,7 +210,7 @@ namespace PostItNoteRacing.Plugin.Models
                         referenceLapTime = LastNLapsAverage;
                         break;
                     case ReferenceLap.ClassBest:
-                        referenceLapTime = BestLapTime - TimeSpan.FromSeconds(DeltaToBest);
+                        referenceLapTime = BestLap?.Time - TimeSpan.FromSeconds(DeltaToBest);
                         break;
                     default:
                         throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
@@ -349,7 +363,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             get
             {
-                if (LastLap?.Time > TimeSpan.Zero && LastLap.Time == BestLapTime)
+                if (LastLap?.Time > TimeSpan.Zero && LastLap.Time == BestLap?.Time)
                 {
                     if (BestLapColor == Colors.Purple)
                     {
@@ -417,8 +431,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string RelativeGapToPlayerString => _telemetry.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
-        private List<TimeSpan> BestNLaps { get; } = new List<TimeSpan>();
-
         protected void Dispose(bool disposing)
         {
             if (disposing)
@@ -450,14 +462,14 @@ namespace PostItNoteRacing.Plugin.Models
             IsDirty = true;
         }
 
-        private void OnBestLapTimeChanged()
+        private void OnBestLapChanged()
         {
-            BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLapTime));
+            BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLap));
         }
 
         private void OnCarClassBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (BestLapTime > TimeSpan.Zero && BestLapTime == e.LapTime)
+            if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap.Time)
             {
                 BestLapColor = Colors.Purple;
             }
@@ -489,9 +501,9 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnDriverBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (e.LapTime < (BestLapTime ?? TimeSpan.MaxValue))
+            if (e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
             {
-                BestLapTime = e.LapTime;
+                BestLap = e.Lap;
             }
         }
 
@@ -538,7 +550,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 BestNLaps.Clear();
 
-                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1).Select(x => x.Time));
+                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1));
             }
         }
 
@@ -573,7 +585,6 @@ namespace PostItNoteRacing.Plugin.Models
         public void Dispose()
         {
             Dispose(true);
-
             GC.SuppressFinalize(this);
         }
         #endregion

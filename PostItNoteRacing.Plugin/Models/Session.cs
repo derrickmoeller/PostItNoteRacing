@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -122,7 +123,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                 foreach (var team in carClass.Teams)
                 {
-                    team.DeltaToBest = (team.BestLapTime - carClass.Teams.Where(x => x.BestLapTime > TimeSpan.Zero).Min(x => x.BestLapTime))?.TotalSeconds ?? 0D;
+                    team.DeltaToBest = (team.BestLap?.Time - carClass.Teams.Where(x => x.BestLap?.Time > TimeSpan.Zero).Min(x => x.BestLap.Time))?.TotalSeconds ?? 0D;
                     team.DeltaToBestN = (team.BestNLapsAverage - carClass.Teams.Where(x => x.BestNLapsAverage > TimeSpan.Zero).Min(x => x.BestNLapsAverage))?.TotalSeconds ?? 0D;
 
                     if (leader != null)
@@ -137,7 +138,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (player != null)
                     {
-                        team.DeltaToPlayerBest = (team.BestLapTime - player.BestLapTime)?.TotalSeconds ?? 0D;
+                        team.DeltaToPlayerBest = (team.BestLap?.Time - player.BestLap?.Time)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerBestN = (team.BestNLapsAverage - player.BestNLapsAverage)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerLast = (team.LastLap?.Time - player.LastLap?.Time)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerLastN = (team.LastNLapsAverage - player.LastNLapsAverage)?.TotalSeconds ?? 0D;
@@ -236,43 +237,100 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public void CalculateEstimatedLapTimes()
+        public void CalculateEstimatedLapTimes(ReferenceLap referenceLap)
         {
-            Parallel.ForEach(CarClasses.SelectMany(x => x.Teams), team =>
+            Parallel.ForEach(CarClasses, carClass =>
             {
-                var miniSector = team.CurrentLap.LastMiniSector;
-
-                if (_telemetry.UseLastNLapsToEstimateLapTime == false)
+                Parallel.ForEach(carClass.Teams, team =>
                 {
-                    var bestLap = team.ActiveDriver?.BestLap;
+                    var miniSector = team.CurrentLap.LastMiniSector;
 
-                    if (bestLap != null && team.CurrentLap.MiniSectors.Any())
+                    switch (referenceLap)
                     {
-                        team.EstimatedLapTime = bestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, bestLap).Time);
-                    }
-                    else
-                    {
-                        team.EstimatedLapTime = null;
-                    }
-                }
-                else
-                {
-                    if (team.LastNLaps.Any())
-                    {
-                        var estimatedLaps = new List<TimeSpan>();
+                        case ReferenceLap.PersonalBest:
+                            if (team.ActiveDriver?.BestLap != null && team.CurrentLap.MiniSectors.Any())
+                            {
+                                team.EstimatedLapTime = team.ActiveDriver.BestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, team.ActiveDriver.BestLap).Time);
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
 
-                        foreach (var lap in team.LastNLaps)
-                        {
-                            estimatedLaps.Add(lap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, lap).Time));
-                        }
+                            break;
+                        case ReferenceLap.TeamBest:
+                            if (team.BestLap != null && team.CurrentLap.MiniSectors.Any())
+                            {
+                                team.EstimatedLapTime = team.BestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, team.BestLap).Time);
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
 
-                        team.EstimatedLapTime = TimeSpan.FromSeconds(estimatedLaps.Average(x => x.TotalSeconds));
+                            break;
+                        case ReferenceLap.TeamBestN:
+                            if (team.BestNLaps.Any())
+                            {
+                                var estimatedLaps = new List<TimeSpan>();
+
+                                foreach (var lap in team.BestNLaps)
+                                {
+                                    estimatedLaps.Add(lap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, lap).Time));
+                                }
+
+                                team.EstimatedLapTime = TimeSpan.FromSeconds(estimatedLaps.Average(x => x.TotalSeconds));
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
+
+                            break;
+                        case ReferenceLap.TeamLast:
+                            if (team.LastLap != null && team.CurrentLap.MiniSectors.Any())
+                            {
+                                team.EstimatedLapTime = team.LastLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, team.LastLap).Time);
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
+
+                            break;
+                        case ReferenceLap.TeamLastN:
+                            if (team.LastNLaps.Any())
+                            {
+                                var estimatedLaps = new List<TimeSpan>();
+
+                                foreach (var lap in team.LastNLaps)
+                                {
+                                    estimatedLaps.Add(lap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, lap).Time));
+                                }
+
+                                team.EstimatedLapTime = TimeSpan.FromSeconds(estimatedLaps.Average(x => x.TotalSeconds));
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
+
+                            break;
+                        case ReferenceLap.ClassBest:
+                            if (carClass.BestLap != null && team.CurrentLap.MiniSectors.Any())
+                            {
+                                team.EstimatedLapTime = carClass.BestLap.Time + (miniSector.Time - GetInterpolatedMiniSector(miniSector.TrackPosition, carClass.BestLap).Time);
+                            }
+                            else
+                            {
+                                team.EstimatedLapTime = null;
+                            }
+
+                            break;
+                        default:
+                            throw new InvalidEnumArgumentException(nameof(referenceLap), (int)referenceLap, typeof(ReferenceLap));
                     }
-                    else
-                    {
-                        team.EstimatedLapTime = null;
-                    }
-                }
+                });
             });
         }
 
@@ -676,10 +734,12 @@ namespace PostItNoteRacing.Plugin.Models
                 team.IsConnected = opponent.IsConnected;
                 team.IsPlayer = opponent.IsPlayer;
 
+                /* TO DO: Fix qualifying lap times
                 if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero)
                 {
                     team.BestLapTime = opponent.BestLapTime;
                 }
+                */
 
                 if (IsRace == true && StatusDatabase.Flag_Green == 1)
                 {
@@ -873,7 +933,7 @@ namespace PostItNoteRacing.Plugin.Models
                     _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerColor", IsRace ? team.RelativeGapToPlayerColor : Colors.White);
                     _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_RelativeGapToPlayerString", team.RelativeGapToPlayerString);
                     _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamBestLapColor", team.BestLapColor);
-                    _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamBestLapTime", team.BestLapTime ?? TimeSpan.Zero);
+                    _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamBestLapTime", team.BestLap?.Time ?? TimeSpan.Zero);
                     _plugin.SetProperty($"Drivers_{team.LeaderboardPosition:D2}_TeamLapsCompleted", team.LapsCompleted);
 
                     _plugin.SetProperty($"Drivers_Live_{team.LivePosition:D2}_LeaderboardPosition", team.LeaderboardPosition);
@@ -1117,7 +1177,7 @@ namespace PostItNoteRacing.Plugin.Models
                 // 4, 10, 16, 22, 28...
                 if (_counter % 6 == 4)
                 {
-                    CalculateEstimatedLapTimes();
+                    CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
                 }
 
                 // 30

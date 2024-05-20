@@ -16,7 +16,7 @@ namespace PostItNoteRacing.Plugin.Models
         private const string VeryLightViolet = "#AE6BFF";
         private const string VividCyan = "#33CEFF";
 
-        private TimeSpan? _bestLapTime;
+        private Lap _bestLap;
         private string _name;
         private ObservableCollection<Team> _teams;
 
@@ -29,6 +29,19 @@ namespace PostItNoteRacing.Plugin.Models
                 VeryLightViolet,
                 LightLimeGreen,
             });
+
+        public Lap BestLap
+        {
+            get => _bestLap;
+            set
+            {
+                if (_bestLap != value)
+                {
+                    _bestLap = value;
+                    OnBestLapChanged();
+                }
+            }
+        }
 
         public string Color { get; set; }
 
@@ -107,19 +120,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string TextColor { get; set; }
 
-        private TimeSpan? BestLapTime
-        {
-            get => _bestLapTime;
-            set
-            {
-                if (_bestLapTime != value)
-                {
-                    _bestLapTime = value;
-                    OnBestLapTimeChanged();
-                }
-            }
-        }
-
         private static int GetStrengthOfField(IEnumerable<int> iRatings)
         {
             double sum = 0;
@@ -133,16 +133,16 @@ namespace PostItNoteRacing.Plugin.Models
             return (int)Math.Round(weight * Math.Log(iRatings.Count() / sum));
         }
 
-        private void OnBestLapTimeChanged()
+        private void OnBestLapChanged()
         {
-            BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLapTime));
+            BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLap));
         }
 
         private void OnTeamBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (e.LapTime < (BestLapTime ?? TimeSpan.MaxValue))
+            if (e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
             {
-                BestLapTime = e.LapTime;
+                BestLap = e.Lap;
             }
         }
 
