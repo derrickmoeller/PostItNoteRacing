@@ -6,6 +6,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:styles="clr-namespace:SimHub.Plugins.Styles;assembly=SimHub.Plugins"
              xmlns:ui="clr-namespace:SimHub.Plugins.UI;assembly=SimHub.Plugins"
+             xmlns:common.extensions="clr-namespace:PostItNoteRacing.Common.Extensions"
+             xmlns:local.models="clr-namespace:PostItNoteRacing.Plugin.Models"
              xmlns:local.viewmodels="clr-namespace:PostItNoteRacing.Plugin.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=local.viewmodels:TelemetryViewModel}">
@@ -26,11 +28,18 @@
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="0" ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
-                    <ui:TitledSlider Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Title="N Laps (Best / Last)" Maximum="{Binding NLapsMaximum}" Minimum="{Binding NLapsMinimum}" Value="{Binding NLaps}" />
+                    <ui:TitledSlider Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Title="N Laps (Best / Last)" Maximum="{Binding NLapsMaximum}" Minimum="{Binding NLapsMinimum}" Value="{Binding NLaps}" VerticalAlignment="Bottom" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="1" ActionName="PostItNoteRacing.IncrementNLaps" FriendlyName="Increment N Laps" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="2" ActionName="PostItNoteRacing.DecrementNLaps" FriendlyName="Decrement N Laps" />
+                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Reference Lap" Margin="5,-3" VerticalAlignment="Bottom" />
+                    <ComboBox Grid.Column="0" Grid.Row="4" ItemsSource="{Binding Source={common.extensions:EnumBindingSource {x:Type local.models:ReferenceLap}}}" SelectedItem="{Binding ReferenceLap}" Margin="5,10,6,10" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="3" ActionName="PostItNoteRacing.NextReferenceLap" FriendlyName="Next Reference Lap" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="4" ActionName="PostItNoteRacing.LastReferenceLap" FriendlyName="Last Reference Lap" />
                 </Grid>
             </styles:SHSubSection>
             <styles:SHSubSection Grid.Column="1" Title="Toggles">

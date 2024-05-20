@@ -138,13 +138,65 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        public double EstimatedDelta => (EstimatedLapTime - ActiveDriver?.BestLap?.Time)?.TotalSeconds ?? 0D;
+        public double EstimatedDelta
+        {
+            get
+            {
+                TimeSpan? referenceLapTime;
+
+                switch (_telemetry.ReferenceLap)
+                {
+                    case ReferenceLap.PersonalBest:
+                        referenceLapTime = ActiveDriver?.BestLap?.Time;
+                        break;
+                    case ReferenceLap.TeamBestN:
+                        referenceLapTime = BestNLapsAverage;
+                        break;
+                    case ReferenceLap.TeamLast:
+                        referenceLapTime = LastLap?.Time;
+                        break;
+                    case ReferenceLap.TeamLastN:
+                        referenceLapTime = LastNLapsAverage;
+                        break;
+                    case ReferenceLap.ClassBest:
+                        referenceLapTime = BestLapTime - TimeSpan.FromSeconds(DeltaToBest);
+                        break;
+                    default:
+                        throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
+                }
+
+                return (EstimatedLapTime - referenceLapTime)?.TotalSeconds ?? 0D;
+            }
+        }
 
         public string EstimatedLapColor
         {
             get
             {
-                if (EstimatedLapTime <= ActiveDriver?.BestLap?.Time)
+                TimeSpan? referenceLapTime;
+
+                switch (_telemetry.ReferenceLap)
+                {
+                    case ReferenceLap.PersonalBest:
+                        referenceLapTime = ActiveDriver?.BestLap?.Time;
+                        break;
+                    case ReferenceLap.TeamBestN:
+                        referenceLapTime = BestNLapsAverage;
+                        break;
+                    case ReferenceLap.TeamLast:
+                        referenceLapTime = LastLap?.Time;
+                        break;
+                    case ReferenceLap.TeamLastN:
+                        referenceLapTime = LastNLapsAverage;
+                        break;
+                    case ReferenceLap.ClassBest:
+                        referenceLapTime = BestLapTime - TimeSpan.FromSeconds(DeltaToBest);
+                        break;
+                    default:
+                        throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
+                }
+
+                if (EstimatedLapTime <= referenceLapTime)
                 {
                     if (DeltaToBest + EstimatedDelta < 0)
                     {

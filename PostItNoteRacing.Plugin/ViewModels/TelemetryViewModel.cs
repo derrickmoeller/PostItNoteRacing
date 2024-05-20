@@ -1,6 +1,8 @@
 ﻿using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
+using System;
+using System.Windows;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
@@ -30,19 +32,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public bool EnableTelemetry
-        {
-            get => Entity.EnableTelemetry;
-            set
-            {
-                if (Entity.EnableTelemetry != value)
-                {
-                    Entity.EnableTelemetry = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public bool EnableInverseGapStrings
         {
             get => Entity.EnableInverseGapStrings;
@@ -51,6 +40,19 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 if (Entity.EnableInverseGapStrings != value)
                 {
                     Entity.EnableInverseGapStrings = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool EnableTelemetry
+        {
+            get => Entity.EnableTelemetry;
+            set
+            {
+                if (Entity.EnableTelemetry != value)
+                {
+                    Entity.EnableTelemetry = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -84,6 +86,19 @@ namespace PostItNoteRacing.Plugin.ViewModels
         public int NLapsMaximum { get; } = 50;
 
         public int NLapsMinimum { get; } = 2;
+
+        public ReferenceLap ReferenceLap
+        {
+            get => Entity.ReferenceLap;
+            set
+            {
+                if (Entity.ReferenceLap != value && Enum.IsDefined(typeof(ReferenceLap), value))
+                {
+                    Entity.ReferenceLap = value;
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => NotifyPropertyChanged(nameof(ReferenceLap))));
+                }
+            }
+        }
 
         public bool UseLastNLapsToEstimateLapTime
         {

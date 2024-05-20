@@ -101,6 +101,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\IntegerProperty.cs" />
+    <Compile Include="Models\ReferenceLap.cs" />
     <Compile Include="Models\Utility.cs" />
     <Compile Include="Models\SimHubAction.cs" />
     <Compile Include="Models\Colors.cs" />

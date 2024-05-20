@@ -948,8 +948,10 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubActions()
         {
-            _plugin.AddAction("IncrementNLaps", (a, b) => _telemetry.NLaps++);
             _plugin.AddAction("DecrementNLaps", (a, b) => _telemetry.NLaps--);
+            _plugin.AddAction("IncrementNLaps", (a, b) => _telemetry.NLaps++);
+            _plugin.AddAction("LastReferenceLap", (a, b) => _telemetry.ReferenceLap--);
+            _plugin.AddAction("NextReferenceLap", (a, b) => _telemetry.ReferenceLap++);
             _plugin.AddAction("ResetBestLaps", ResetBestLaps);
         }
 

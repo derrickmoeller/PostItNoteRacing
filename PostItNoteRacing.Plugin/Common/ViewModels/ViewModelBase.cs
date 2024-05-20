@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace PostItNoteRacing.Common.ViewModels
 {
@@ -11,9 +12,13 @@ namespace PostItNoteRacing.Common.ViewModels
     /// </summary>
     public abstract class ViewModelBase : IDisposable, INotifyPropertyChanged
     {
+        private readonly SynchronizationContext _dispatcher;
+
         public ViewModelBase(string displayName = null)
         {
             DisplayName = displayName;
+
+            _dispatcher = SynchronizationContext.Current;
         }
 
         /// <summary>
@@ -29,7 +34,14 @@ namespace PostItNoteRacing.Common.ViewModels
 
         protected virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (_dispatcher == SynchronizationContext.Current)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            }
+            else
+            {
+                _dispatcher.Post((object state) => { PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); }, null);
+            }
         }
 
         #region Interface: IDisposable
