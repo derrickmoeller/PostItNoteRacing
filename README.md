@@ -1,5 +1,14 @@
 The PostItNoteRacing plugin is a SimHub plugin that provides additional properties that are easily accessed by Ahead/Behind/Class/Leaderboard/Live/Relative position.
 
+**Installation Instructions**
+
+Download PostItNoteRacing.Plugin.dll from [Releases](https://github.com/derrickmoeller/PostItNoteRacing/releases).  
+Copy PostItNoteRacing.Plugin.dll into your SimHub folder. (e.g., C:\Program Files (x86)\SimHub)
+
+(Optional)  
+Download Post-It-Note-Racing_extensions.js from [Releases](https://github.com/derrickmoeller/PostItNoteRacing/releases).  
+Copy Post-It-Note-Racing_extensions.js into your SimHub JavascriptExtensions folder. (e.g., C:\Program Files (x86)\SimHub\JavascriptExtensions)
+
 **Multi-Class Examples**
 
 - return mc_GetPropertyFromClassPosition(2, 4, 'LastNLapsAverage'); // Retrieve last N laps average for 4th place in the 2nd class.
