@@ -1102,6 +1102,7 @@ namespace PostItNoteRacing.Plugin.Models
             _plugin.AddProperty("Session_Description", string.Empty);
             _plugin.AddProperty("Session_IsMultiClass", false);
             _plugin.AttachDelegate("Settings_NLaps", () => _telemetry.NLaps);
+            _plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => _telemetry.OverrideJavaScriptFunctions);
             _plugin.AttachDelegate("Settings_ReferenceLap", () => _telemetry.ReferenceLap);
         }
 

@@ -86,6 +86,19 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         public int NLapsMinimum { get; } = 2;
 
+        public bool OverrideJavaScriptFunctions
+        {
+            get => Entity.OverrideJavaScriptFunctions;
+            set
+            {
+                if (Entity.OverrideJavaScriptFunctions != value)
+                {
+                    Entity.OverrideJavaScriptFunctions = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public ReferenceLap ReferenceLap
         {
             get => Entity.ReferenceLap;

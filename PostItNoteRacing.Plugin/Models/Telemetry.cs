@@ -13,6 +13,8 @@
 
         public int NLaps { get; set; } = 5;
 
+        public bool OverrideJavaScriptFunctions { get; set; } = false;
+
         public ReferenceLap ReferenceLap { get; set; } = ReferenceLap.PersonalBest;
     }
 }
