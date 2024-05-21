@@ -123,7 +123,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                 foreach (var team in carClass.Teams)
                 {
-                    team.DeltaToBest = (team.BestLap?.Time - carClass.Teams.Where(x => x.BestLap?.Time > TimeSpan.Zero).Min(x => x.BestLap.Time))?.TotalSeconds ?? 0D;
+                    team.DeltaToBest = (team.BestLap?.Time - carClass.Teams.Where(x => x.BestLap?.Time > TimeSpan.Zero).Min(x => x.BestLap?.Time))?.TotalSeconds ?? 0D;
                     team.DeltaToBestN = (team.BestNLapsAverage - carClass.Teams.Where(x => x.BestNLapsAverage > TimeSpan.Zero).Min(x => x.BestNLapsAverage))?.TotalSeconds ?? 0D;
 
                     if (leader != null)
@@ -239,9 +239,9 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateEstimatedLapTimes(ReferenceLap referenceLap)
         {
-            Parallel.ForEach(CarClasses, carClass =>
+            foreach (var carClass in CarClasses)
             {
-                Parallel.ForEach(carClass.Teams, team =>
+                foreach (var team in carClass.Teams)
                 {
                     var miniSector = team.CurrentLap.LastMiniSector;
 
@@ -330,8 +330,8 @@ namespace PostItNoteRacing.Plugin.Models
                         default:
                             throw new InvalidEnumArgumentException(nameof(referenceLap), (int)referenceLap, typeof(ReferenceLap));
                     }
-                });
-            });
+                }
+            }
         }
 
         public void CalculateGaps()
