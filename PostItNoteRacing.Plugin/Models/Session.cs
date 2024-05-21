@@ -734,12 +734,16 @@ namespace PostItNoteRacing.Plugin.Models
                 team.IsConnected = opponent.IsConnected;
                 team.IsPlayer = opponent.IsPlayer;
 
-                /* TO DO: Fix qualifying lap times
-                if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero)
+                if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero && opponent.BestLapTime < (team.BestLap?.Time ?? TimeSpan.MaxValue))
                 {
-                    team.BestLapTime = opponent.BestLapTime;
+                    team.BestLap = new Lap(opponent.CurrentLap - 1 ?? 0);
+
+                    team.BestLap.MiniSectors.Add(new MiniSector
+                    {
+                        Time = opponent.BestLapTime,
+                        TrackPosition = 1,
+                    });
                 }
-                */
 
                 if (IsRace == true && StatusDatabase.Flag_Green == 1)
                 {
