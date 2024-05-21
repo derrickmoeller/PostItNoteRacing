@@ -1,5 +1,6 @@
 ﻿using PostItNoteRacing.Common.ViewModels;
 using PostItNoteRacing.Plugin.Interfaces;
+using System.Runtime.CompilerServices;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
@@ -18,14 +19,14 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         protected IModifySimHub Plugin { get; }
 
-        protected override void Dispose(bool disposing)
+        protected override void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            if (disposing)
+            if (Entity.GetType().GetProperty(propertyName) != null)
             {
                 Plugin.SaveSettings(typeof(T).Name, Entity);
             }
 
-            base.Dispose(disposing);
+            base.NotifyPropertyChanged(propertyName);
         }
     }
 }
