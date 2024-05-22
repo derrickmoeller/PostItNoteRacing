@@ -46,9 +46,10 @@
                 <StackPanel>
                     <styles:SHToggleCheckbox Content="Enable gap calculations via mini sectors." IsChecked="{Binding EnableGapCalculations}" />
                     <styles:SHToggleCheckbox Content="Enable inverse gap strings." IsChecked="{Binding EnableInverseGapStrings}" />
-                    <styles:SHToggleCheckbox Content="Override JavaScript functions." IsChecked="{Binding OverrideJavaScriptFunctions}" />
+                    <styles:SHToggleCheckbox Content="Override JavaScript functions. *" IsChecked="{Binding OverrideJavaScriptFunctions}" />
                 </StackPanel>
             </styles:SHSubSection>
         </Grid>
+        <Label Content="* Requires JS extensions." HorizontalAlignment="Right" />
     </StackPanel>
 </UserControl>
