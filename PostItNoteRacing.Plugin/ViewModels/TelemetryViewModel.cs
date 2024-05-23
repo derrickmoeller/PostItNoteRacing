@@ -2,6 +2,7 @@
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
 using System;
+using System.Linq;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
@@ -104,9 +105,21 @@ namespace PostItNoteRacing.Plugin.ViewModels
             get => Entity.ReferenceLap;
             set
             {
-                if (Entity.ReferenceLap != value && Enum.IsDefined(typeof(ReferenceLap), value))
+                if (Entity.ReferenceLap != value)
                 {
-                    Entity.ReferenceLap = value;
+                    if (Enum.IsDefined(typeof(ReferenceLap), value))
+                    {
+                        Entity.ReferenceLap = value;
+                    }
+                    else if (Entity.ReferenceLap < value)
+                    {
+                        Entity.ReferenceLap = Enum.GetValues(typeof(ReferenceLap)).Cast<ReferenceLap>().Min();
+                    }
+                    else
+                    {
+                        Entity.ReferenceLap = Enum.GetValues(typeof(ReferenceLap)).Cast<ReferenceLap>().Max();
+                    }
+
                     NotifyPropertyChanged();
                 }
             }
