@@ -179,42 +179,20 @@ namespace PostItNoteRacing.Plugin.Models
 
             string GetGapAsString(Team a, Team b, double? gap)
             {
-                if (_telemetry.EnableInverseGapStrings == true)
+                var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
+                if (laps > 1 || laps < -1)
                 {
-                    var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
-                    if (laps > 1 || laps < -1)
-                    {
-                        return $"{laps:-0:+0}L";
-                    }
-                    else
-                    {
-                        if (gap != 0)
-                        {
-                            return $"{gap:-0.0;+0.0}";
-                        }
-                        else
-                        {
-                            return "0.0";
-                        }
-                    }
+                    return _telemetry.EnableInverseGapStrings == true ? $"{laps:-0:+0}L" : $"{laps:+0;-0}L";
                 }
                 else
                 {
-                    var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
-                    if (laps > 1 || laps < -1)
+                    if (gap != 0)
                     {
-                        return $"{laps:+0;-0}L";
+                        return _telemetry.EnableInverseGapStrings == true ? $"{gap:-0.0;+0.0}" : $"{gap:+0.0;-0.0}";
                     }
                     else
                     {
-                        if (gap != 0)
-                        {
-                            return $"{gap:+0.0;-0.0}";
-                        }
-                        else
-                        {
-                            return "0.0";
-                        }
+                        return "0.0";
                     }
                 }
             }
@@ -224,11 +202,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var laps = b.CurrentLapHighPrecision - a.CurrentLapHighPrecision;
                 if (laps > 1)
                 {
-                    return $"+{(int)laps}L";
-                }
-                else if (laps < -1)
-                {
-                    return $"{(int)laps}L";
+                    return $"{laps:+0}L";
                 }
                 else
                 {
