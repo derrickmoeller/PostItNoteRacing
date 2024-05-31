@@ -63,10 +63,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             get
             {
-                if (_bestNLaps == null)
-                {
-                    _bestNLaps = new List<Lap>();
-                }
+                _bestNLaps ??= new List<Lap>();
 
                 return _bestNLaps;
             }

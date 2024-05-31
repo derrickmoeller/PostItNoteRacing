@@ -8,7 +8,7 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class Driver : IDisposable, INotifyBestLapChanged
     {
-        private static readonly char[] Digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+        private static readonly char[] Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         private static readonly TextInfo TextInfo = new CultureInfo("en-US").TextInfo;
 
         private readonly INotifyBestLapChanged _carClass;

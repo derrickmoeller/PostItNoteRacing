@@ -2,3 +2,9 @@
 
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = silent
+
+# IDE0028: Collection initialization can be simplified
+dotnet_diagnostic.IDE0028.severity = silent
+
+# IDE0066: Use 'switch' expression
+dotnet_diagnostic.IDE0066.severity = silent

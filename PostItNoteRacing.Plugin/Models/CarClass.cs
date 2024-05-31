@@ -21,14 +21,14 @@ namespace PostItNoteRacing.Plugin.Models
         private ObservableCollection<Team> _teams;
 
         public static ReadOnlyCollection<string> Colors { get; } =
-            new ReadOnlyCollection<string>(new[]
-            {
+            new ReadOnlyCollection<string>(
+            [
                 LightYellow,
                 VividCyan,
                 LightPink,
                 VeryLightViolet,
                 LightLimeGreen,
-            });
+            ]);
 
         public Lap BestLap
         {

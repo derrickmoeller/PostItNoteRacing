@@ -16,9 +16,10 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class Session : IDisposable
     {
+        private static readonly double Weight = 1600 / Math.Log(2);
+
         private readonly IModifySimHub _plugin;
         private readonly TelemetryViewModel _telemetry;
-        private readonly double _weight = 1600 / Math.Log(2);
 
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
@@ -114,6 +115,39 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateDeltas()
         {
+            static string GetGapAsString(Team team, Team comparison, double? gap, bool inverse)
+            {
+                var laps = team.CurrentLapHighPrecision - comparison.CurrentLapHighPrecision;
+                if (laps > 1 || laps < -1)
+                {
+                    return inverse == true ? $"{laps:-0:+0}L" : $"{laps:+0;-0}L";
+                }
+                else
+                {
+                    if (gap != 0)
+                    {
+                        return inverse == true ? $"{gap:-0.0;+0.0}" : $"{gap:+0.0;-0.0}";
+                    }
+                    else
+                    {
+                        return "0.0";
+                    }
+                }
+            }
+
+            static string GetIntervalAsString(Team team, Team comparison, double? interval)
+            {
+                var laps = comparison.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
+                if (laps > 1)
+                {
+                    return $"{laps:+0}L";
+                }
+                else
+                {
+                    return $"{interval:+0.0;-0.0}";
+                }
+            }
+
             var leader = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == 1);
             var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
@@ -128,12 +162,12 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (leader != null)
                     {
-                        team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader);
+                        team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader, _telemetry.EnableInverseGapStrings);
                     }
 
                     if (classLeader != null)
                     {
-                        team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader);
+                        team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader, _telemetry.EnableInverseGapStrings);
                     }
 
                     if (player != null)
@@ -142,7 +176,7 @@ namespace PostItNoteRacing.Plugin.Models
                         team.DeltaToPlayerBestN = (team.BestNLapsAverage - player.BestNLapsAverage)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerLast = (team.LastLap?.Time - player.LastLap?.Time)?.TotalSeconds ?? 0D;
                         team.DeltaToPlayerLastN = (team.LastNLapsAverage - player.LastNLapsAverage)?.TotalSeconds ?? 0D;
-                        team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer);
+                        team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer, _telemetry.EnableInverseGapStrings);
                     }
 
                     if (team.LivePosition == 1)
@@ -174,39 +208,6 @@ namespace PostItNoteRacing.Plugin.Models
                             team.IntervalInClassString = GetIntervalAsString(team, teamAhead, team.IntervalInClass);
                         }
                     }
-                }
-            }
-
-            string GetGapAsString(Team a, Team b, double? gap)
-            {
-                var laps = a.CurrentLapHighPrecision - b.CurrentLapHighPrecision;
-                if (laps > 1 || laps < -1)
-                {
-                    return _telemetry.EnableInverseGapStrings == true ? $"{laps:-0:+0}L" : $"{laps:+0;-0}L";
-                }
-                else
-                {
-                    if (gap != 0)
-                    {
-                        return _telemetry.EnableInverseGapStrings == true ? $"{gap:-0.0;+0.0}" : $"{gap:+0.0;-0.0}";
-                    }
-                    else
-                    {
-                        return "0.0";
-                    }
-                }
-            }
-
-            string GetIntervalAsString(Team a, Team b, double? interval)
-            {
-                var laps = b.CurrentLapHighPrecision - a.CurrentLapHighPrecision;
-                if (laps > 1)
-                {
-                    return $"{laps:+0}L";
-                }
-                else
-                {
-                    return $"{interval:+0.0;-0.0}";
                 }
             }
         }
@@ -310,6 +311,146 @@ namespace PostItNoteRacing.Plugin.Models
 
         public void CalculateGaps()
         {
+            static double GetGap(Team team, Team comparison, double? defaultValue)
+            {
+                if (team.CurrentLapHighPrecision < comparison.CurrentLapHighPrecision)
+                {
+                    var lap = team.ActiveDriver?.BestLap;
+                    if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
+                    {
+                        lap = team.LastLap;
+                    }
+
+                    if (lap != null)
+                    {
+                        double gap = 0D;
+
+                        var laps = comparison.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
+                        if (laps > 1)
+                        {
+                            gap = (int)laps * lap.Time.TotalSeconds;
+                        }
+
+                        if (team.CurrentLap.MiniSectors.Any() && comparison.CurrentLap.MiniSectors.Any())
+                        {
+                            var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
+                            var comparisonMiniSector = GetInterpolatedMiniSector(comparison.CurrentLap.LastMiniSector.TrackPosition, lap);
+
+                            if (comparisonMiniSector.TrackPosition > teamMiniSector.TrackPosition)
+                            {
+                                gap += (comparisonMiniSector.Time - teamMiniSector.Time).TotalSeconds;
+                            }
+                            else if (comparisonMiniSector.TrackPosition < teamMiniSector.TrackPosition)
+                            {
+                                gap += (lap.Time - (teamMiniSector.Time - comparisonMiniSector.Time)).TotalSeconds;
+                            }
+                        }
+
+                        return gap;
+                    }
+                }
+                else if (team.CurrentLapHighPrecision > comparison.CurrentLapHighPrecision)
+                {
+                    var lap = comparison.ActiveDriver?.BestLap;
+                    if (lap == null && comparison.LastLap?.IsInLap == false && comparison.LastLap?.IsOutLap == false && comparison.LastLap?.Time > TimeSpan.Zero)
+                    {
+                        lap = comparison.LastLap;
+                    }
+
+                    if (lap != null)
+                    {
+                        double gap = 0D;
+
+                        var laps = comparison.CurrentLapHighPrecision - team.CurrentLapHighPrecision;
+                        if (laps < -1)
+                        {
+                            gap = (int)laps * lap.Time.TotalSeconds;
+                        }
+
+                        if (team.CurrentLap.MiniSectors.Any() && comparison.CurrentLap.MiniSectors.Any())
+                        {
+                            var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
+                            var comparisonMiniSector = GetInterpolatedMiniSector(comparison.CurrentLap.LastMiniSector.TrackPosition, lap);
+
+                            if (teamMiniSector.TrackPosition > comparisonMiniSector.TrackPosition)
+                            {
+                                gap -= (teamMiniSector.Time - comparisonMiniSector.Time).TotalSeconds;
+                            }
+                            else if (teamMiniSector.TrackPosition < comparisonMiniSector.TrackPosition)
+                            {
+                                gap -= (lap.Time - (comparisonMiniSector.Time - teamMiniSector.Time)).TotalSeconds;
+                            }
+                        }
+
+                        return gap;
+                    }
+                }
+                else
+                {
+                    return 0D;
+                }
+
+                return defaultValue ?? 0D;
+            }
+
+            static double? GetRelativeGap(Team team, Team comparison, double? defaultValue)
+            {
+                if (defaultValue > 0)
+                {
+                    var lap = team.ActiveDriver?.BestLap;
+                    if (lap == null && team.LastLap?.IsInLap == false && team.LastLap?.IsOutLap == false && team.LastLap?.Time > TimeSpan.Zero)
+                    {
+                        lap = team.LastLap;
+                    }
+
+                    if (lap != null)
+                    {
+                        if (team.CurrentLap.MiniSectors.Any() && comparison.CurrentLap.MiniSectors.Any())
+                        {
+                            var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
+                            var comparisonMiniSector = GetInterpolatedMiniSector(comparison.CurrentLap.LastMiniSector.TrackPosition, lap);
+
+                            if (comparisonMiniSector.TrackPosition > teamMiniSector.TrackPosition)
+                            {
+                                return (comparisonMiniSector.Time - teamMiniSector.Time).TotalSeconds;
+                            }
+                            else if (comparisonMiniSector.TrackPosition < teamMiniSector.TrackPosition)
+                            {
+                                return (lap.Time - (teamMiniSector.Time - comparisonMiniSector.Time)).TotalSeconds;
+                            }
+                        }
+                    }
+                }
+                else if (defaultValue < 0)
+                {
+                    var lap = comparison.ActiveDriver?.BestLap;
+                    if (lap == null && comparison.LastLap?.IsInLap == false && comparison.LastLap?.IsOutLap == false && comparison.LastLap?.Time > TimeSpan.Zero)
+                    {
+                        lap = comparison.LastLap;
+                    }
+
+                    if (lap != null)
+                    {
+                        if (team.CurrentLap.MiniSectors.Any() && comparison.CurrentLap.MiniSectors.Any())
+                        {
+                            var teamMiniSector = GetInterpolatedMiniSector(team.CurrentLap.LastMiniSector.TrackPosition, lap);
+                            var comparisonMiniSector = GetInterpolatedMiniSector(comparison.CurrentLap.LastMiniSector.TrackPosition, lap);
+
+                            if (teamMiniSector.TrackPosition > comparisonMiniSector.TrackPosition)
+                            {
+                                return -(teamMiniSector.Time - comparisonMiniSector.Time).TotalSeconds;
+                            }
+                            else if (teamMiniSector.TrackPosition < comparisonMiniSector.TrackPosition)
+                            {
+                                return -(lap.Time - (comparisonMiniSector.Time - teamMiniSector.Time)).TotalSeconds;
+                            }
+                        }
+                    }
+                }
+
+                return defaultValue;
+            }
+
             var leader = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == 1);
             var player = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.IsPlayer == true);
 
@@ -336,150 +477,23 @@ namespace PostItNoteRacing.Plugin.Models
                     }
                 }
             });
-
-            double GetGap(Team a, Team b, double? defaultValue)
-            {
-                if (a.CurrentLapHighPrecision < b.CurrentLapHighPrecision)
-                {
-                    var lap = a.ActiveDriver?.BestLap;
-                    if (lap == null && a.LastLap?.IsInLap == false && a.LastLap?.IsOutLap == false && a.LastLap?.Time > TimeSpan.Zero)
-                    {
-                        lap = a.LastLap;
-                    }
-
-                    if (lap != null)
-                    {
-                        double gap = 0D;
-
-                        var laps = b.CurrentLapHighPrecision - a.CurrentLapHighPrecision;
-                        if (laps > 1)
-                        {
-                            gap = (int)laps * lap.Time.TotalSeconds;
-                        }
-
-                        if (a.CurrentLap.MiniSectors.Any() && b.CurrentLap.MiniSectors.Any())
-                        {
-                            var aMiniSector = GetInterpolatedMiniSector(a.CurrentLap.LastMiniSector.TrackPosition, lap);
-                            var bMiniSector = GetInterpolatedMiniSector(b.CurrentLap.LastMiniSector.TrackPosition, lap);
-
-                            if (bMiniSector.TrackPosition > aMiniSector.TrackPosition)
-                            {
-                                gap += (bMiniSector.Time - aMiniSector.Time).TotalSeconds;
-                            }
-                            else if (bMiniSector.TrackPosition < aMiniSector.TrackPosition)
-                            {
-                                gap += (lap.Time - (aMiniSector.Time - bMiniSector.Time)).TotalSeconds;
-                            }
-                        }
-
-                        return gap;
-                    }
-                }
-                else if (a.CurrentLapHighPrecision > b.CurrentLapHighPrecision)
-                {
-                    var lap = b.ActiveDriver?.BestLap;
-                    if (lap == null && b.LastLap?.IsInLap == false && b.LastLap?.IsOutLap == false && b.LastLap?.Time > TimeSpan.Zero)
-                    {
-                        lap = b.LastLap;
-                    }
-
-                    if (lap != null)
-                    {
-                        double gap = 0D;
-
-                        var laps = b.CurrentLapHighPrecision - a.CurrentLapHighPrecision;
-                        if (laps < -1)
-                        {
-                            gap = (int)laps * lap.Time.TotalSeconds;
-                        }
-
-                        if (a.CurrentLap.MiniSectors.Any() && b.CurrentLap.MiniSectors.Any())
-                        {
-                            var aMiniSector = GetInterpolatedMiniSector(a.CurrentLap.LastMiniSector.TrackPosition, lap);
-                            var bMiniSector = GetInterpolatedMiniSector(b.CurrentLap.LastMiniSector.TrackPosition, lap);
-
-                            if (aMiniSector.TrackPosition > bMiniSector.TrackPosition)
-                            {
-                                gap -= (aMiniSector.Time - bMiniSector.Time).TotalSeconds;
-                            }
-                            else if (aMiniSector.TrackPosition < bMiniSector.TrackPosition)
-                            {
-                                gap -= (lap.Time - (bMiniSector.Time - aMiniSector.Time)).TotalSeconds;
-                            }
-                        }
-
-                        return gap;
-                    }
-                }
-                else
-                {
-                    return 0D;
-                }
-
-                return defaultValue ?? 0D;
-            }
-
-            double? GetRelativeGap(Team a, Team b, double? defaultValue)
-            {
-                if (defaultValue > 0)
-                {
-                    var lap = a.ActiveDriver?.BestLap;
-                    if (lap == null && a.LastLap?.IsInLap == false && a.LastLap?.IsOutLap == false && a.LastLap?.Time > TimeSpan.Zero)
-                    {
-                        lap = a.LastLap;
-                    }
-
-                    if (lap != null)
-                    {
-                        if (a.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
-                        {
-                            var aMiniSector = GetInterpolatedMiniSector(a.CurrentLap.LastMiniSector.TrackPosition, lap);
-                            var bMiniSector = GetInterpolatedMiniSector(b.CurrentLap.LastMiniSector.TrackPosition, lap);
-
-                            if (bMiniSector.TrackPosition > aMiniSector.TrackPosition)
-                            {
-                                return (bMiniSector.Time - aMiniSector.Time).TotalSeconds;
-                            }
-                            else if (bMiniSector.TrackPosition < aMiniSector.TrackPosition)
-                            {
-                                return (lap.Time - (aMiniSector.Time - bMiniSector.Time)).TotalSeconds;
-                            }
-                        }
-                    }
-                }
-                else if (defaultValue < 0)
-                {
-                    var lap = player.ActiveDriver?.BestLap;
-                    if (lap == null && player.LastLap?.IsInLap == false && player.LastLap?.IsOutLap == false && player.LastLap?.Time > TimeSpan.Zero)
-                    {
-                        lap = player.LastLap;
-                    }
-
-                    if (lap != null)
-                    {
-                        if (a.CurrentLap.MiniSectors.Any() && player.CurrentLap.MiniSectors.Any())
-                        {
-                            var aMiniSector = GetInterpolatedMiniSector(a.CurrentLap.LastMiniSector.TrackPosition, lap);
-                            var bMiniSector = GetInterpolatedMiniSector(b.CurrentLap.LastMiniSector.TrackPosition, lap);
-
-                            if (aMiniSector.TrackPosition > bMiniSector.TrackPosition)
-                            {
-                                return -(aMiniSector.Time - bMiniSector.Time).TotalSeconds;
-                            }
-                            else if (aMiniSector.TrackPosition < bMiniSector.TrackPosition)
-                            {
-                                return -(lap.Time - (bMiniSector.Time - aMiniSector.Time)).TotalSeconds;
-                            }
-                        }
-                    }
-                }
-
-                return defaultValue;
-            }
         }
 
         public void CalculateIRating()
         {
+            static double GetIRatingChange(int teamIRating, int position, IEnumerable<int> iRatings)
+            {
+                double factor = ((iRatings.Count() / 2D) - position) / 100D;
+                double sum = -0.5;
+
+                foreach (var iRating in iRatings)
+                {
+                    sum += (1 - Math.Exp(-teamIRating / Weight)) * Math.Exp(-iRating / Weight) / (((1 - Math.Exp(-iRating / Weight)) * Math.Exp(-teamIRating / Weight)) + ((1 - Math.Exp(-teamIRating / Weight)) * Math.Exp(-iRating / Weight)));
+                }
+
+                return Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count());
+            }
+
             Parallel.ForEach(CarClasses, carClass =>
             {
                 Parallel.ForEach(carClass.Teams.Where(x => x.IRating > 0), team =>
@@ -519,19 +533,6 @@ namespace PostItNoteRacing.Plugin.Models
                 _plugin.SetProperty($"Class_{carClass.Index:D2}_SoF", carClass.StrengthOfField);
                 _plugin.SetProperty($"Class_{carClass.Index:D2}_SoFString", carClass.StrengthOfFieldString);
             });
-
-            double GetIRatingChange(int teamIRating, int position, IEnumerable<int> iRatings)
-            {
-                double factor = ((iRatings.Count() / 2D) - position) / 100D;
-                double sum = -0.5;
-
-                foreach (var iRating in iRatings)
-                {
-                    sum += (1 - Math.Exp(-teamIRating / _weight)) * Math.Exp(-iRating / _weight) / (((1 - Math.Exp(-iRating / _weight)) * Math.Exp(-teamIRating / _weight)) + ((1 - Math.Exp(-teamIRating / _weight)) * Math.Exp(-iRating / _weight)));
-                }
-
-                return Math.Round((iRatings.Count() - position - sum - factor) * 200 / iRatings.Count());
-            }
         }
 
         public void CalculateLivePositions()
@@ -901,6 +902,16 @@ namespace PostItNoteRacing.Plugin.Models
 
         private static MiniSector GetInterpolatedMiniSector(double trackPosition, Lap lap)
         {
+            static long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
+            {
+                if ((x1 - x0) == 0)
+                {
+                    return (y0 + y1) / 2;
+                }
+
+                return (long)(y0 + ((x - x0) * (y1 - y0) / (x1 - x0)));
+            }
+
             if (trackPosition > 1)
             {
                 trackPosition -= 1;
@@ -914,16 +925,6 @@ namespace PostItNoteRacing.Plugin.Models
                 Time = TimeSpan.FromTicks(GetLinearInterpolation(trackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks)),
                 TrackPosition = trackPosition,
             };
-
-            long GetLinearInterpolation(double x, double x0, double x1, long y0, long y1)
-            {
-                if ((x1 - x0) == 0)
-                {
-                    return (y0 + y1) / 2;
-                }
-
-                return (long)(y0 + ((x - x0) * (y1 - y0) / (x1 - x0)));
-            }
         }
 
         private void CreateSimHubActions()
