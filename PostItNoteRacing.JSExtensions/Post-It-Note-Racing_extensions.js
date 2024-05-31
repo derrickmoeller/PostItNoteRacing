@@ -56,170 +56,86 @@ function sc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
     return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 }
 
+function sh_OverrideFunction(leaderboardPosition, propertyName, original) {
+    if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
+        let value = sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
+
+        if (value != null) {
+            return value;
+        }
+    }
+
+    return original(leaderboardPosition);
+}
+
 driverclassposition = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let positionInClass = sc_GetPropertyFromLeaderboardPosition(raceposition, 'LivePositionInClass');
-
-            if (positionInClass != null) {
-                return positionInClass;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'LivePositionInClass', original);
     };
 })(driverclassposition);
 
 drivergaptoclassleader = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeader');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToClassLeader', original);
     };
 })(drivergaptoclassleader);
 
 drivergaptoclassleadercombined = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToClassLeaderString');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToClassLeaderString', original);
     };
 })(drivergaptoclassleadercombined);
 
 drivergaptoleader = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeader');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToLeader', original);
     };
 })(drivergaptoleader);
 
 drivergaptoleadercombined = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToLeaderString');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToLeaderString', original);
     };
 })(drivergaptoleadercombined);
 
 drivergaptoplayer = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayer');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToPlayer', original);
     };
 })(drivergaptoplayer);
 
 driverpositiongain = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGained');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'PositionsGained', original);
     };
 })(driverpositiongain);
 
 driverpositiongainclass = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'PositionsGainedInClass');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'PositionsGainedInClass', original);
     };
 })(driverpositiongainclass);
 
 driverrelativegaptoplayer = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'RelativeGapToPlayer');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'RelativeGapToPlayer', original);
     };
 })(driverrelativegaptoplayer);
 
 driverrelativegaptoplayercombined = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GapToPlayerString');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GapToPlayerString', original);
     };
 })(driverrelativegaptoplayercombined);
 
 driverstartposition = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPosition');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GridPosition', original);
     };
 })(driverstartposition);
 
 driverstartpositionclass = (function (original) {
     return function (raceposition) {
-        if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
-            let gapToClassLeader = sc_GetPropertyFromLeaderboardPosition(raceposition, 'GridPositionInClass');
-
-            if (gapToClassLeader != null) {
-                return gapToClassLeader;
-            }
-        }
-
-        return original(raceposition);
+        return sh_OverrideFunction(raceposition, 'GridPositionInClass', original);
     };
 })(driverstartpositionclass);
