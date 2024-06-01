@@ -56,7 +56,7 @@ function sc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
     return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 }
 
-function sh_OverrideFunction(leaderboardPosition, propertyName, original) {
+function sh_GetPropertyFromOverriddenFunction(leaderboardPosition, propertyName, originalFunction) {
     if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
         let value = sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 
@@ -65,77 +65,77 @@ function sh_OverrideFunction(leaderboardPosition, propertyName, original) {
         }
     }
 
-    return original(leaderboardPosition);
+    return originalFunction(leaderboardPosition);
 }
 
-driverclassposition = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'LivePositionInClass', original);
+driverclassposition = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'LivePositionInClass', originalFunction);
     };
 })(driverclassposition);
 
-drivergaptoclassleader = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToClassLeader', original);
+drivergaptoclassleader = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToClassLeader', originalFunction);
     };
 })(drivergaptoclassleader);
 
-drivergaptoclassleadercombined = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToClassLeaderString', original);
+drivergaptoclassleadercombined = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToClassLeaderString', originalFunction);
     };
 })(drivergaptoclassleadercombined);
 
-drivergaptoleader = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToLeader', original);
+drivergaptoleader = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToLeader', originalFunction);
     };
 })(drivergaptoleader);
 
-drivergaptoleadercombined = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToLeaderString', original);
+drivergaptoleadercombined = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToLeaderString', originalFunction);
     };
 })(drivergaptoleadercombined);
 
-drivergaptoplayer = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToPlayer', original);
+drivergaptoplayer = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToPlayer', originalFunction);
     };
 })(drivergaptoplayer);
 
-driverpositiongain = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'PositionsGained', original);
+driverpositiongain = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'PositionsGained', originalFunction);
     };
 })(driverpositiongain);
 
-driverpositiongainclass = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'PositionsGainedInClass', original);
+driverpositiongainclass = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'PositionsGainedInClass', originalFunction);
     };
 })(driverpositiongainclass);
 
-driverrelativegaptoplayer = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'RelativeGapToPlayer', original);
+driverrelativegaptoplayer = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'RelativeGapToPlayer', originalFunction);
     };
 })(driverrelativegaptoplayer);
 
-driverrelativegaptoplayercombined = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GapToPlayerString', original);
+driverrelativegaptoplayercombined = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToPlayerString', originalFunction);
     };
 })(driverrelativegaptoplayercombined);
 
-driverstartposition = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GridPosition', original);
+driverstartposition = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GridPosition', originalFunction);
     };
 })(driverstartposition);
 
-driverstartpositionclass = (function (original) {
-    return function (raceposition) {
-        return sh_OverrideFunction(raceposition, 'GridPositionInClass', original);
+driverstartpositionclass = (function (originalFunction) {
+    return function (leaderboardPosition) {
+        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GridPositionInClass', originalFunction);
     };
 })(driverstartpositionclass);
