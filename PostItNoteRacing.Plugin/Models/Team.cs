@@ -466,7 +466,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnCarClassBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap.Time)
+            if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap?.Time)
             {
                 BestLapColor = Colors.Purple;
             }
@@ -498,7 +498,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnDriverBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
+            if (e.Lap == null || e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 BestLap = e.Lap;
             }

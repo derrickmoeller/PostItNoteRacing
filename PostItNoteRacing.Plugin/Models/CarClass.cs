@@ -140,7 +140,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnTeamBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
+            if (e.Lap == null || e.Lap.Time < (BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 BestLap = e.Lap;
             }

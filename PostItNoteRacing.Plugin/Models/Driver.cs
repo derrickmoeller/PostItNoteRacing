@@ -95,7 +95,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void OnCarClassBestLapChanged(object sender, BestLapChangedEventArgs e)
         {
-            if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap.Time)
+            if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap?.Time)
             {
                 BestLapColor = Colors.Purple;
             }
