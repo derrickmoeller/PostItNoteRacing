@@ -15,7 +15,6 @@ namespace PostItNoteRacing.Plugin.Models
         private readonly bool _isPlayer;
 
         private Lap _bestLap;
-        private string _name;
 
         public Driver(INotifyBestLapChanged carClass, bool isPlayer)
         {
@@ -61,11 +60,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         public License License { get; set; }
 
-        public string Name
-        {
-            get => TextInfo.ToTitleCase($"{_name.TrimEnd(Digits)}");
-            set => _name = value;
-        }
+        public string Name { get; set; }
 
         public string ShortName
         {
@@ -73,7 +68,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (Name != null)
                 {
-                    return $"{Name.Split(' ')[0].Substring(0, 1)}. {string.Join(" ", Name.Split(' ').Skip(1))}";
+                    return TextInfo.ToTitleCase($"{Name.Split(' ')[0].Substring(0, 1)}. {string.Join(" ", Name.Split(' ').Skip(1)).TrimEnd(Digits)}");
                 }
                 else
                 {
