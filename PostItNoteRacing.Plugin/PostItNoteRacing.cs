@@ -72,10 +72,7 @@ namespace PostItNoteRacing.Plugin
         /// <param name="pluginManager">Plugin manager.</param>
         public void Init(PluginManager pluginManager)
         {
-            if (_mainPage == null)
-            {
-                _mainPage = new MainPageViewModel(this);
-            }
+            _mainPage ??= new MainPageViewModel(this);
 
             (this as IModifySimHub)?.AddProperty("Version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
         }

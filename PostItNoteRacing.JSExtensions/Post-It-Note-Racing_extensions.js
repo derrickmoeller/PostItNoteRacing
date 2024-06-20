@@ -35,7 +35,7 @@ function sc_GetPropertyFromAheadBehind(aheadBehind, propertyName) {
 }
 
 function sc_GetPropertyFromCarNumber(carNumber, propertyName) {
-    let leaderboardPosition = $prop('PostItNoteRacing.Drivers_Car_' + (carNumber ?? '000').toString().padStart(3, '0') + '_LeaderboardPosition');
+    let leaderboardPosition = $prop('PostItNoteRacing.Drivers_Car_' + (carNumber ?? '') + '_LeaderboardPosition');
 
     return sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 }

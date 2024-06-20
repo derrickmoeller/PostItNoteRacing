@@ -463,18 +463,18 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     if (leader != null)
                     {
-                        team.GapToLeader = GetGap(team, leader, StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoLeader);
+                        team.GapToLeader = GetGap(team, leader, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoLeader);
                     }
 
                     if (classLeader != null)
                     {
-                        team.GapToClassLeader = GetGap(team, classLeader, StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoClassLeader);
+                        team.GapToClassLeader = GetGap(team, classLeader, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoClassLeader);
                     }
 
                     if (player != null)
                     {
-                        team.GapToPlayer = GetGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.GaptoPlayer);
-                        team.RelativeGapToPlayer = GetRelativeGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => int.Parse(x.CarNumber) == team.CarNumber)?.RelativeGapToPlayer);
+                        team.GapToPlayer = GetGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer);
+                        team.RelativeGapToPlayer = GetRelativeGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer);
                     }
                 }
             });
@@ -563,7 +563,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Parallel.ForEach(StatusDatabase.Opponents, opponent =>
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
+                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                 if (team != null)
                 {
                     if (team.IsPlayer == true || IsQualifying == false)
@@ -620,12 +620,12 @@ namespace PostItNoteRacing.Plugin.Models
                     CarClasses.Add(carClass);
                 }
 
-                var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
+                var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                 if (team == null)
                 {
                     team = new Team(carClass, _telemetry)
                     {
-                        CarNumber = int.Parse(opponent.CarNumber),
+                        CarNumber = opponent.CarNumber,
                         CurrentLap = new Lap(opponent.CurrentLap.Value)
                         {
                             IsOutLap = opponent.IsCarInPitLane,
@@ -635,7 +635,7 @@ namespace PostItNoteRacing.Plugin.Models
                         Name = opponent.TeamName,
                     };
 
-                    _plugin.AttachDelegate($"Drivers_Car_{team.CarNumber:D3}_LeaderboardPosition", () => { return team.LeaderboardPosition; });
+                    _plugin.AttachDelegate($"Drivers_Car_{team.CarNumber}_LeaderboardPosition", () => { return team.LeaderboardPosition; });
 
                     carClass.Teams.Add(team);
                 }
@@ -798,7 +798,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == int.Parse(opponent.CarNumber));
+                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
                 if (team != null)
                 {
                     team.LeaderboardPosition = i + 1;

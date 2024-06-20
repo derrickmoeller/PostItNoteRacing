@@ -105,7 +105,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string BestLapColor { get; private set; }
 
-        public int CarNumber { get; set; }
+        public string CarNumber { get; set; }
 
         public Lap CurrentLap
         {
