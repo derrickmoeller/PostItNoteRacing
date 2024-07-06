@@ -13,7 +13,7 @@ namespace PostItNoteRacing.Plugin
 {
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Additional Properties")]
-    [PluginName("PostItNoteRacing")]
+    [PluginName("Post-It Note Racing")]
     public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
     {
         private MainPageViewModel _mainPage;

@@ -1059,54 +1059,59 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (e.Data.GameRunning && e.Data.NewData != null)
             {
-                StatusDatabase = e.Data.NewData;
+                var unsupportedGames = new List<string> { "RFactor2" };
 
-                // 0, 4, 8, 12, 16...
-                if (_counter % 4 == 0)
+                if (unsupportedGames.Contains(e.Data.GameName) == false)
                 {
-                    GetGameData();
-                }
+                    StatusDatabase = e.Data.NewData;
 
-                // 0
-                if (_counter % 60 == 0)
-                {
-                    CalculateLivePositions();
-                }
+                    // 0, 4, 8, 12, 16...
+                    if (_counter % 4 == 0)
+                    {
+                        GetGameData();
+                    }
 
-                // 0, 30
-                if (_counter % 30 == 0)
-                {
-                    GenerateMiniSectors();
-                }
+                    // 0
+                    if (_counter % 60 == 0)
+                    {
+                        CalculateLivePositions();
+                    }
 
-                // 1, 3, 5, 7, 9...
-                if (_counter % 2 == 1)
-                {
-                    WriteSimHubData();
-                }
+                    // 0, 30
+                    if (_counter % 30 == 0)
+                    {
+                        GenerateMiniSectors();
+                    }
 
-                // 0, 6, 12, 18, 24...
-                if (_counter % 6 == 0 && _telemetry.EnableGapCalculations)
-                {
-                    CalculateGaps();
-                }
+                    // 1, 3, 5, 7, 9...
+                    if (_counter % 2 == 1)
+                    {
+                        WriteSimHubData();
+                    }
 
-                // 2, 8, 14, 20, 26...
-                if (_counter % 6 == 2)
-                {
-                    CalculateDeltas();
-                }
+                    // 0, 6, 12, 18, 24...
+                    if (_counter % 6 == 0 && _telemetry.EnableGapCalculations)
+                    {
+                        CalculateGaps();
+                    }
 
-                // 4, 10, 16, 22, 28...
-                if (_counter % 6 == 4)
-                {
-                    CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
-                }
+                    // 2, 8, 14, 20, 26...
+                    if (_counter % 6 == 2)
+                    {
+                        CalculateDeltas();
+                    }
 
-                // 30
-                if (_counter % 60 == 30 && e.Data.GameName == "IRacing")
-                {
-                    CalculateIRating();
+                    // 4, 10, 16, 22, 28...
+                    if (_counter % 6 == 4)
+                    {
+                        CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
+                    }
+
+                    // 30
+                    if (_counter % 60 == 30 && e.Data.GameName == "IRacing")
+                    {
+                        CalculateIRating();
+                    }
                 }
             }
             else

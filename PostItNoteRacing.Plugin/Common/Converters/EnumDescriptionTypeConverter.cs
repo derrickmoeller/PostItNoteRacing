@@ -9,13 +9,8 @@ namespace PostItNoteRacing.Common.Converters
     /// Converts description attribute of enum to string.
     /// </summary>
     /// <see href="https://brianlagunas.com/a-better-way-to-data-bind-enums-in-wpf/" />
-    public class EnumDescriptionTypeConverter : EnumConverter
+    public class EnumDescriptionTypeConverter(Type type) : EnumConverter(type)
     {
-        public EnumDescriptionTypeConverter(Type type)
-            : base(type)
-        {
-        }
-
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             if (destinationType == typeof(string))

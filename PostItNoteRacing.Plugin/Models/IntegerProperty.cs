@@ -1,13 +1,8 @@
 ﻿namespace PostItNoteRacing.Plugin.Models
 {
-    internal class IntegerProperty
+    internal class IntegerProperty(int id)
     {
-        public IntegerProperty(int id)
-        {
-            Id = id;
-        }
-
-        public int Id { get; }
+        public int Id { get; } = id;
 
         public int Maximum { get; set; } = 10;
 
