@@ -121,7 +121,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var laps = team.CurrentLapHighPrecision - comparison.CurrentLapHighPrecision;
                 if (laps > 1 || laps < -1)
                 {
-                    return inverse == true ? $"{laps:-0;+0}L" : $"{laps:+0;-0}L";
+                    return inverse == true ? $"{laps:+0;-0}L" : $"{laps:-0;+0}L";
                 }
                 else
                 {
