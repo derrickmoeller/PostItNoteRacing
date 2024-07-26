@@ -59,7 +59,7 @@ namespace PostItNoteRacing.Plugin.Models
                 if (_description != value?.ToUpper())
                 {
                     _description = value?.ToUpper();
-                    _plugin.SetProperty("Session_Description", Description);
+                    OnDescriptionChanged();
                 }
             }
         }
@@ -878,6 +878,13 @@ namespace PostItNoteRacing.Plugin.Models
             _plugin.SetProperty("Session_IsMultiClass", IsMultiClass);
         }
 
+        private void OnDescriptionChanged()
+        {
+            ResetSession();
+
+            _plugin.SetProperty("Session_Description", Description);
+        }
+
         private void OnGameChanged()
         {
             if (Game.IsSupported != null)
@@ -960,8 +967,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
             else
             {
-                CarClasses.Clear();
-                ResetSimHubProperties();
+                ResetSession();
             }
         }
 
@@ -971,6 +977,12 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 driver.BestLap = null;
             }
+        }
+
+        private void ResetSession()
+        {
+            CarClasses.Clear();
+            ResetSimHubProperties();
         }
 
         private void ResetSimHubProperties()
