@@ -57,7 +57,7 @@ function sc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
 }
 
 function sh_GetPropertyFromOverriddenFunction(leaderboardPosition, propertyName, originalFunction) {
-    if ($prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
+    if ($prop('PostItNoteRacing.Game_IsSupported') != false && $prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
         let value = sc_GetPropertyFromLeaderboardPosition(leaderboardPosition, propertyName);
 
         if (value != null) {

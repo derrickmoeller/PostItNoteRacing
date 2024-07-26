@@ -24,6 +24,7 @@ namespace PostItNoteRacing.Plugin.Models
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
         private string _description;
+        private Game _game;
 
         public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
         {
@@ -61,6 +62,19 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     _description = value;
                     OnDescriptionChanged();
+                }
+            }
+        }
+
+        private Game Game
+        {
+            get => _game;
+            set
+            {
+                if (_game?.Name != value.Name)
+                {
+                    _game = value;
+                    OnGameChanged();
                 }
             }
         }
@@ -1020,6 +1034,8 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
 
+            _plugin.AddProperty("Game_IsSupported", 0);
+            _plugin.AddProperty("Game_Name", string.Empty);
             _plugin.AddProperty("Player_Incidents", 0);
             _plugin.AddProperty("Session_Description", string.Empty);
             _plugin.AddProperty("Session_IsMultiClass", false);
@@ -1048,6 +1064,20 @@ namespace PostItNoteRacing.Plugin.Models
             _plugin.SetProperty("Session_Description", Description);
         }
 
+        private void OnGameChanged()
+        {
+            if (Game.IsSupported != null)
+            {
+                _plugin.SetProperty("Game_IsSupported", Game.IsSupported);
+            }
+            else
+            {
+                _plugin.SetProperty("Game_IsSupported", "Untested");
+            }
+
+            _plugin.SetProperty("Game_Name", Game.Name);
+        }
+
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
         {
             _counter++;
@@ -1059,9 +1089,9 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (e.Data.GameRunning && e.Data.NewData != null)
             {
-                var unsupportedGames = new List<string> { "RFactor2" };
+                Game = new Game(e.Data.GameName);
 
-                if (unsupportedGames.Contains(e.Data.GameName) == false)
+                if (Game.IsSupported != false)
                 {
                     StatusDatabase = e.Data.NewData;
 
@@ -1108,7 +1138,7 @@ namespace PostItNoteRacing.Plugin.Models
                     }
 
                     // 30
-                    if (_counter % 60 == 30 && e.Data.GameName == "IRacing")
+                    if (_counter % 60 == 30 && Game.IsIRacing == true)
                     {
                         CalculateIRating();
                     }
