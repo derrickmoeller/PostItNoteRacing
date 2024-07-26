@@ -1034,7 +1034,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
 
-            _plugin.AddProperty("Game_IsSupported", 0);
+            _plugin.AddProperty("Game_IsSupported", "Untested");
             _plugin.AddProperty("Game_Name", string.Empty);
             _plugin.AddProperty("Player_Incidents", 0);
             _plugin.AddProperty("Session_Description", string.Empty);
