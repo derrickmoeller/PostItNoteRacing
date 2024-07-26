@@ -411,18 +411,19 @@ namespace PostItNoteRacing.Plugin.Models
         {
             get
             {
-                if (GapToPlayer < 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer >= 0))
+                if (CurrentLapHighPrecision > 0)
                 {
-                    return Colors.Orange;
+                    if (GapToPlayer < 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer >= 0))
+                    {
+                        return Colors.Orange;
+                    }
+                    else if (GapToPlayer > 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer <= 0))
+                    {
+                        return Colors.Blue;
+                    }
                 }
-                else if (GapToPlayer > 0 && (GapToPlayerString?.EndsWith("L") == true || RelativeGapToPlayer <= 0))
-                {
-                    return Colors.Blue;
-                }
-                else
-                {
-                    return Colors.White;
-                }
+
+                return Colors.White;
             }
         }
 
