@@ -8,13 +8,15 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class CarClass : INotifyBestLapChanged
+    internal class CarClass(IModifySimHub plugin) : INotifyBestLapChanged
     {
         private const string LightLimeGreen = "#53FF77";
         private const string LightPink = "#FF5888";
         private const string LightYellow = "#FFDA59";
         private const string VeryLightViolet = "#AE6BFF";
         private const string VividCyan = "#33CEFF";
+
+        private readonly IModifySimHub _plugin = plugin;
 
         private Lap _bestLap;
         private string _name;
@@ -154,6 +156,11 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     team.BestLapChanged -= OnTeamBestLapChanged;
                 }
+
+                for (int i = Teams.Count + 1; i <= 63; i++)
+                {
+                    _plugin.SetProperty($"Class_{Index:D2}_{i:D2}_LeaderboardPosition", -1);
+                }
             }
 
             if (e.NewItems != null && e.NewItems.Count != 0)
@@ -163,6 +170,8 @@ namespace PostItNoteRacing.Plugin.Models
                     team.BestLapChanged += OnTeamBestLapChanged;
                 }
             }
+
+            _plugin.SetProperty($"Class_{Index:D2}_OpponentCount", Teams.Count);
         }
 
         #region Interface: INotifyBestLapChanged

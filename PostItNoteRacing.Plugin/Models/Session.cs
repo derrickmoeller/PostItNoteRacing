@@ -771,7 +771,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var carClass = CarClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
                 if (carClass == null)
                 {
-                    carClass = new CarClass
+                    carClass = new CarClass(_plugin)
                     {
                         Color = opponent.CarClassColor,
                         Name = opponent.CarClass,
@@ -979,15 +979,9 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void ResetSession()
+        private void ResetDriverProperties(int start)
         {
-            CarClasses.Clear();
-            ResetSimHubProperties();
-        }
-
-        private void ResetSimHubProperties()
-        {
-            for (int i = 1; i <= 63; i++)
+            for (int i = start; i <= 63; i++)
             {
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsAverage", TimeSpan.Zero);
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsColor", string.Empty);
@@ -1055,6 +1049,17 @@ namespace PostItNoteRacing.Plugin.Models
 
                 _plugin.SetProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
+        }
+
+        private void ResetSession()
+        {
+            CarClasses.Clear();
+            ResetSimHubProperties();
+        }
+
+        private void ResetSimHubProperties()
+        {
+            ResetDriverProperties(1);
 
             for (int i = 1; i <= CarClass.Colors.Count; i++)
             {
@@ -1075,11 +1080,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void WriteSimHubData()
         {
-            foreach (var team in CarClasses.SelectMany(x => x.Teams))
-            {
-                team.LeaderboardPosition = -1;
-            }
-
             foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
             {
                 var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
@@ -1089,22 +1089,26 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
 
-            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).Where(x => x.LeaderboardPosition == -1).ToList();
+            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).Where(x => StatusDatabase.Opponents.Select(y => y.CarNumber).Contains(x.CarNumber) == false).ToList();
             if (teamsToRemove.Count > 0)
             {
-                ResetSimHubProperties();
-
-                foreach (var team in teamsToRemove)
+                foreach (var carClass in CarClasses.Where(x => x.Teams.Any(y => teamsToRemove.Contains(y))))
                 {
-                    CarClasses.Single(x => x.Teams.Contains(team)).Teams.Remove(team);
-                    team.Dispose();
+                    foreach (var team in teamsToRemove.OrderByDescending(x => x.LivePosition))
+                    {
+                        CarClasses.SelectMany(x => x.Teams).Where(x => x.LivePosition > team.LivePosition).ToList().ForEach(x => x.LivePosition--);
+                        carClass.Teams.Where(x => x.LivePositionInClass > team.LivePositionInClass).ToList().ForEach(x => x.LivePositionInClass--);
+                        carClass.Teams.Remove(team);
+                        team.LeaderboardPosition = -1;
+                        team.Dispose();
+                    }
                 }
+
+                ResetDriverProperties(CarClasses.SelectMany(x => x.Teams).Count() + 1);
             }
 
             Parallel.ForEach(CarClasses, carClass =>
             {
-                _plugin.SetProperty($"Class_{carClass.Index:D2}_OpponentCount", carClass.Teams.Count);
-
                 Parallel.ForEach(carClass.Teams, team =>
                 {
                     _plugin.SetProperty($"Class_{carClass.Index:D2}_{team.LivePositionInClass:D2}_LeaderboardPosition", team.LeaderboardPosition);
