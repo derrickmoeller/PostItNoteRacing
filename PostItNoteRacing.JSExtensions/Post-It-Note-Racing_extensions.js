@@ -139,3 +139,17 @@ driverstartpositionclass = (function (originalFunction) {
         return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GridPositionInClass', originalFunction);
     };
 })(driverstartpositionclass);
+
+getopponentleaderboardposition_playerclassonly = (function (originalFunction) {
+    return function (classPosition) {
+        if ($prop('PostItNoteRacing.Game_IsSupported') != false && $prop('PostItNoteRacing.Settings_OverrideJavaScriptFunctions') === true) {
+            let value = pc_GetLeaderboardPosition(classPosition);
+
+            if (value != null) {
+                return value;
+            }
+        }
+
+        return originalFunction(classPosition);
+    };
+})(getopponentleaderboardposition_playerclassonly);
