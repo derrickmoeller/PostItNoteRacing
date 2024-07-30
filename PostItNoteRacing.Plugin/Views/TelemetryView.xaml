@@ -40,6 +40,7 @@
                     <ComboBox Grid.Column="0" Grid.Row="4" ItemsSource="{Binding Source={common.extensions:EnumBindingSource {x:Type local.models:ReferenceLap}}}" SelectedItem="{Binding ReferenceLap}" Margin="5,10,6,10" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="3" ActionName="PostItNoteRacing.NextReferenceLap" FriendlyName="Next Reference Lap" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="4" ActionName="PostItNoteRacing.LastReferenceLap" FriendlyName="Last Reference Lap" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="5" ActionName="PostItNoteRacing.ToggleJSOverrides" FriendlyName="Toggle JS Overrides" />
                 </Grid>
             </styles:SHSubSection>
             <styles:SHSubSection Grid.Column="1" Title="Toggles">

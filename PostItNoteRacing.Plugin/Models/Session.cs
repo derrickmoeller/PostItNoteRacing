@@ -625,6 +625,7 @@ namespace PostItNoteRacing.Plugin.Models
             _plugin.AddAction("LastReferenceLap", (a, b) => _telemetry.ReferenceLap--);
             _plugin.AddAction("NextReferenceLap", (a, b) => _telemetry.ReferenceLap++);
             _plugin.AddAction("ResetBestLaps", ResetBestLaps);
+            _plugin.AddAction("ToggleJSOverrides", (a, b) => _telemetry.OverrideJavaScriptFunctions = _telemetry.OverrideJavaScriptFunctions == false);
         }
 
         private void CreateSimHubProperties()
