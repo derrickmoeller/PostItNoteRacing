@@ -825,14 +825,14 @@ namespace PostItNoteRacing.Plugin.Models
                     });
                 }
 
-                if (IsRace == true && StatusDatabase.Flag_Green == 1 && team.GridPosition == -1)
+                if (IsRace == true && StatusDatabase.Flag_Green == 1 && team.CurrentLapHighPrecision < 1)
                 {
                     if (Game.IsIRacing == true)
                     {
-                        team.GridPosition = CarClasses.SelectMany(x => x.Teams).Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
+                        team.GridPosition = team.LeaderboardPosition;
                         team.GridPositionInClass = carClass.Teams.Count(x => x.LeaderboardPosition <= team.LeaderboardPosition);
                     }
-                    else
+                    else if (team.GridPosition == -1)
                     {
                         team.GridPosition = opponent.StartPosition ?? -1;
                         team.GridPositionInClass = opponent.StartPositionClass ?? -1;
