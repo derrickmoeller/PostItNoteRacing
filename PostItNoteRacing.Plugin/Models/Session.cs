@@ -699,7 +699,7 @@ namespace PostItNoteRacing.Plugin.Models
                 _plugin.AddProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
 
-            for (int i = 1; i <= CarClass.Colors.Count; i++)
+            for (int i = 1; i <= 7; i++)
             {
                 _plugin.AddProperty($"Class_{i:D2}_OpponentCount", 0);
                 _plugin.AddProperty($"Class_{i:D2}_SoF", 0);
@@ -769,12 +769,13 @@ namespace PostItNoteRacing.Plugin.Models
 
             foreach (var opponent in StatusDatabase.Opponents)
             {
-                var carClass = CarClasses.SingleOrDefault(x => x.Color == opponent.CarClassColor);
+                var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
                 {
                     carClass = new CarClass(_plugin)
                     {
                         Color = opponent.CarClassColor,
+                        Index = CarClasses.Count() + 1,
                         Name = opponent.CarClass,
                         TextColor = opponent.CarClassTextColor,
                     };
@@ -1070,7 +1071,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             ResetDriverProperties(1);
 
-            for (int i = 1; i <= CarClass.Colors.Count; i++)
+            for (int i = 1; i <= 7; i++)
             {
                 _plugin.SetProperty($"Class_{i:D2}_OpponentCount", 0);
                 _plugin.SetProperty($"Class_{i:D2}_SoF", 0);

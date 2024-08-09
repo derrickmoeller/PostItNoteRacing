@@ -10,27 +10,10 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class CarClass(IModifySimHub plugin) : INotifyBestLapChanged
     {
-        private const string LightLimeGreen = "#53FF77";
-        private const string LightPink = "#FF5888";
-        private const string LightYellow = "#FFDA59";
-        private const string VeryLightViolet = "#AE6BFF";
-        private const string VividCyan = "#33CEFF";
-
         private readonly IModifySimHub _plugin = plugin;
 
         private Lap _bestLap;
-        private string _name;
         private ObservableCollection<Team> _teams;
-
-        public static ReadOnlyCollection<string> Colors { get; } =
-            new ReadOnlyCollection<string>(
-            [
-                LightYellow,
-                VividCyan,
-                LightPink,
-                VeryLightViolet,
-                LightLimeGreen,
-            ]);
 
         public Lap BestLap
         {
@@ -47,57 +30,35 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string Color { get; set; }
 
-        public int Index
+        public int Index { get; set; }
+
+        public string Name { get; set; }
+
+        public string ShortName
         {
             get
             {
-                var index = Colors.IndexOf(Color);
-                if (index == -1)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return index + 1;
-                }
-            }
-        }
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                switch (value)
+                switch (Name)
                 {
                     case "Nissan GTP":
-                        _name = "GTP";
-                        break;
+                        return "GTP";
                     case "Dallara P217":
                     case "HPD ARX-01c":
-                        _name = "LMP2";
-                        break;
+                        return "LMP2";
                     case "Ligier JS P320":
-                        _name = "LMP3";
-                        break;
+                        return "LMP3";
                     case "GT1 Class":
-                        _name = "GT1";
-                        break;
+                        return "GT1";
                     case "Ford GT":
-                        _name = "GT2";
-                        break;
+                        return "GT2";
                     case "IMSA23":
-                        _name = "GTD";
-                        break;
+                        return "GTD";
                     case "GT4 Class":
-                        _name = "GT4";
-                        break;
+                        return "GT4";
                     case "Audi 90 GTO":
-                        _name = "GTO";
-                        break;
+                        return "GTO";
                     default:
-                        _name = value;
-                        break;
+                        return Name;
                 }
             }
         }
