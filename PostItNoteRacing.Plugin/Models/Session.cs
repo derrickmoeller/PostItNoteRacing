@@ -808,7 +808,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Description = StatusDatabase.SessionTypeName;
 
-            foreach (var opponent in StatusDatabase.Opponents)
+            foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
             {
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
@@ -836,6 +836,7 @@ namespace PostItNoteRacing.Plugin.Models
                         },
                         CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                         IsInPit = opponent.IsCarInPitLane,
+                        LeaderboardPosition = i + 1,
                         Name = opponent.TeamName,
                     };
 

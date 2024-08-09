@@ -22,7 +22,7 @@ namespace PostItNoteRacing.Plugin.Models
         private ObservableCollection<Driver> _drivers;
         private ObservableCollection<Lap> _lastNLaps;
         private Lap _lastLap;
-        private int _leaderboardPosition = -1;
+        private int _leaderboardPosition;
 
         public Team(INotifyBestLapChanged carClass, TelemetryViewModel telemetry)
         {
