@@ -5,7 +5,7 @@ namespace PostItNoteRacing.Plugin.Models
     internal class Game(string name)
     {
         private readonly List<string> _supportedGames = new () { "IRacing" };
-        private readonly List<string> _unsupportedGames = new () { "RFactor2" };
+        private readonly List<string> _unsupportedGames = new () { "AssettoCorsa", "RFactor2" };
 
         public bool IsIRacing => Name == "IRacing";
 
