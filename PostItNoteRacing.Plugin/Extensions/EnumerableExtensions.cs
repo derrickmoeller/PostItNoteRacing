@@ -7,6 +7,18 @@ namespace PostItNoteRacing.Plugin.Extensions
 {
     internal static class EnumerableExtensions
     {
+        public static IEnumerable<Team> GetDistinct(this IEnumerable<Team> list, IEnumerable<Opponent> opponents, Game game)
+        {
+            switch (game.Name)
+            {
+                case "AssettoCorsaCompetizione":
+                case "IRacing":
+                    return list.Where(x => opponents.Select(y => y.CarNumber).Contains(x.CarNumber) == false);
+                default:
+                    return list.Where(x => opponents.Select(y => y.Name).Contains(x.ActiveDriver.Name) == false);
+            }
+        }
+
         public static Opponent GetUnique(this IEnumerable<Opponent> list, Team team, Game game)
         {
             switch (game.Name)

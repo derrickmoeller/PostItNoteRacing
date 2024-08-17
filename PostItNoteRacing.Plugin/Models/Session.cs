@@ -1039,15 +1039,9 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void ResetSession()
+        private void ResetDriverProperties(int start)
         {
-            CarClasses.Clear();
-            ResetSimHubProperties();
-        }
-
-        private void ResetSimHubProperties()
-        {
-            for (int i = 1; i <= 63; i++)
+            for (int i = start; i <= 63; i++)
             {
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsAverage", TimeSpan.Zero);
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsColor", string.Empty);
@@ -1115,6 +1109,17 @@ namespace PostItNoteRacing.Plugin.Models
 
                 _plugin.SetProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
+        }
+
+        private void ResetSession()
+        {
+            CarClasses.Clear();
+            ResetSimHubProperties();
+        }
+
+        private void ResetSimHubProperties()
+        {
+            ResetDriverProperties(1);
 
             for (int i = 1; i <= 7; i++)
             {
@@ -1142,6 +1147,24 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     team.LeaderboardPosition = i + 1;
                 }
+            }
+
+            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).GetDistinct(StatusDatabase.Opponents, Game).ToList();
+            if (teamsToRemove.Count > 0)
+            {
+                foreach (var carClass in CarClasses.Where(x => x.Teams.Any(y => teamsToRemove.Contains(y))))
+                {
+                    foreach (var team in teamsToRemove.OrderByDescending(x => x.LivePosition))
+                    {
+                        CarClasses.SelectMany(x => x.Teams).Where(x => x.LivePosition > team.LivePosition).ToList().ForEach(x => x.LivePosition--);
+                        carClass.Teams.Where(x => x.LivePositionInClass > team.LivePositionInClass).ToList().ForEach(x => x.LivePositionInClass--);
+                        carClass.Teams.Remove(team);
+                        team.LeaderboardPosition = -1;
+                        team.Dispose();
+                    }
+                }
+
+                ResetDriverProperties(CarClasses.SelectMany(x => x.Teams).Count() + 1);
             }
 
             Parallel.ForEach(CarClasses, carClass =>
