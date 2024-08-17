@@ -96,6 +96,7 @@
     <Compile Include="Common\ViewModels\ViewModelBase.cs" />
     <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />
     <Compile Include="EventArgs\BestLapChangedEventArgs.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Interfaces\IModifySimHub.cs" />
     <Compile Include="Interfaces\INotifyBestLapChanged.cs" />

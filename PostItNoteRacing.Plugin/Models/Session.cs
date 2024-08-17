@@ -1,6 +1,7 @@
 ﻿using GameReaderCommon;
 using IRacingReader;
 using PostItNoteRacing.Plugin.EventArgs;
+using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.ViewModels;
 using SimHub.Plugins;
@@ -492,7 +493,7 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         if (enableGapCalculations == true)
                         {
-                            team.GapToLeader = GetGap(team, leader, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoLeader);
+                            team.GapToLeader = GetGap(team, leader, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoLeader);
                         }
 
                         team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader, _telemetry.EnableInverseGapStrings);
@@ -505,7 +506,7 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         if (enableGapCalculations == true)
                         {
-                            team.GapToClassLeader = GetGap(team, classLeader, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoClassLeader);
+                            team.GapToClassLeader = GetGap(team, classLeader, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoClassLeader);
                         }
 
                         team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader, _telemetry.EnableInverseGapStrings);
@@ -518,8 +519,8 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         if (enableGapCalculations == true)
                         {
-                            team.GapToPlayer = GetGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.GaptoPlayer);
-                            team.RelativeGapToPlayer = GetRelativeGap(team, player, StatusDatabase.Opponents.SingleOrDefault(x => x.CarNumber == team.CarNumber)?.RelativeGapToPlayer);
+                            team.GapToPlayer = GetGap(team, player, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoPlayer);
+                            team.RelativeGapToPlayer = GetRelativeGap(team, player, StatusDatabase.Opponents.GetUnique(team, Game)?.RelativeGapToPlayer);
                         }
 
                         team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer, _telemetry.EnableInverseGapStrings);
@@ -764,7 +765,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Parallel.ForEach(StatusDatabase.Opponents, opponent =>
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
                 if (team != null)
                 {
                     if (team.IsPlayer == true || IsQualifying == false)
@@ -824,13 +825,13 @@ namespace PostItNoteRacing.Plugin.Models
                     CarClasses.Add(carClass);
                 }
 
-                var team = carClass.Teams.SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = carClass.Teams.GetUnique(opponent, Game);
                 if (team == null)
                 {
                     team = new Team(carClass, _telemetry)
                     {
                         CarNumber = opponent.CarNumber,
-                        CurrentLap = new Lap(opponent.CurrentLap.Value)
+                        CurrentLap = new Lap(opponent.CurrentLap ?? 0)
                         {
                             IsOutLap = opponent.IsCarInPitLane,
                         },
@@ -863,7 +864,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                 if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero && opponent.BestLapTime < (team.BestLap?.Time ?? TimeSpan.MaxValue))
                 {
-                    team.BestLap = new Lap(opponent.CurrentLap - 1 ?? 0);
+                    team.BestLap = new Lap((opponent.CurrentLap - 1) ?? 0);
 
                     team.BestLap.MiniSectors.Add(new MiniSector
                     {
@@ -1038,9 +1039,15 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void ResetDriverProperties(int start)
+        private void ResetSession()
         {
-            for (int i = start; i <= 63; i++)
+            CarClasses.Clear();
+            ResetSimHubProperties();
+        }
+
+        private void ResetSimHubProperties()
+        {
+            for (int i = 1; i <= 63; i++)
             {
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsAverage", TimeSpan.Zero);
                 _plugin.SetProperty($"Drivers_{i:D2}_BestNLapsColor", string.Empty);
@@ -1108,17 +1115,6 @@ namespace PostItNoteRacing.Plugin.Models
 
                 _plugin.SetProperty($"Drivers_Live_{i:D2}_LeaderboardPosition", -1);
             }
-        }
-
-        private void ResetSession()
-        {
-            CarClasses.Clear();
-            ResetSimHubProperties();
-        }
-
-        private void ResetSimHubProperties()
-        {
-            ResetDriverProperties(1);
 
             for (int i = 1; i <= 7; i++)
             {
@@ -1141,29 +1137,11 @@ namespace PostItNoteRacing.Plugin.Models
         {
             foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
             {
-                var team = CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.CarNumber == opponent.CarNumber);
+                var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
                 if (team != null)
                 {
                     team.LeaderboardPosition = i + 1;
                 }
-            }
-
-            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).Where(x => StatusDatabase.Opponents.Select(y => y.CarNumber).Contains(x.CarNumber) == false).ToList();
-            if (teamsToRemove.Count > 0)
-            {
-                foreach (var carClass in CarClasses.Where(x => x.Teams.Any(y => teamsToRemove.Contains(y))))
-                {
-                    foreach (var team in teamsToRemove.OrderByDescending(x => x.LivePosition))
-                    {
-                        CarClasses.SelectMany(x => x.Teams).Where(x => x.LivePosition > team.LivePosition).ToList().ForEach(x => x.LivePosition--);
-                        carClass.Teams.Where(x => x.LivePositionInClass > team.LivePositionInClass).ToList().ForEach(x => x.LivePositionInClass--);
-                        carClass.Teams.Remove(team);
-                        team.LeaderboardPosition = -1;
-                        team.Dispose();
-                    }
-                }
-
-                ResetDriverProperties(CarClasses.SelectMany(x => x.Teams).Count() + 1);
             }
 
             Parallel.ForEach(CarClasses, carClass =>

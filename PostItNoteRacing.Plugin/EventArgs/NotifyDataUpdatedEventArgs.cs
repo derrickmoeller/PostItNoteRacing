@@ -2,13 +2,8 @@
 
 namespace PostItNoteRacing.Plugin.EventArgs
 {
-    internal class NotifyDataUpdatedEventArgs
+    internal class NotifyDataUpdatedEventArgs(GameData data)
     {
-        public NotifyDataUpdatedEventArgs(GameData data)
-        {
-            Data = data;
-        }
-
-        public GameData Data { get; }
+        public GameData Data { get; } = data;
     }
 }
