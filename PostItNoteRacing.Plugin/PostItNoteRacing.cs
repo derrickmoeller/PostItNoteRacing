@@ -1,4 +1,5 @@
 ﻿using GameReaderCommon;
+using PostItNoteRacing.Common;
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.ViewModels;
@@ -14,18 +15,20 @@ namespace PostItNoteRacing.Plugin
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Additional Properties")]
     [PluginName("Post-It Note Racing")]
-    public class PostItNoteRacing : IDataPlugin, IDisposable, IModifySimHub, IWPFSettingsV2
+    public class PostItNoteRacing : Disposable, IDataPlugin, IModifySimHub, IWPFSettingsV2
     {
         private MainPageViewModel _mainPage;
 
         private EventHandler<NotifyDataUpdatedEventArgs> _dataUpdated;
 
-        protected void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _mainPage?.Dispose();
             }
+
+            base.Dispose(disposing);
         }
 
         #region Interface: IDataPlugin
@@ -78,14 +81,6 @@ namespace PostItNoteRacing.Plugin
         }
         #endregion
 
-        #region Interface: IDisposable
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
-
         #region Interface: IModifySimHub
         event EventHandler<NotifyDataUpdatedEventArgs> IModifySimHub.DataUpdated
         {
@@ -105,6 +100,8 @@ namespace PostItNoteRacing.Plugin
         void IModifySimHub.AddProperty(string propertyName, dynamic defaultValue) => PluginManager.AddProperty(propertyName, typeof(PostItNoteRacing), defaultValue);
 
         void IModifySimHub.AttachDelegate<T>(string propertyName, Func<T> valueProvider) => PluginManager.AttachDelegate(propertyName, typeof(PostItNoteRacing), valueProvider);
+
+        void IModifySimHub.DetachDelegate(string propertyName) => PluginManager.DetachDelegate(propertyName, typeof(PostItNoteRacing));
 
         dynamic IModifySimHub.GetProperty(string propertyName) => PluginManager.GetPropertyValue<PostItNoteRacing>(propertyName);
 

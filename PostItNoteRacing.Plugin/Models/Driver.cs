@@ -1,4 +1,5 @@
-﻿using PostItNoteRacing.Plugin.EventArgs;
+﻿using PostItNoteRacing.Common;
+using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using System;
 using System.Globalization;
@@ -6,7 +7,7 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class Driver : IDisposable, INotifyBestLapChanged
+    internal class Driver : Disposable, INotifyBestLapChanged
     {
         private static readonly char[] Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         private static readonly TextInfo TextInfo = new CultureInfo("en-US").TextInfo;
@@ -77,7 +78,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        protected void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -86,6 +87,8 @@ namespace PostItNoteRacing.Plugin.Models
                     _carClass.BestLapChanged -= OnCarClassBestLapChanged;
                 }
             }
+
+            base.Dispose(disposing);
         }
 
         private void OnBestLapChanged()
@@ -108,15 +111,6 @@ namespace PostItNoteRacing.Plugin.Models
                 BestLapColor = Colors.White;
             }
         }
-
-        #region Interface: IDisposable
-        public void Dispose()
-        {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-        #endregion
 
         #region Interface: INotifyBestLapChanged
         public event EventHandler<BestLapChangedEventArgs> BestLapChanged;

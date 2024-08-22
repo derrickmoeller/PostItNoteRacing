@@ -7,7 +7,7 @@ namespace PostItNoteRacing.Plugin.Extensions
 {
     internal static class EnumerableExtensions
     {
-        public static IEnumerable<Team> GetDistinct(this IEnumerable<Team> list, IEnumerable<Opponent> opponents, Game game)
+        public static IEnumerable<Team> GetAbsent(this IEnumerable<Team> list, IEnumerable<Opponent> opponents, Game game)
         {
             switch (game.Name)
             {

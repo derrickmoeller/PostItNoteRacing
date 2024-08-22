@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Converters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Common\Disposable.cs" />
     <Compile Include="Common\Extensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Common\ViewModels\ViewModelBase.cs" />
     <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\IntegerProperty.cs" />
     <Compile Include="Models\Game.cs" />
     <Compile Include="Models\ReferenceLap.cs" />

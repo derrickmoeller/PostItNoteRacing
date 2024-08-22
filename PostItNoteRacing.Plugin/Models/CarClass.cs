@@ -8,12 +8,16 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class CarClass(IModifySimHub plugin) : INotifyBestLapChanged
+    internal class CarClass : Entity, INotifyBestLapChanged
     {
-        private readonly IModifySimHub _plugin = plugin;
-
         private Lap _bestLap;
         private ObservableCollection<Team> _teams;
+
+        public CarClass(int index, IModifySimHub plugin)
+            : base(index, plugin)
+        {
+            CreateSimHubProperties();
+        }
 
         public Lap BestLap
         {
@@ -29,8 +33,6 @@ namespace PostItNoteRacing.Plugin.Models
         }
 
         public string Color { get; set; }
-
-        public int Index { get; set; }
 
         public string Name { get; set; }
 
@@ -83,6 +85,23 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string TextColor { get; set; }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_teams != null)
+                {
+                    _teams.CollectionChanged -= OnTeamsCollectionChanged;
+                }
+
+                Plugin.DetachDelegate($"Class_{Index:D2}_OpponentCount");
+                Plugin.DetachDelegate($"Class_{Index:D2}_SoF");
+                Plugin.DetachDelegate($"Class_{Index:D2}_SoFString");
+            }
+
+            base.Dispose(disposing);
+        }
+
         private static int GetStrengthOfField(IEnumerable<int> iRatings)
         {
             double sum = 0;
@@ -94,6 +113,13 @@ namespace PostItNoteRacing.Plugin.Models
             }
 
             return (int)Math.Round(weight * Math.Log(iRatings.Count() / sum));
+        }
+
+        private void CreateSimHubProperties()
+        {
+            Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
         }
 
         private void OnBestLapChanged()
@@ -116,11 +142,16 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.OldItems)
                 {
                     team.BestLapChanged -= OnTeamBestLapChanged;
+
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassColor");
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassIndex");
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassString");
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassTextColor");
                 }
 
-                for (int i = Teams.Count + 1; i <= 63; i++)
+                for (int i = Teams.Count + 1; i <= Teams.Count + e.OldItems.Count; i++)
                 {
-                    _plugin.SetProperty($"Class_{Index:D2}_{i:D2}_LeaderboardPosition", -1);
+                    Plugin.DetachDelegate($"Class_{Index:D2}_LivePosition_{i:D2}_Team");
                 }
             }
 
@@ -129,10 +160,20 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.NewItems)
                 {
                     team.BestLapChanged += OnTeamBestLapChanged;
+
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassColor", () => Color);
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassIndex", () => Index);
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassString", () => ShortName);
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassTextColor", () => TextColor);
+                }
+
+                for (int i = Teams.Count - e.NewItems.Count + 1; i <= Teams.Count; i++)
+                {
+                    int j = i;
+
+                    Plugin.AttachDelegate($"Class_{Index:D2}_LivePosition_{i:D2}_Team", () => Teams.SingleOrDefault(x => x.LivePositionInClass == j)?.Index);
                 }
             }
-
-            _plugin.SetProperty($"Class_{Index:D2}_OpponentCount", Teams.Count);
         }
 
         #region Interface: INotifyBestLapChanged

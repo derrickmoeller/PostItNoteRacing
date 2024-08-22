@@ -14,6 +14,8 @@ namespace PostItNoteRacing.Plugin.Interfaces
 
         void AttachDelegate<T>(string propertyName, Func<T> valueProvider);
 
+        void DetachDelegate(string propertyName);
+
         dynamic GetProperty(string propertyName);
 
         T ReadSettings<T>(string settingsName, Func<T> valueProvider);
