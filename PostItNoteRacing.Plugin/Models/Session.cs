@@ -1,6 +1,7 @@
 ﻿using GameReaderCommon;
 using IRacingReader;
 using PostItNoteRacing.Common;
+using PostItNoteRacing.Common.Extensions;
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class Session : Disposable
+    internal class Session : DisposableObject
     {
         private static readonly double Weight = 1600 / Math.Log(2);
 
@@ -27,7 +28,6 @@ namespace PostItNoteRacing.Plugin.Models
         private short _counter;
         private string _description;
         private Game _game;
-        private ObservableCollection<Team> _teams;
 
         public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
         {
@@ -40,11 +40,17 @@ namespace PostItNoteRacing.Plugin.Models
             CreateSimHubProperties();
         }
 
+        public event EventHandler RequestNew;
+
         private ObservableCollection<CarClass> CarClasses
         {
             get
             {
-                _carClasses ??= new ObservableCollection<CarClass>();
+                if (_carClasses == null)
+                {
+                    _carClasses = new ObservableCollection<CarClass>();
+                    _carClasses.CollectionChanged += OnCarClassesCollectionChanged;
+                }
 
                 return _carClasses;
             }
@@ -57,8 +63,8 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (_description != value?.ToUpper())
                 {
+                    OnDescriptionChanging();
                     _description = value?.ToUpper();
-                    OnDescriptionChanged();
                 }
             }
         }
@@ -126,20 +132,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         private StatusDataBase StatusDatabase { get; set; }
 
-        private ObservableCollection<Team> Teams
-        {
-            get
-            {
-                if (_teams == null)
-                {
-                    _teams = new ObservableCollection<Team>();
-                    _teams.CollectionChanged += OnTeamsCollectionChanged;
-                }
-
-                return _teams;
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -150,12 +142,25 @@ namespace PostItNoteRacing.Plugin.Models
                     {
                         foreach (var team in carClass.Teams)
                         {
+                            foreach (var driver in team.Drivers)
+                            {
+                                driver.Dispose();
+                            }
+
                             team.Dispose();
                         }
 
                         carClass.Dispose();
                     }
+
+                    _carClasses.RemoveAll();
+                    _carClasses.CollectionChanged -= OnCarClassesCollectionChanged;
                 }
+
+                _plugin.DetachDelegate("Game_IsSupported");
+                _plugin.DetachDelegate("Game_Name");
+                _plugin.DetachDelegate("Session_Description");
+                _plugin.DetachDelegate("Session_IsMultiClass");
 
                 _plugin.DataUpdated -= OnPluginDataUpdated;
             }
@@ -628,12 +633,7 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubActions()
         {
-            _plugin.AddAction("DecrementNLaps", (a, b) => _telemetry.NLaps--);
-            _plugin.AddAction("IncrementNLaps", (a, b) => _telemetry.NLaps++);
-            _plugin.AddAction("LastReferenceLap", (a, b) => _telemetry.ReferenceLap--);
-            _plugin.AddAction("NextReferenceLap", (a, b) => _telemetry.ReferenceLap++);
             _plugin.AddAction("ResetBestLaps", ResetBestLaps);
-            _plugin.AddAction("ToggleJSOverrides", (a, b) => _telemetry.OverrideJavaScriptFunctions = _telemetry.OverrideJavaScriptFunctions == false);
         }
 
         private void CreateSimHubProperties()
@@ -644,9 +644,6 @@ namespace PostItNoteRacing.Plugin.Models
             _plugin.AttachDelegate("Game_Name", () => Game.Name);
             _plugin.AttachDelegate("Session_Description", () => Description);
             _plugin.AttachDelegate("Session_IsMultiClass", () => IsMultiClass);
-            _plugin.AttachDelegate("Settings_NLaps", () => _telemetry.NLaps);
-            _plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => _telemetry.OverrideJavaScriptFunctions);
-            _plugin.AttachDelegate("Settings_ReferenceLap", () => _telemetry.ReferenceLap);
         }
 
         private void GenerateMiniSectors()
@@ -727,7 +724,6 @@ namespace PostItNoteRacing.Plugin.Models
                     };
 
                     carClass.Teams.Add(team);
-                    Teams.Add(team);
                 }
                 else if (opponent.IsConnected == true)
                 {
@@ -802,9 +798,31 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void OnDescriptionChanged()
+        private void OnCarClassesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            ResetSession();
+            if (e.OldItems != null && e.OldItems.Count != 0)
+            {
+                foreach (CarClass carClass in e.OldItems)
+                {
+                    carClass.Teams.CollectionChanged -= OnTeamsCollectionChanged;
+                }
+            }
+
+            if (e.NewItems != null && e.NewItems.Count != 0)
+            {
+                foreach (CarClass carClass in e.NewItems)
+                {
+                    carClass.Teams.CollectionChanged += OnTeamsCollectionChanged;
+                }
+            }
+        }
+
+        private void OnDescriptionChanging()
+        {
+            if (Description != null)
+            {
+                RequestNew?.Invoke(this, System.EventArgs.Empty);
+            }
         }
 
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
@@ -875,15 +893,17 @@ namespace PostItNoteRacing.Plugin.Models
             }
             else
             {
-                ResetSession();
+                RequestNew?.Invoke(this, System.EventArgs.Empty);
             }
         }
 
         private void OnTeamsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            int teamsCount = CarClasses.SelectMany(x => x.Teams).Count();
+
             if (e.OldItems != null && e.OldItems.Count != 0)
             {
-                for (int i = Teams.Count + 1; i <= Teams.Count + e.OldItems.Count; i++)
+                for (int i = teamsCount + 1; i <= teamsCount + e.OldItems.Count; i++)
                 {
                     _plugin.DetachDelegate($"LeaderboardPosition_{i:D2}_Team");
                     _plugin.DetachDelegate($"LivePosition_{i:D2}_Team");
@@ -892,12 +912,12 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (e.NewItems != null && e.NewItems.Count != 0)
             {
-                for (int i = Teams.Count - e.NewItems.Count + 1; i <= Teams.Count; i++)
+                for (int i = teamsCount - e.NewItems.Count + 1; i <= teamsCount; i++)
                 {
                     int j = i;
 
-                    _plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () => Teams.SingleOrDefault(x => x.LeaderboardPosition == j)?.Index);
-                    _plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () => Teams.SingleOrDefault(x => x.LivePosition == j)?.Index);
+                    _plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () => CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LeaderboardPosition == j)?.Index);
+                    _plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () => CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == j)?.Index);
                 }
             }
         }
@@ -908,14 +928,6 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 driver.BestLap = null;
             }
-        }
-
-        private void ResetSession()
-        {
-            CarClasses.Clear();
-            Teams.Clear();
-
-            _plugin.SetProperty("Player_Incidents", 0);
         }
 
         private void UpdateLeaderboardPosition()

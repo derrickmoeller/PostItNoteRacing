@@ -18,7 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Interface: INotifyBestLapChanged", Scope = "member", Target = "~E:PostItNoteRacing.Plugin.Models.Team.BestLapChanged")]
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Interface: INotifyPropertyChanged", Scope = "member", Target = "~E:PostItNoteRacing.Common.ViewModels.ViewModelBase.PropertyChanged")]
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:Elements should appear in the correct order", Justification = "Interface: IWPFSettingsV2", Scope = "member", Target = "~P:PostItNoteRacing.Plugin.PostItNoteRacing.LeftMenuTitle")]
-[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:Elements should be ordered by access", Justification = "Interface: IDisposable", Scope = "member", Target = "~M:PostItNoteRacing.Common.Disposable.Dispose")]
+[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:Elements should be ordered by access", Justification = "Interface: IDisposable", Scope = "member", Target = "~M:PostItNoteRacing.Common.DisposableObject.Dispose")]
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1208:System using directives should be placed before other using directives", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1124:Do not use regions", Justification = "Grouping interface implementations.")]

@@ -9,7 +9,7 @@ namespace PostItNoteRacing.Common.ViewModels
     /// It provides support for property change notifications and has a DisplayName property.
     /// This class is abstract.
     /// </summary>
-    public abstract class ViewModelBase(string displayName = null) : Disposable, INotifyPropertyChanged
+    public abstract class ViewModelBase(string displayName = null) : DisposableObject, INotifyPropertyChanged
     {
         private readonly SynchronizationContext _dispatcher = SynchronizationContext.Current;
 

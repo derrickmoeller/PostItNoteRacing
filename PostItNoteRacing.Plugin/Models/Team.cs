@@ -1,4 +1,5 @@
-﻿using PostItNoteRacing.Plugin.EventArgs;
+﻿using PostItNoteRacing.Common.Extensions;
+using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.ViewModels;
 using System;
@@ -417,6 +418,7 @@ namespace PostItNoteRacing.Plugin.Models
 
                 if (_drivers != null)
                 {
+                    _drivers.RemoveAll();
                     _drivers.CollectionChanged -= OnDriversCollectionChanged;
                 }
 

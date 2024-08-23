@@ -92,7 +92,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Converters\EnumDescriptionTypeConverter.cs" />
-    <Compile Include="Common\Disposable.cs" />
+    <Compile Include="Common\DisposableObject.cs" />
+    <Compile Include="Common\Extensions\ListExtensions.cs" />
     <Compile Include="Common\Extensions\EnumBindingSourceExtension.cs" />
     <Compile Include="Common\ViewModels\ViewModelBase.cs" />
     <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />

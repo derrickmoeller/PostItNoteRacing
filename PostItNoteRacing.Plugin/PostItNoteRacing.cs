@@ -15,7 +15,7 @@ namespace PostItNoteRacing.Plugin
     [PluginAuthor("Derrick Moeller")]
     [PluginDescription("Additional Properties")]
     [PluginName("Post-It Note Racing")]
-    public class PostItNoteRacing : Disposable, IDataPlugin, IModifySimHub, IWPFSettingsV2
+    public class PostItNoteRacing : DisposableObject, IDataPlugin, IModifySimHub, IWPFSettingsV2
     {
         private MainPageViewModel _mainPage;
 

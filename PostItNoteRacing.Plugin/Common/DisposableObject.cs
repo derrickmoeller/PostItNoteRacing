@@ -2,7 +2,7 @@
 
 namespace PostItNoteRacing.Common
 {
-    public abstract class Disposable : IDisposable
+    public abstract class DisposableObject : IDisposable
     {
         protected virtual void Dispose(bool disposing)
         {

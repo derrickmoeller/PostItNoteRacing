@@ -3,7 +3,7 @@ using PostItNoteRacing.Plugin.Interfaces;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal abstract class Entity(int index, IModifySimHub plugin) : Disposable
+    internal abstract class Entity(int index, IModifySimHub plugin) : DisposableObject
     {
         public int Index { get; } = index;
 

@@ -1,4 +1,5 @@
-﻿using PostItNoteRacing.Plugin.EventArgs;
+﻿using PostItNoteRacing.Common.Extensions;
+using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,9 @@ namespace PostItNoteRacing.Plugin.Models
         public CarClass(int index, IModifySimHub plugin)
             : base(index, plugin)
         {
-            CreateSimHubProperties();
+            Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
         }
 
         public Lap BestLap
@@ -91,6 +94,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 if (_teams != null)
                 {
+                    _teams.RemoveAll();
                     _teams.CollectionChanged -= OnTeamsCollectionChanged;
                 }
 
@@ -113,13 +117,6 @@ namespace PostItNoteRacing.Plugin.Models
             }
 
             return (int)Math.Round(weight * Math.Log(iRatings.Count() / sum));
-        }
-
-        private void CreateSimHubProperties()
-        {
-            Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
-            Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
-            Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
         }
 
         private void OnBestLapChanged()
