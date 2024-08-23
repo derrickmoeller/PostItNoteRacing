@@ -11,12 +11,16 @@ namespace PostItNoteRacing.Plugin.Models
 {
     internal class CarClass : Entity, INotifyBestLapChanged
     {
+        private readonly object _livePositionLock;
+
         private Lap _bestLap;
         private ObservableCollection<Team> _teams;
 
-        public CarClass(int index, IModifySimHub plugin)
+        public CarClass(int index, IModifySimHub plugin, object livePositionLock)
             : base(index, plugin)
         {
+            _livePositionLock = livePositionLock;
+
             Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
             Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
             Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
@@ -168,7 +172,13 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     int j = i;
 
-                    Plugin.AttachDelegate($"Class_{Index:D2}_LivePosition_{i:D2}_Team", () => Teams.SingleOrDefault(x => x.LivePositionInClass == j)?.Index);
+                    Plugin.AttachDelegate($"Class_{Index:D2}_LivePosition_{i:D2}_Team", () =>
+                    {
+                        lock (_livePositionLock)
+                        {
+                            return Teams.SingleOrDefault(x => x.LivePositionInClass == j)?.Index;
+                        }
+                    });
                 }
             }
         }

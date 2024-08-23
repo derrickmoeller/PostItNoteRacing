@@ -1,4 +1,5 @@
-﻿using PostItNoteRacing.Plugin.Interfaces;
+﻿using PostItNoteRacing.Plugin.EventArgs;
+using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
 using System;
@@ -13,11 +14,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
         public TelemetryViewModel(IModifySimHub plugin)
             : base(plugin, Resources.TelemetryViewModel_DisplayName)
         {
-            if (EnableTelemetry == true)
-            {
-                Session = new Session(Plugin, this);
-            }
-
             Plugin.AddAction("DecrementNLaps", (a, b) => NLaps--);
             Plugin.AddAction("IncrementNLaps", (a, b) => NLaps++);
             Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
@@ -27,6 +23,8 @@ namespace PostItNoteRacing.Plugin.ViewModels
             Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
             Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
             Plugin.AttachDelegate("Settings_ReferenceLap", () => ReferenceLap);
+
+            Plugin.DataUpdated += OnPluginDataUpdated;
         }
 
         public bool EnableGapCalculations
@@ -63,7 +61,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 if (Entity.EnableTelemetry != value)
                 {
                     Entity.EnableTelemetry = value;
-                    OnEnableTelemetryChanged();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -153,24 +151,28 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (disposing)
             {
+                Plugin.DetachDelegate("Settings_NLaps");
+                Plugin.DetachDelegate("Settings_OverrideJavaScriptFunctions");
+                Plugin.DetachDelegate("Settings_ReferenceLap");
+
+                Plugin.DataUpdated -= OnPluginDataUpdated;
+
                 _session?.Dispose();
             }
 
             base.Dispose(disposing);
         }
 
-        private void OnEnableTelemetryChanged()
+        private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
         {
-            if (EnableTelemetry == true)
+            if (EnableTelemetry == true && e.Data.GameRunning && e.Data.NewData != null)
             {
-                Session = new Session(Plugin, this);
+                Session ??= new Session(Plugin, this);
             }
             else
             {
                 Session = null;
             }
-
-            NotifyPropertyChanged(nameof(EnableTelemetry));
         }
 
         private void OnSessionChanged()

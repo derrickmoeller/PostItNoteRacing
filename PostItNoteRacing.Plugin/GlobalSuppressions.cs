@@ -22,6 +22,8 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1208:System using directives should be placed before other using directives", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1124:Do not use regions", Justification = "Grouping interface implementations.")]
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "Conflicts with IDE0055.", Scope = "member", Target = "~F:PostItNoteRacing.Plugin.Models.Session._leaderboardLock")]
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "Conflicts with IDE0055.", Scope = "member", Target = "~F:PostItNoteRacing.Plugin.Models.Session._livePositionLock")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Common.Converters.EnumDescriptionTypeConverter")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Common.ViewModels.ViewModelBase")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Plugin.Models.CarClass")]

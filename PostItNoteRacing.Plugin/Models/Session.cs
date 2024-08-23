@@ -21,6 +21,8 @@ namespace PostItNoteRacing.Plugin.Models
     {
         private static readonly double Weight = 1600 / Math.Log(2);
 
+        private readonly object _leaderboardLock = new();
+        private readonly object _livePositionLock = new();
         private readonly IModifySimHub _plugin;
         private readonly TelemetryViewModel _telemetry;
 
@@ -610,23 +612,26 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CalculateLivePositions()
         {
-            foreach (var (team, i) in CarClasses.SelectMany(x => x.Teams).OrderByDescending(x => x.CurrentLapHighPrecision).Select((team, i) => (team, i)))
+            lock (_livePositionLock)
             {
-                if (IsRace == true)
+                foreach (var (team, i) in CarClasses.SelectMany(x => x.Teams).OrderByDescending(x => x.CurrentLapHighPrecision).Select((team, i) => (team, i)))
                 {
-                    team.LivePosition = i + 1;
+                    if (IsRace == true)
+                    {
+                        team.LivePosition = i + 1;
+                    }
+                    else
+                    {
+                        team.LivePosition = team.LeaderboardPosition;
+                    }
                 }
-                else
-                {
-                    team.LivePosition = team.LeaderboardPosition;
-                }
-            }
 
-            foreach (var carClass in CarClasses)
-            {
-                foreach (var team in carClass.Teams)
+                foreach (var carClass in CarClasses)
                 {
-                    team.LivePositionInClass = carClass.Teams.Count(x => x.LivePosition <= team.LivePosition);
+                    foreach (var team in carClass.Teams)
+                    {
+                        team.LivePositionInClass = carClass.Teams.Count(x => x.LivePosition <= team.LivePosition);
+                    }
                 }
             }
         }
@@ -640,8 +645,8 @@ namespace PostItNoteRacing.Plugin.Models
         {
             _plugin.AddProperty("Player_Incidents", 0);
 
-            _plugin.AttachDelegate("Game_IsSupported", () => Game.IsSupported?.ToString() ?? "Untested");
-            _plugin.AttachDelegate("Game_Name", () => Game.Name);
+            _plugin.AttachDelegate("Game_IsSupported", () => Game != null ? (Game.IsSupported?.ToString() ?? "Untested") : null);
+            _plugin.AttachDelegate("Game_Name", () => Game?.Name);
             _plugin.AttachDelegate("Session_Description", () => Description);
             _plugin.AttachDelegate("Session_IsMultiClass", () => IsMultiClass);
         }
@@ -697,7 +702,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
                 {
-                    carClass = new CarClass(CarClasses.Count() + 1, _plugin)
+                    carClass = new CarClass(CarClasses.Count() + 1, _plugin, _livePositionLock)
                     {
                         Color = opponent.CarClassColor,
                         Name = opponent.CarClass,
@@ -891,10 +896,6 @@ namespace PostItNoteRacing.Plugin.Models
                     }
                 }
             }
-            else
-            {
-                RequestNew?.Invoke(this, System.EventArgs.Empty);
-            }
         }
 
         private void OnTeamsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -916,8 +917,20 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     int j = i;
 
-                    _plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () => CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LeaderboardPosition == j)?.Index);
-                    _plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () => CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == j)?.Index);
+                    _plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () =>
+                    {
+                        lock (_leaderboardLock)
+                        {
+                            return CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LeaderboardPosition == j)?.Index;
+                        }
+                    });
+                    _plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () =>
+                    {
+                        lock (_livePositionLock)
+                        {
+                            return CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LivePosition == j)?.Index;
+                        }
+                    });
                 }
             }
         }
@@ -932,19 +945,22 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void UpdateLeaderboardPosition()
         {
-            foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
+            lock (_leaderboardLock)
             {
-                var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
-                if (team != null)
+                foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
                 {
-                    team.LeaderboardPosition = i + 1;
+                    var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
+                    if (team != null)
+                    {
+                        team.LeaderboardPosition = i + 1;
+                    }
                 }
-            }
 
-            var absentTeams = CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game).ToList();
-            foreach (var team in absentTeams)
-            {
-                team.LeaderboardPosition = -1;
+                var absentTeams = CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game).ToList();
+                foreach (var team in absentTeams)
+                {
+                    team.LeaderboardPosition = -1;
+                }
             }
         }
     }
