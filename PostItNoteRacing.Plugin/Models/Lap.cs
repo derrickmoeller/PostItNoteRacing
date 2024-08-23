@@ -23,12 +23,12 @@ namespace PostItNoteRacing.Plugin.Models
 
         public bool IsOutLap { get; set; }
 
-        public MiniSector LastMiniSector => MiniSectors.OrderByDescending(x => x.TrackPosition).FirstOrDefault();
+        public MiniSector LastMiniSector => MiniSectors.Last();
 
         public List<MiniSector> MiniSectors { get; } = new List<MiniSector>();
 
         public int Number { get; }
 
-        public TimeSpan Time => LastMiniSector?.Time ?? TimeSpan.Zero;
+        public TimeSpan Time => LastMiniSector.Time;
     }
 }

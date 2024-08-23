@@ -187,7 +187,7 @@ namespace PostItNoteRacing.Plugin.Models
                 trackPosition -= 1;
             }
 
-            var nextSector = lap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= trackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
+            var nextSector = lap.MiniSectors.FirstOrDefault(x => x.TrackPosition >= trackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
             var lastSector = lap.MiniSectors.OrderByDescending(x => x.TrackPosition).First(x => x.TrackPosition <= trackPosition);
 
             return new MiniSector
@@ -697,7 +697,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             Description = StatusDatabase.SessionTypeName;
 
-            foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
+            foreach (var opponent in StatusDatabase.Opponents)
             {
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
@@ -724,7 +724,6 @@ namespace PostItNoteRacing.Plugin.Models
                         },
                         CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                         IsInPit = opponent.IsCarInPitLane,
-                        LeaderboardPosition = i + 1,
                         Name = opponent.TeamName,
                     };
 
@@ -853,6 +852,12 @@ namespace PostItNoteRacing.Plugin.Models
                         GetGameData();
                     }
 
+                    // 0, 2, 4, 6, 8...
+                    if (_counter % 2 == 0)
+                    {
+                        UpdateLeaderboardPosition();
+                    }
+
                     // 0
                     if (_counter % 60 == 0)
                     {
@@ -865,12 +870,6 @@ namespace PostItNoteRacing.Plugin.Models
                         GenerateMiniSectors();
                     }
 
-                    // 1, 3, 5, 7, 9...
-                    if (_counter % 2 == 1)
-                    {
-                        UpdateLeaderboardPosition();
-                    }
-
                     // 0, 6, 12, 18, 24...
                     if (_counter % 6 == 0)
                     {
@@ -880,17 +879,17 @@ namespace PostItNoteRacing.Plugin.Models
                     // 2, 8, 14, 20, 26...
                     if (_counter % 6 == 2)
                     {
-                        CalculateDeltas();
-                    }
-
-                    // 4, 10, 16, 22, 28...
-                    if (_counter % 6 == 4)
-                    {
                         CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
                     }
 
-                    // 30
-                    if (_counter % 60 == 30 && Game.IsIRacing == true)
+                    // 4, 34
+                    if (_counter % 30 == 4)
+                    {
+                        CalculateDeltas();
+                    }
+
+                    // 36
+                    if (_counter % 60 == 36 && Game.IsIRacing == true)
                     {
                         CalculateIRating();
                     }
@@ -956,8 +955,7 @@ namespace PostItNoteRacing.Plugin.Models
                     }
                 }
 
-                var absentTeams = CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game).ToList();
-                foreach (var team in absentTeams)
+                foreach (var team in CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game))
                 {
                     team.LeaderboardPosition = -1;
                 }
