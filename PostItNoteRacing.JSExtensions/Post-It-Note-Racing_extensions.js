@@ -1,31 +1,21 @@
 "use strict";
 
 function mc_GetPropertyFromClassPosition(classIndex, classPosition, propertyName) {
-    let teamIndex = mc_GetTeamIndex(classIndex, classPosition);
+    let teamIndex = $prop('PostItNoteRacing.Class_' + (classIndex ?? '00').toString().padStart(2, '0') + '_LivePosition_' + (classPosition ?? '00').toString().padStart(2, '0') + '_Team');
 
     return sc_GetPropertyFromTeamIndex(teamIndex, propertyName);
-}
-
-function mc_GetTeamIndex(classIndex, classPosition) {
-    return $prop('PostItNoteRacing.Class_' + (classIndex ?? '00').toString().padStart(2, '0') + '_' + (classPosition ?? '00').toString().padStart(2, '0') + '_Team');
 }
 
 function pc_GetPropertyFromClassPosition(classPosition, propertyName) {
-    let teamIndex = pc_GetTeamIndex(classPosition);
-
-    return sc_GetPropertyFromTeamIndex(teamIndex, propertyName);
+    let classIndex = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'ClassIndex');
+    
+    return mc_GetPropertyFromClassPosition(classIndex, classPosition, propertyName);
 }
 
 function pc_GetPropertyFromRelativePosition(relativePosition, propertyName) {
-    let positionInClass = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'LivePositionInClass') + relativePosition;
+    let classPosition = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'LivePositionInClass') + relativePosition;
 
-    return pc_GetPropertyFromClassPosition(positionInClass, propertyName);
-}
-
-function pc_GetTeamIndex(classPosition) {
-    let classIndex = sc_GetPropertyFromLeaderboardPosition(getplayerleaderboardposition(), 'ClassIndex');
-
-    return mc_GetTeamIndex(classIndex, classPosition);
+    return pc_GetPropertyFromClassPosition(classPosition, propertyName);
 }
 
 function sc_GetPropertyFromAheadBehind(aheadBehind, propertyName) {
@@ -103,12 +93,6 @@ drivergaptoplayer = (function (originalFunction) {
         return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'GapToPlayer', originalFunction);
     };
 })(drivergaptoplayer);
-
-driverposition = (function (originalFunction) {
-    return function (leaderboardPosition) {
-        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'LivePosition', originalFunction);
-    };
-})(driverposition);
 
 driverpositiongain = (function (originalFunction) {
     return function (leaderboardPosition) {
