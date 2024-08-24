@@ -50,6 +50,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
             {
                 foreach (var action in BooleanActions.Skip(BooleanQuantity).ToList())
                 {
+                    action.Dispose();
                     BooleanActions.Remove(action);
                 }
             }
@@ -70,6 +71,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
             {
                 foreach (var action in IntegerActions.Skip(quantity).ToList())
                 {
+                    action.Dispose();
                     IntegerActions.Remove(action);
                 }
             }

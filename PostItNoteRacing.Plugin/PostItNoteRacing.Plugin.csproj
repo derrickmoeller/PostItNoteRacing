@@ -130,6 +130,8 @@
     <Compile Include="PostItNoteRacing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Utilities\PerformanceMonitor.cs" />
+    <Compile Include="ViewModels\PropertyViewModel.cs" />
+    <Compile Include="ViewModels\SimHubViewModel.cs" />
     <Compile Include="ViewModels\IntegerPropertyViewModel.cs" />
     <Compile Include="ViewModels\BooleanPropertyViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />

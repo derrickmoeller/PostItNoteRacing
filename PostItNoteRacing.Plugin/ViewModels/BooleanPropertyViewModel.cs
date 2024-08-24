@@ -1,19 +1,33 @@
-﻿using PostItNoteRacing.Common.ViewModels;
-using PostItNoteRacing.Plugin.Interfaces;
+﻿using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class BooleanPropertyViewModel : ViewModelBase
+    internal class BooleanPropertyViewModel : PropertyViewModel<bool>
     {
-        public BooleanPropertyViewModel(IModifySimHub plugin, int id)
-        {
-            ToggleBoolean = new SimHubAction($"PostItNoteRacing.Toggle_Boolean_{id:D2}", $"Toggle Boolean {id:D2}");
+        private readonly int _id;
 
-            plugin.AddAction($"Toggle_Boolean_{id:D2}", (a, b) => plugin.SetProperty($"Booleans_{id:D2}", plugin.GetProperty($"Booleans_{id:D2}") == false));
-            plugin.AddProperty($"Booleans_{id:D2}", false);
+        public BooleanPropertyViewModel(IModifySimHub plugin, int id)
+            : base(plugin)
+        {
+            _id = id;
+
+            ToggleBoolean = new SimHubAction($"PostItNoteRacing.Toggle_Boolean_{_id:D2}", $"Toggle Boolean {_id:D2}");
+            Plugin.AddAction($"Toggle_Boolean_{_id:D2}", (a, b) => Value = Value == false);
+
+            Plugin.AttachDelegate($"Booleans_{_id:D2}", () => Value);
         }
 
         public SimHubAction ToggleBoolean { get; }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Plugin.DetachDelegate($"Booleans_{_id:D2}");
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

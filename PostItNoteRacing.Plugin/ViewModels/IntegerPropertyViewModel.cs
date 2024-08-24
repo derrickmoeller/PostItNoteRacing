@@ -1,20 +1,24 @@
-﻿using PostItNoteRacing.Common.ViewModels;
-using PostItNoteRacing.Plugin.Interfaces;
+﻿using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class IntegerPropertyViewModel : ViewModelBase
+    internal class IntegerPropertyViewModel : PropertyViewModel<int>
     {
         public IntegerPropertyViewModel(IModifySimHub plugin, IntegerProperty entity)
+            : base(plugin)
         {
             Entity = entity;
 
-            DecrementInteger = new SimHubAction($"PostItNoteRacing.Decrement_Integer_{Id:D2}", $"Decrement Integer {Id:D2}");
-            IncrementInteger = new SimHubAction($"PostItNoteRacing.Increment_Integer_{Id:D2}", $"Increment Integer {Id:D2}");
+            Value = Minimum;
 
-            CreateActions(plugin);
-            CreateProperties(plugin);
+            DecrementInteger = new SimHubAction($"PostItNoteRacing.Decrement_Integer_{Id:D2}", $"Decrement Integer {Id:D2}");
+            Plugin.AddAction($"Decrement_Integer_{Id:D2}", (a, b) => Value--);
+
+            IncrementInteger = new SimHubAction($"PostItNoteRacing.Increment_Integer_{Id:D2}", $"Increment Integer {Id:D2}");
+            Plugin.AddAction($"Increment_Integer_{Id:D2}", (a, b) => Value++);
+
+            Plugin.AttachDelegate($"Integers_{Id:D2}", () => Value);
         }
 
         public SimHubAction DecrementInteger { get; }
@@ -51,37 +55,37 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         internal IntegerProperty Entity { get; }
 
-        private void CreateActions(IModifySimHub plugin)
+        protected override int Value
         {
-            plugin.AddAction($"Increment_Integer_{Id:D2}", (a, b) => Increment($"Integers_{Id:D2}"));
-            plugin.AddAction($"Decrement_Integer_{Id:D2}", (a, b) => Decrement($"Integers_{Id:D2}"));
-
-            void Decrement(string propertyName)
+            get => base.Value;
+            set
             {
-                int value = plugin.GetProperty(propertyName);
-                if (--value < Minimum)
+                if (Value != value)
                 {
-                    value = Maximum;
+                    if (value < Minimum)
+                    {
+                        base.Value = Maximum;
+                    }
+                    else if (value > Maximum)
+                    {
+                        base.Value = Minimum;
+                    }
+                    else
+                    {
+                        base.Value = value;
+                    }
                 }
-
-                plugin.SetProperty(propertyName, value);
-            }
-
-            void Increment(string propertyName)
-            {
-                int value = plugin.GetProperty(propertyName);
-                if (++value > Maximum)
-                {
-                    value = Minimum;
-                }
-
-                plugin.SetProperty(propertyName, value);
             }
         }
 
-        private void CreateProperties(IModifySimHub plugin)
+        protected override void Dispose(bool disposing)
         {
-            plugin.AddProperty($"Integers_{Id:D2}", Minimum);
+            if (disposing)
+            {
+                Plugin.DetachDelegate($"Integers_{Id:D2}");
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

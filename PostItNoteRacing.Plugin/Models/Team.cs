@@ -432,19 +432,6 @@ namespace PostItNoteRacing.Plugin.Models
                     _telemetry.PropertyChanged -= OnTelemetryPropertyChanged;
                 }
 
-                Plugin.DetachDelegate($"Team_{Index:D2}_BestLapColor");
-                Plugin.DetachDelegate($"Team_{Index:D2}_BestLapTime");
-                Plugin.DetachDelegate($"Team_{Index:D2}_BestNLapsAverage");
-                Plugin.DetachDelegate($"Team_{Index:D2}_BestNLapsColor");
-                Plugin.DetachDelegate($"Team_{Index:D2}_CarNumber");
-                Plugin.DetachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision");
-                Plugin.DetachDelegate($"Team_{Index:D2}_CurrentLapTime");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToBest");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToBestN");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerBest");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerBestN");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerLast");
-                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerLastN");
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverBestLapColor");
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverBestLapTime");
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverIRating");
@@ -458,6 +445,19 @@ namespace PostItNoteRacing.Plugin.Models
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverLicenseTextColor");
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverName");
                 Plugin.DetachDelegate($"Team_{Index:D2}_ActiveDriverShortName");
+                Plugin.DetachDelegate($"Team_{Index:D2}_BestLapColor");
+                Plugin.DetachDelegate($"Team_{Index:D2}_BestLapTime");
+                Plugin.DetachDelegate($"Team_{Index:D2}_BestNLapsAverage");
+                Plugin.DetachDelegate($"Team_{Index:D2}_BestNLapsColor");
+                Plugin.DetachDelegate($"Team_{Index:D2}_CarNumber");
+                Plugin.DetachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision");
+                Plugin.DetachDelegate($"Team_{Index:D2}_CurrentLapTime");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToBest");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToBestN");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerBest");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerBestN");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerLast");
+                Plugin.DetachDelegate($"Team_{Index:D2}_DeltaToPlayerLastN");
                 Plugin.DetachDelegate($"Team_{Index:D2}_EstimatedDelta");
                 Plugin.DetachDelegate($"Team_{Index:D2}_EstimatedLapColor");
                 Plugin.DetachDelegate($"Team_{Index:D2}_EstimatedLapTime");
@@ -486,12 +486,12 @@ namespace PostItNoteRacing.Plugin.Models
                 Plugin.DetachDelegate($"Team_{Index:D2}_LeaderboardPosition");
                 Plugin.DetachDelegate($"Team_{Index:D2}_LivePosition");
                 Plugin.DetachDelegate($"Team_{Index:D2}_LivePositionInClass");
+                Plugin.DetachDelegate($"Team_{Index:D2}_Name");
                 Plugin.DetachDelegate($"Team_{Index:D2}_PositionsGained");
                 Plugin.DetachDelegate($"Team_{Index:D2}_PositionsGainedInClass");
                 Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayer");
                 Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayerColor");
                 Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString");
-                Plugin.DetachDelegate($"Team_{Index:D2}_Name");
             }
 
             base.Dispose(disposing);
@@ -499,19 +499,6 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void CreateSimHubProperties()
         {
-            Plugin.AttachDelegate($"Team_{Index:D2}_BestLapColor", () => BestLapColor);
-            Plugin.AttachDelegate($"Team_{Index:D2}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
-            Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsAverage", () => BestNLapsAverage ?? TimeSpan.Zero);
-            Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsColor", () => BestNLapsColor);
-            Plugin.AttachDelegate($"Team_{Index:D2}_CarNumber", () => CarNumber);
-            Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision", () => CurrentLapHighPrecision);
-            Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapTime", () => CurrentLap.Time);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToBest", () => DeltaToBest);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToBestN", () => DeltaToBestN);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerBest", () => DeltaToPlayerBest);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerBestN", () => DeltaToPlayerBestN);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerLast", () => DeltaToPlayerLast);
-            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerLastN", () => DeltaToPlayerLastN);
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverBestLapColor", () => ActiveDriver.BestLapColor);
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverBestLapTime", () => ActiveDriver.BestLap?.Time ?? TimeSpan.Zero);
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverIRating", () => ActiveDriver.IRating);
@@ -525,6 +512,19 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverLicenseTextColor", () => ActiveDriver.License.TextColor);
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverName", () => ActiveDriver.Name);
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriverShortName", () => ActiveDriver.ShortName);
+            Plugin.AttachDelegate($"Team_{Index:D2}_BestLapColor", () => BestLapColor);
+            Plugin.AttachDelegate($"Team_{Index:D2}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
+            Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsAverage", () => BestNLapsAverage ?? TimeSpan.Zero);
+            Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsColor", () => BestNLapsColor);
+            Plugin.AttachDelegate($"Team_{Index:D2}_CarNumber", () => CarNumber);
+            Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision", () => CurrentLapHighPrecision);
+            Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapTime", () => CurrentLap.Time);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToBest", () => DeltaToBest);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToBestN", () => DeltaToBestN);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerBest", () => DeltaToPlayerBest);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerBestN", () => DeltaToPlayerBestN);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerLast", () => DeltaToPlayerLast);
+            Plugin.AttachDelegate($"Team_{Index:D2}_DeltaToPlayerLastN", () => DeltaToPlayerLastN);
             Plugin.AttachDelegate($"Team_{Index:D2}_EstimatedDelta", () => EstimatedDelta);
             Plugin.AttachDelegate($"Team_{Index:D2}_EstimatedLapColor", () => EstimatedLapColor);
             Plugin.AttachDelegate($"Team_{Index:D2}_EstimatedLapTime", () => EstimatedLapTime ?? TimeSpan.Zero);
@@ -553,12 +553,12 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AttachDelegate($"Team_{Index:D2}_LeaderboardPosition", () => LeaderboardPosition);
             Plugin.AttachDelegate($"Team_{Index:D2}_LivePosition", () => LivePosition);
             Plugin.AttachDelegate($"Team_{Index:D2}_LivePositionInClass", () => LivePositionInClass);
+            Plugin.AttachDelegate($"Team_{Index:D2}_Name", () => Name);
             Plugin.AttachDelegate($"Team_{Index:D2}_PositionsGained", () => PositionsGained);
             Plugin.AttachDelegate($"Team_{Index:D2}_PositionsGainedInClass", () => PositionsGainedInClass);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayer", () => RelativeGapToPlayer);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayerColor", () => RelativeGapToPlayerColor);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString", () => RelativeGapToPlayerString);
-            Plugin.AttachDelegate($"Team_{Index:D2}_Name", () => Name);
         }
 
         private void OnBestLapChanged()
