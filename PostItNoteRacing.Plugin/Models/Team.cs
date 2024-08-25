@@ -490,7 +490,6 @@ namespace PostItNoteRacing.Plugin.Models
                 Plugin.DetachDelegate($"Team_{Index:D2}_PositionsGained");
                 Plugin.DetachDelegate($"Team_{Index:D2}_PositionsGainedInClass");
                 Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayer");
-                Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayerColor");
                 Plugin.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString");
             }
 
@@ -557,7 +556,6 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AttachDelegate($"Team_{Index:D2}_PositionsGained", () => PositionsGained);
             Plugin.AttachDelegate($"Team_{Index:D2}_PositionsGainedInClass", () => PositionsGainedInClass);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayer", () => RelativeGapToPlayer);
-            Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayerColor", () => RelativeGapToPlayerColor);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString", () => RelativeGapToPlayerString);
         }
 

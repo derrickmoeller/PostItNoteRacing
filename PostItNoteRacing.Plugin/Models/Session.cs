@@ -903,6 +903,11 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (e.OldItems != null && e.OldItems.Count != 0)
             {
+                foreach (Team team in e.OldItems)
+                {
+                    _plugin.DetachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor");
+                }
+
                 for (int i = teamsCount + 1; i <= teamsCount + e.OldItems.Count; i++)
                 {
                     _plugin.DetachDelegate($"LeaderboardPosition_{i:D2}_Team");
@@ -912,6 +917,11 @@ namespace PostItNoteRacing.Plugin.Models
 
             if (e.NewItems != null && e.NewItems.Count != 0)
             {
+                foreach (Team team in e.NewItems)
+                {
+                    _plugin.AttachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor", () => IsRace == true ? team.RelativeGapToPlayerColor : Colors.White);
+                }
+
                 for (int i = teamsCount - e.NewItems.Count + 1; i <= teamsCount; i++)
                 {
                     int j = i;
