@@ -1,5 +1,4 @@
-﻿using PostItNoteRacing.Common;
-using PostItNoteRacing.Plugin.EventArgs;
+﻿using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using System;
 using System.Globalization;
@@ -7,31 +6,20 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class Driver : DisposableObject, INotifyBestLapChanged
+    internal class Driver : Entity, INotifyBestLapChanged
     {
         private static readonly char[] Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         private static readonly TextInfo TextInfo = new CultureInfo("en-US").TextInfo;
 
         private readonly INotifyBestLapChanged _carClass;
-        private readonly bool _isPlayer;
 
         private Lap _bestLap;
 
-        public Driver(INotifyBestLapChanged carClass, bool isPlayer)
+        public Driver(IModifySimHub plugin, int index, INotifyBestLapChanged carClass)
+            : base(plugin, index)
         {
             _carClass = carClass;
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
-
-            _isPlayer = isPlayer;
-
-            if (_isPlayer == true)
-            {
-                BestLapColor = Colors.Yellow;
-            }
-            else
-            {
-                BestLapColor = Colors.White;
-            }
         }
 
         public Lap BestLap
@@ -53,9 +41,9 @@ namespace PostItNoteRacing.Plugin.Models
 
         public int IRatingChange { get; set; }
 
-        public string IRatingString => $"{(IRating ?? 0D) / 1000:0.0k}";
-
         public string IRatingLicenseCombinedString => $"{License.ShortString} {IRatingString}";
+
+        public string IRatingString => $"{(IRating ?? 0D) / 1000:0.0k}";
 
         public int LapsCompleted { get; set; }
 
@@ -78,6 +66,23 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
+        protected override void AttachDelegates()
+        {
+            Plugin.AttachDelegate($"Driver_{Index:D2}_BestLapColor", () => BestLapColor);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_IRating", () => IRating);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingChange", () => IRatingChange);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingLicenseCombinedString", () => IRatingLicenseCombinedString);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingString", () => IRatingString);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_LapsCompleted", () => LapsCompleted);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseColor", () => License.Color);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseShortString", () => License.ShortString);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseString", () => License.String);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseTextColor", () => License.TextColor);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_Name", () => Name);
+            Plugin.AttachDelegate($"Driver_{Index:D2}_ShortName", () => ShortName);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -91,6 +96,23 @@ namespace PostItNoteRacing.Plugin.Models
             base.Dispose(disposing);
         }
 
+        protected override void TryDetachDelegates()
+        {
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_BestLapColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_BestLapTime");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRating");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingChange");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingLicenseCombinedString");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingString");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_LapsCompleted");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseShortString");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseString");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseTextColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_Name");
+            Plugin?.DetachDelegate($"Driver_{Index:D2}_ShortName");
+        }
+
         private void OnBestLapChanged()
         {
             BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLap));
@@ -101,10 +123,6 @@ namespace PostItNoteRacing.Plugin.Models
             if (BestLap?.Time > TimeSpan.Zero && BestLap.Time == e.Lap?.Time)
             {
                 BestLapColor = Colors.Purple;
-            }
-            else if (_isPlayer == true)
-            {
-                BestLapColor = Colors.Yellow;
             }
             else
             {

@@ -1,6 +1,5 @@
 ﻿using GameReaderCommon;
 using IRacingReader;
-using PostItNoteRacing.Common;
 using PostItNoteRacing.Common.Extensions;
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
@@ -17,29 +16,28 @@ using System.Threading.Tasks;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class Session : DisposableObject
+    internal class Session : Entity
     {
         private static readonly double Weight = 1600 / Math.Log(2);
 
         private readonly object _leaderboardLock = new();
         private readonly object _livePositionLock = new();
-        private readonly IModifySimHub _plugin;
         private readonly TelemetryViewModel _telemetry;
 
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
         private string _description;
         private Game _game;
+        private int _incidents;
 
         public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
+            : base(plugin)
         {
-            _plugin = plugin;
-            _plugin.DataUpdated += OnPluginDataUpdated;
-
             _telemetry = telemetry;
 
-            CreateSimHubActions();
-            CreateSimHubProperties();
+            Plugin.DataUpdated += OnPluginDataUpdated;
+
+            Plugin.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
         public event EventHandler RequestNew;
@@ -134,6 +132,15 @@ namespace PostItNoteRacing.Plugin.Models
 
         private StatusDataBase StatusDatabase { get; set; }
 
+        protected override void AttachDelegates()
+        {
+            Plugin.AttachDelegate("Game_IsSupported", () => Game != null ? (Game.IsSupported?.ToString() ?? "Untested") : null);
+            Plugin.AttachDelegate("Game_Name", () => Game?.Name);
+            Plugin.AttachDelegate("Player_Incidents", () => _incidents);
+            Plugin.AttachDelegate("Session_Description", () => Description);
+            Plugin.AttachDelegate("Session_IsMultiClass", () => IsMultiClass);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -159,15 +166,22 @@ namespace PostItNoteRacing.Plugin.Models
                     _carClasses.CollectionChanged -= OnCarClassesCollectionChanged;
                 }
 
-                _plugin.DetachDelegate("Game_IsSupported");
-                _plugin.DetachDelegate("Game_Name");
-                _plugin.DetachDelegate("Session_Description");
-                _plugin.DetachDelegate("Session_IsMultiClass");
-
-                _plugin.DataUpdated -= OnPluginDataUpdated;
+                if (Plugin != null)
+                {
+                    Plugin.DataUpdated -= OnPluginDataUpdated;
+                }
             }
 
             base.Dispose(disposing);
+        }
+
+        protected override void TryDetachDelegates()
+        {
+            Plugin?.DetachDelegate("Game_IsSupported");
+            Plugin?.DetachDelegate("Game_Name");
+            Plugin?.DetachDelegate("Player_Incidents");
+            Plugin?.DetachDelegate("Session_Description");
+            Plugin?.DetachDelegate("Session_IsMultiClass");
         }
 
         private static MiniSector GetInterpolatedMiniSector(double trackPosition, Lap lap)
@@ -636,21 +650,6 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void CreateSimHubActions()
-        {
-            _plugin.AddAction("ResetBestLaps", ResetBestLaps);
-        }
-
-        private void CreateSimHubProperties()
-        {
-            _plugin.AddProperty("Player_Incidents", 0);
-
-            _plugin.AttachDelegate("Game_IsSupported", () => Game != null ? (Game.IsSupported?.ToString() ?? "Untested") : null);
-            _plugin.AttachDelegate("Game_Name", () => Game?.Name);
-            _plugin.AttachDelegate("Session_Description", () => Description);
-            _plugin.AttachDelegate("Session_IsMultiClass", () => IsMultiClass);
-        }
-
         private void GenerateMiniSectors()
         {
             Parallel.ForEach(StatusDatabase.Opponents, opponent =>
@@ -702,7 +701,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
                 {
-                    carClass = new CarClass(CarClasses.Count() + 1, _plugin, _livePositionLock)
+                    carClass = new CarClass(Plugin, CarClasses.Count() + 1, _livePositionLock)
                     {
                         Color = opponent.CarClassColor,
                         Name = opponent.CarClass,
@@ -715,7 +714,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var team = carClass.Teams.GetUnique(opponent, Game);
                 if (team == null)
                 {
-                    team = new Team(CarClasses.SelectMany(x => x.Teams).Count() + 1, _plugin, carClass, _telemetry)
+                    team = new Team(Plugin, CarClasses.SelectMany(x => x.Teams).Count() + 1, carClass, _telemetry)
                     {
                         CarNumber = opponent.CarNumber,
                         CurrentLap = new Lap(opponent.CurrentLap ?? 0)
@@ -778,7 +777,7 @@ namespace PostItNoteRacing.Plugin.Models
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
                 if (driver == null)
                 {
-                    driver = new Driver(carClass, team.IsPlayer)
+                    driver = new Driver(Plugin, CarClasses.SelectMany(x => x.Teams).SelectMany(x => x.Drivers).Count() + 1, carClass)
                     {
                         IRating = opponent.IRacing_IRating,
                         License = new License
@@ -798,7 +797,7 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
 
-                _plugin.SetProperty("Player_Incidents", Convert.ToInt32(rawIncidents));
+                _incidents = Convert.ToInt32(rawIncidents);
             }
         }
 
@@ -905,13 +904,13 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 foreach (Team team in e.OldItems)
                 {
-                    _plugin.DetachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor");
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor");
                 }
 
                 for (int i = teamsCount + 1; i <= teamsCount + e.OldItems.Count; i++)
                 {
-                    _plugin.DetachDelegate($"LeaderboardPosition_{i:D2}_Team");
-                    _plugin.DetachDelegate($"LivePosition_{i:D2}_Team");
+                    Plugin.DetachDelegate($"LeaderboardPosition_{i:D2}_Team");
+                    Plugin.DetachDelegate($"LivePosition_{i:D2}_Team");
                 }
             }
 
@@ -919,21 +918,21 @@ namespace PostItNoteRacing.Plugin.Models
             {
                 foreach (Team team in e.NewItems)
                 {
-                    _plugin.AttachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor", () => IsRace == true ? team.RelativeGapToPlayerColor : Colors.White);
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_RelativeGapToPlayerColor", () => IsRace == true ? team.RelativeGapToPlayerColor : Colors.White);
                 }
 
                 for (int i = teamsCount - e.NewItems.Count + 1; i <= teamsCount; i++)
                 {
                     int j = i;
 
-                    _plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () =>
+                    Plugin.AttachDelegate($"LeaderboardPosition_{i:D2}_Team", () =>
                     {
                         lock (_leaderboardLock)
                         {
                             return CarClasses.SelectMany(x => x.Teams).SingleOrDefault(x => x.LeaderboardPosition == j)?.Index;
                         }
                     });
-                    _plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () =>
+                    Plugin.AttachDelegate($"LivePosition_{i:D2}_Team", () =>
                     {
                         lock (_livePositionLock)
                         {

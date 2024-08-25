@@ -9,22 +9,12 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal class CarClass : Entity, INotifyBestLapChanged
+    internal class CarClass(IModifySimHub plugin, int index, object livePositionLock) : Entity(plugin, index), INotifyBestLapChanged
     {
-        private readonly object _livePositionLock;
+        private readonly object _livePositionLock = livePositionLock;
 
         private Lap _bestLap;
         private ObservableCollection<Team> _teams;
-
-        public CarClass(int index, IModifySimHub plugin, object livePositionLock)
-            : base(index, plugin)
-        {
-            _livePositionLock = livePositionLock;
-
-            Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
-            Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
-            Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
-        }
 
         public Lap BestLap
         {
@@ -92,6 +82,17 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string TextColor { get; set; }
 
+        protected override void AttachDelegates()
+        {
+            Plugin.AttachDelegate($"Class_{Index:D2}_Color", () => Color);
+            Plugin.AttachDelegate($"Class_{Index:D2}_Index", () => Index);
+            Plugin.AttachDelegate($"Class_{Index:D2}_Name", () => ShortName);
+            Plugin.AttachDelegate($"Class_{Index:D2}_OpponentCount", () => Teams.Count);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoF", () => StrengthOfField);
+            Plugin.AttachDelegate($"Class_{Index:D2}_SoFString", () => StrengthOfFieldString);
+            Plugin.AttachDelegate($"Class_{Index:D2}_TextColor", () => TextColor);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -101,13 +102,20 @@ namespace PostItNoteRacing.Plugin.Models
                     _teams.RemoveAll();
                     _teams.CollectionChanged -= OnTeamsCollectionChanged;
                 }
-
-                Plugin.DetachDelegate($"Class_{Index:D2}_OpponentCount");
-                Plugin.DetachDelegate($"Class_{Index:D2}_SoF");
-                Plugin.DetachDelegate($"Class_{Index:D2}_SoFString");
             }
 
             base.Dispose(disposing);
+        }
+
+        protected override void TryDetachDelegates()
+        {
+            Plugin?.DetachDelegate($"Class_{Index:D2}_Color");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_Index");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_Name");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_OpponentCount");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_SoF");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_SoFString");
+            Plugin?.DetachDelegate($"Class_{Index:D2}_TextColor");
         }
 
         private static int GetStrengthOfField(IEnumerable<int> iRatings)
@@ -143,11 +151,6 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.OldItems)
                 {
                     team.BestLapChanged -= OnTeamBestLapChanged;
-
-                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassColor");
-                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassIndex");
-                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassString");
-                    Plugin.DetachDelegate($"Team_{team.Index:D2}_ClassTextColor");
                 }
 
                 for (int i = Teams.Count + 1; i <= Teams.Count + e.OldItems.Count; i++)
@@ -161,11 +164,6 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.NewItems)
                 {
                     team.BestLapChanged += OnTeamBestLapChanged;
-
-                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassColor", () => Color);
-                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassIndex", () => Index);
-                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassString", () => ShortName);
-                    Plugin.AttachDelegate($"Team_{team.Index:D2}_ClassTextColor", () => TextColor);
                 }
 
                 for (int i = Teams.Count - e.NewItems.Count + 1; i <= Teams.Count; i++)

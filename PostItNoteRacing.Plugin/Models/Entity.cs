@@ -3,10 +3,32 @@ using PostItNoteRacing.Plugin.Interfaces;
 
 namespace PostItNoteRacing.Plugin.Models
 {
-    internal abstract class Entity(int index, IModifySimHub plugin) : DisposableObject
+    internal abstract class Entity : DisposableObject
     {
-        public int Index { get; } = index;
+        public Entity(IModifySimHub plugin, int index = 1)
+        {
+            Index = index;
+            Plugin = plugin;
 
-        protected IModifySimHub Plugin { get; } = plugin;
+            AttachDelegates();
+        }
+
+        public int Index { get; }
+
+        protected IModifySimHub Plugin { get; }
+
+        protected abstract void AttachDelegates();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                TryDetachDelegates();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        protected abstract void TryDetachDelegates();
     }
 }
