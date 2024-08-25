@@ -68,19 +68,20 @@ namespace PostItNoteRacing.Plugin.Models
 
         protected override void AttachDelegates()
         {
-            Plugin.AttachDelegate($"Driver_{Index:D2}_BestLapColor", () => BestLapColor);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_IRating", () => IRating);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingChange", () => IRatingChange);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingLicenseCombinedString", () => IRatingLicenseCombinedString);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_IRatingString", () => IRatingString);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_LapsCompleted", () => LapsCompleted);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseColor", () => License.Color);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseShortString", () => License.ShortString);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseString", () => License.String);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_LicenseTextColor", () => License.TextColor);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_Name", () => Name);
-            Plugin.AttachDelegate($"Driver_{Index:D2}_ShortName", () => ShortName);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_BestLapColor", () => BestLapColor);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_IRating", () => IRating);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_IRatingChange", () => IRatingChange);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_IRatingLicenseCombinedString", () => IRatingLicenseCombinedString);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_IRatingString", () => IRatingString);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_Index", () => Index);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_LapsCompleted", () => LapsCompleted);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_LicenseColor", () => License.Color);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_LicenseShortString", () => License.ShortString);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_LicenseString", () => License.String);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_LicenseTextColor", () => License.TextColor);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_Name", () => Name);
+            Plugin.AttachDelegate($"Driver_{Index:D3}_ShortName", () => ShortName);
         }
 
         protected override void Dispose(bool disposing)
@@ -98,19 +99,20 @@ namespace PostItNoteRacing.Plugin.Models
 
         protected override void TryDetachDelegates()
         {
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_BestLapColor");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_BestLapTime");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRating");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingChange");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingLicenseCombinedString");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_IRatingString");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_LapsCompleted");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseColor");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseShortString");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseString");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_LicenseTextColor");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_Name");
-            Plugin?.DetachDelegate($"Driver_{Index:D2}_ShortName");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_BestLapColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_BestLapTime");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_IRating");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_IRatingChange");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_IRatingLicenseCombinedString");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_IRatingString");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_Index");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_LapsCompleted");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_LicenseColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_LicenseShortString");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_LicenseString");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_LicenseTextColor");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_Name");
+            Plugin?.DetachDelegate($"Driver_{Index:D3}_ShortName");
         }
 
         private void OnBestLapChanged()

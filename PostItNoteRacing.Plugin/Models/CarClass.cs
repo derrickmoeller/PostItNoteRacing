@@ -151,6 +151,8 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.OldItems)
                 {
                     team.BestLapChanged -= OnTeamBestLapChanged;
+
+                    Plugin.DetachDelegate($"Team_{team.Index:D2}_Class");
                 }
 
                 for (int i = Teams.Count + 1; i <= Teams.Count + e.OldItems.Count; i++)
@@ -164,6 +166,8 @@ namespace PostItNoteRacing.Plugin.Models
                 foreach (Team team in e.NewItems)
                 {
                     team.BestLapChanged += OnTeamBestLapChanged;
+
+                    Plugin.AttachDelegate($"Team_{team.Index:D2}_Class", () => Index);
                 }
 
                 for (int i = Teams.Count - e.NewItems.Count + 1; i <= Teams.Count; i++)

@@ -589,7 +589,7 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     driver.BestLapChanged -= OnDriverBestLapChanged;
 
-                    Plugin.DetachDelegate($"Driver_{driver.Index:D2}_BestLapColor");
+                    Plugin.DetachDelegate($"Driver_{driver.Index:D3}_BestLapColor");
                 }
             }
 
@@ -599,7 +599,7 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     driver.BestLapChanged += OnDriverBestLapChanged;
 
-                    Plugin.AttachDelegate($"Driver_{driver.Index:D2}_BestLapColor", () => driver.BestLapColor == Colors.White ? (IsPlayer == true ? Colors.Yellow : Colors.White) : driver.BestLapColor);
+                    Plugin.AttachDelegate($"Driver_{driver.Index:D3}_BestLapColor", () => driver.BestLapColor == Colors.White ? (IsPlayer == true ? Colors.Yellow : Colors.White) : driver.BestLapColor);
                 }
             }
         }
