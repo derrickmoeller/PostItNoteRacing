@@ -164,7 +164,7 @@ namespace PostItNoteRacing.Plugin.Models
                 trackPosition -= 1;
             }
 
-            var nextSector = lap.MiniSectors.OrderBy(x => x.TrackPosition).FirstOrDefault(x => x.TrackPosition >= trackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
+            var nextSector = lap.MiniSectors.FirstOrDefault(x => x.TrackPosition >= trackPosition) ?? new MiniSector { Time = lap.Time, TrackPosition = 1 };
             var lastSector = lap.MiniSectors.OrderByDescending(x => x.TrackPosition).First(x => x.TrackPosition <= trackPosition);
 
             return new MiniSector
@@ -1009,17 +1009,17 @@ namespace PostItNoteRacing.Plugin.Models
                     // 2, 8, 14, 20, 26...
                     if (_counter % 6 == 2)
                     {
-                        CalculateDeltas();
-                    }
-
-                    // 4, 10, 16, 22, 28...
-                    if (_counter % 6 == 4)
-                    {
                         CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
                     }
 
-                    // 30
-                    if (_counter % 60 == 30 && Game.IsIRacing == true)
+                    // 4, 34
+                    if (_counter % 30 == 4)
+                    {
+                        CalculateDeltas();
+                    }
+
+                    // 36
+                    if (_counter % 60 == 36 && Game.IsIRacing == true)
                     {
                         CalculateIRating();
                     }
@@ -1149,7 +1149,7 @@ namespace PostItNoteRacing.Plugin.Models
                 }
             }
 
-            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).GetDistinct(StatusDatabase.Opponents, Game).ToList();
+            var teamsToRemove = CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game).ToList();
             if (teamsToRemove.Count > 0)
             {
                 foreach (var carClass in CarClasses.Where(x => x.Teams.Any(y => teamsToRemove.Contains(y))))
