@@ -837,7 +837,6 @@ namespace PostItNoteRacing.Plugin.Models
                         },
                         CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
                         IsInPit = opponent.IsCarInPitLane,
-                        LeaderboardPosition = i + 1,
                         Name = opponent.TeamName,
                     };
 
