@@ -104,12 +104,6 @@ drivergaptoplayer = (function (originalFunction) {
     };
 })(drivergaptoplayer);
 
-driverposition = (function (originalFunction) {
-    return function (leaderboardPosition) {
-        return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'LivePosition', originalFunction);
-    };
-})(driverposition);
-
 driverpositiongain = (function (originalFunction) {
     return function (leaderboardPosition) {
         return sh_GetPropertyFromOverriddenFunction(leaderboardPosition, 'PositionsGained', originalFunction);
