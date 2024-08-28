@@ -644,7 +644,7 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     foreach (var team in carClass.Teams)
                     {
-                        team.LivePositionInClass = carClass.Teams.Count(x => x.LivePosition <= team.LivePosition);
+                        team.LivePositionInClass = carClass.Teams.Count(x => x.LivePosition > 0 && x.LivePosition <= team.LivePosition);
                     }
                 }
             }
@@ -851,11 +851,7 @@ namespace PostItNoteRacing.Plugin.Models
                         GetGameData();
                     }
 
-                    // 0, 2, 4, 6, 8...
-                    if (_counter % 2 == 0)
-                    {
-                        UpdateLeaderboardPosition();
-                    }
+                    UpdateLeaderboardPosition();
 
                     // 0
                     if (_counter % 60 == 0)
@@ -887,8 +883,8 @@ namespace PostItNoteRacing.Plugin.Models
                         CalculateDeltas();
                     }
 
-                    // 36
-                    if (_counter % 60 == 36 && Game.IsIRacing == true)
+                    // 30
+                    if (_counter % 60 == 30 && Game.IsIRacing == true)
                     {
                         CalculateIRating();
                     }
