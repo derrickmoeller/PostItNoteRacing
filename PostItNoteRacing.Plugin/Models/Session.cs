@@ -516,9 +516,11 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     if (leader != null)
                     {
+                        team.GapToLeader = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoLeader ?? 0D;
+
                         if (enableGapCalculations == true)
                         {
-                            team.GapToLeader = GetGap(team, leader, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoLeader);
+                            team.GapToLeader = GetGap(team, leader, team.GapToLeader);
                         }
 
                         team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader, _telemetry.EnableInverseGapStrings);
@@ -526,9 +528,11 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (classLeader != null)
                     {
+                        team.GapToClassLeader = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoClassLeader ?? 0D;
+
                         if (enableGapCalculations == true)
                         {
-                            team.GapToClassLeader = GetGap(team, classLeader, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoClassLeader);
+                            team.GapToClassLeader = GetGap(team, classLeader, team.GapToClassLeader);
                         }
 
                         team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader, _telemetry.EnableInverseGapStrings);
@@ -536,10 +540,13 @@ namespace PostItNoteRacing.Plugin.Models
 
                     if (player != null)
                     {
+                        team.GapToPlayer = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = StatusDatabase.Opponents.GetUnique(team, Game)?.RelativeGapToPlayer;
+
                         if (enableGapCalculations == true)
                         {
-                            team.GapToPlayer = GetGap(team, player, StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoPlayer);
-                            team.RelativeGapToPlayer = GetRelativeGap(team, player, StatusDatabase.Opponents.GetUnique(team, Game)?.RelativeGapToPlayer);
+                            team.GapToPlayer = GetGap(team, player, team.GapToPlayer);
+                            team.RelativeGapToPlayer = GetRelativeGap(team, player, team.RelativeGapToPlayer);
                         }
 
                         team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer, _telemetry.EnableInverseGapStrings);
@@ -694,6 +701,48 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void GetGameData()
         {
+            static string GameCodeToTireCompound(Game game, string carClass, string carModel, string frontTireCompoundGameCode, string rearTireCompoundGameCode)
+            {
+                if (frontTireCompoundGameCode == rearTireCompoundGameCode)
+                {
+                    if (game.IsIRacing)
+                    {
+                        switch (carClass)
+                        {
+                            case "Dallara P217":
+                            case "GT3 Class":
+                            case "GTP":
+                            case "IMSA23":
+                                switch (frontTireCompoundGameCode)
+                                {
+                                    case "0":
+                                        return "DRY";
+                                    case "1":
+                                        return "WET";
+                                }
+
+                                break;
+                        }
+
+                        switch (carModel)
+                        {
+                            case "Dallara IR18":
+                                switch (frontTireCompoundGameCode)
+                                {
+                                    case "0":
+                                        return "PRI";
+                                    case "1":
+                                        return "ALT";
+                                }
+
+                                break;
+                        }
+                    }
+                }
+
+                return null;
+            }
+
             Description = StatusDatabase.SessionTypeName;
 
             foreach (var opponent in StatusDatabase.Opponents)
@@ -716,30 +765,31 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     team = new Team(Plugin, CarClasses.SelectMany(x => x.Teams).Count() + 1, carClass, _telemetry)
                     {
+                        CarModel = opponent.CarName,
                         CarNumber = opponent.CarNumber,
                         CurrentLap = new Lap(opponent.CurrentLap ?? 0)
                         {
                             IsOutLap = opponent.IsCarInPitLane,
                         },
-                        CurrentLapHighPrecision = opponent.CurrentLapHighPrecision,
-                        IsInPit = opponent.IsCarInPitLane,
                         Name = opponent.TeamName,
                     };
 
                     carClass.Teams.Add(team);
                 }
-                else if (opponent.IsConnected == true)
-                {
-                    team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
-                    team.IsInPit = opponent.IsCarInPitLane;
-                }
-                else if (opponent.IsConnected == false)
-                {
-                    team.IsInPit = true;
-                }
 
                 team.IsConnected = opponent.IsConnected;
                 team.IsPlayer = opponent.IsPlayer;
+
+                if (team.IsConnected == true)
+                {
+                    team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
+                    team.IsInPit = opponent.IsCarInPitLane;
+                    team.TireCompound = GameCodeToTireCompound(Game, carClass.Name, team.CarModel, opponent.FrontTyreCompoundGameCode, opponent.RearTyreCompoundGameCode);
+                }
+                else
+                {
+                    team.IsInPit = true;
+                }
 
                 if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero && opponent.BestLapTime < (team.BestLap?.Time ?? TimeSpan.MaxValue))
                 {
@@ -764,14 +814,6 @@ namespace PostItNoteRacing.Plugin.Models
                         team.GridPosition = opponent.StartPosition ?? -1;
                         team.GridPositionInClass = opponent.StartPositionClass ?? -1;
                     }
-                }
-
-                if (_telemetry.EnableGapCalculations == false)
-                {
-                    team.GapToClassLeader = opponent.GaptoClassLeader ?? 0D;
-                    team.GapToLeader = opponent.GaptoLeader ?? 0D;
-                    team.GapToPlayer = opponent.GaptoPlayer ?? 0D;
-                    team.RelativeGapToPlayer = opponent.IsConnected ? opponent.RelativeGapToPlayer : null;
                 }
 
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);

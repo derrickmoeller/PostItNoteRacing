@@ -94,6 +94,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string BestLapColor { get; private set; }
 
+        public string CarModel { get; set; }
+
         public string CarNumber { get; set; }
 
         public Lap CurrentLap
@@ -405,6 +407,8 @@ namespace PostItNoteRacing.Plugin.Models
 
         public string RelativeGapToPlayerString => _telemetry.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
+        public string TireCompound { get; set; }
+
         protected override void AttachDelegates()
         {
             Plugin.AttachDelegate($"Team_{Index:D2}_ActiveDriver", () => ActiveDriver.Index);
@@ -412,6 +416,7 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AttachDelegate($"Team_{Index:D2}_BestLapTime", () => BestLap?.Time ?? TimeSpan.Zero);
             Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsAverage", () => BestNLapsAverage ?? TimeSpan.Zero);
             Plugin.AttachDelegate($"Team_{Index:D2}_BestNLapsColor", () => BestNLapsColor);
+            Plugin.AttachDelegate($"Team_{Index:D2}_CarModel", () => CarModel);
             Plugin.AttachDelegate($"Team_{Index:D2}_CarNumber", () => CarNumber);
             Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision", () => CurrentLapHighPrecision);
             Plugin.AttachDelegate($"Team_{Index:D2}_CurrentLapTime", () => CurrentLap.Time);
@@ -454,6 +459,7 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AttachDelegate($"Team_{Index:D2}_PositionsGainedInClass", () => PositionsGainedInClass);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayer", () => RelativeGapToPlayer);
             Plugin.AttachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString", () => RelativeGapToPlayerString);
+            Plugin.AttachDelegate($"Team_{Index:D2}_TireCompound", () => TireCompound);
         }
 
         protected override void Dispose(bool disposing)
@@ -492,6 +498,7 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin?.DetachDelegate($"Team_{Index:D2}_BestLapTime");
             Plugin?.DetachDelegate($"Team_{Index:D2}_BestNLapsAverage");
             Plugin?.DetachDelegate($"Team_{Index:D2}_BestNLapsColor");
+            Plugin?.DetachDelegate($"Team_{Index:D2}_CarModel");
             Plugin?.DetachDelegate($"Team_{Index:D2}_CarNumber");
             Plugin?.DetachDelegate($"Team_{Index:D2}_CurrentLapHighPrecision");
             Plugin?.DetachDelegate($"Team_{Index:D2}_CurrentLapTime");
@@ -534,6 +541,7 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin?.DetachDelegate($"Team_{Index:D2}_PositionsGainedInClass");
             Plugin?.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayer");
             Plugin?.DetachDelegate($"Team_{Index:D2}_RelativeGapToPlayerString");
+            Plugin?.DetachDelegate($"Team_{Index:D2}_TireCompound");
         }
 
         private void OnBestLapChanged()
