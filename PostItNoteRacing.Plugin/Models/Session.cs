@@ -701,18 +701,36 @@ namespace PostItNoteRacing.Plugin.Models
 
         private void GetGameData()
         {
-            static string GameCodeToTireCompound(Game game, string carClass, string carModel, string frontTireCompoundGameCode, string rearTireCompoundGameCode)
+            static string GameCodeToTireCompound(Game game, string carModel, string frontTireCompoundGameCode, string rearTireCompoundGameCode)
             {
                 if (frontTireCompoundGameCode == rearTireCompoundGameCode)
                 {
-                    if (game.IsIRacing)
+                    if (game.IsIRacing == true)
                     {
-                        switch (carClass)
+                        switch (carModel)
                         {
-                            case "Dallara P217":
-                            case "GT3 Class":
-                            case "GTP":
-                            case "IMSA23":
+                            case "Acura ARX-06":
+                            case "Aston Martin Vantage GT4":
+                            case "Audi R8 LMS EVO II GT3":
+                            case "BMW M Hybrid V8":
+                            case "BMW M4 GT3":
+                            case "BMW M4 GT4":
+                            case "Cadillac V-Series.R":
+                            case "Chevrolet Corvette Z06 GT3.R":
+                            case "Dallara P217 LMP2":
+                            case "Ferrari 296 GT3":
+                            case "Ford GT GT3":
+                            case "Ford Mustang GT3":
+                            case "Lamborghini Huracan GT3 EVO":
+                            case "Ligier JS P320":
+                            case "Mclaren 570s GT4":
+                            case "McLaren MP4-12C GT3":
+                            case "Mercedes AMG GT4":
+                            case "Mercedes-AMG GT3 2020":
+                            case "Porsche 718 Cayman GT4":
+                            case "Porsche 911 GT3 Cup (992)":
+                            case "Porsche 911 GT3 R (992)":
+                            case "Porsche 963 GTP":
                                 switch (frontTireCompoundGameCode)
                                 {
                                     case "0":
@@ -722,17 +740,13 @@ namespace PostItNoteRacing.Plugin.Models
                                 }
 
                                 break;
-                        }
-
-                        switch (carModel)
-                        {
                             case "Dallara IR18":
                                 switch (frontTireCompoundGameCode)
                                 {
                                     case "0":
-                                        return "PRI";
+                                        return "BLACK";
                                     case "1":
-                                        return "ALT";
+                                        return "RED";
                                 }
 
                                 break;
@@ -784,7 +798,7 @@ namespace PostItNoteRacing.Plugin.Models
                 {
                     team.CurrentLapHighPrecision = opponent.CurrentLapHighPrecision;
                     team.IsInPit = opponent.IsCarInPitLane;
-                    team.TireCompound = GameCodeToTireCompound(Game, carClass.Name, team.CarModel, opponent.FrontTyreCompoundGameCode, opponent.RearTyreCompoundGameCode);
+                    team.TireCompound = GameCodeToTireCompound(Game, team.CarModel, opponent.FrontTyreCompoundGameCode, opponent.RearTyreCompoundGameCode);
                 }
                 else
                 {
