@@ -9,8 +9,6 @@
 
         public bool EnableInverseGapStrings { get; set; } = false;
 
-        public bool EnableTelemetry { get; set; } = true;
-
         public int NLaps { get; set; } = 5;
 
         public bool OverrideJavaScriptFunctions { get; set; } = false;

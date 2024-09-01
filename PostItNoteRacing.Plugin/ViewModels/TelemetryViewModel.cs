@@ -53,19 +53,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public bool EnableTelemetry
-        {
-            get => Entity.EnableTelemetry;
-            set
-            {
-                if (Entity.EnableTelemetry != value)
-                {
-                    Entity.EnableTelemetry = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         public int NLaps
         {
             get => Entity.NLaps;
@@ -151,13 +138,17 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (disposing)
             {
+                if (Session != null)
+                {
+                    Session.DescriptionChanging -= OnSessionDescriptionChanging;
+                    Session.Dispose();
+                }
+
                 Plugin.DetachDelegate("Settings_NLaps");
                 Plugin.DetachDelegate("Settings_OverrideJavaScriptFunctions");
                 Plugin.DetachDelegate("Settings_ReferenceLap");
 
                 Plugin.DataUpdated -= OnPluginDataUpdated;
-
-                _session?.Dispose();
             }
 
             base.Dispose(disposing);
@@ -165,7 +156,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
         {
-            if (EnableTelemetry == true && e.Data.GameRunning && e.Data.NewData != null)
+            if (e.Data.GameRunning && e.Data.NewData != null)
             {
                 Session ??= new Session(Plugin, this);
             }
@@ -179,7 +170,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (Session != null)
             {
-                Session.RequestNew += OnSessionRequestNew;
+                Session.DescriptionChanging += OnSessionDescriptionChanging;
             }
         }
 
@@ -187,12 +178,12 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (Session != null)
             {
-                Session.RequestNew -= OnSessionRequestNew;
+                Session.DescriptionChanging -= OnSessionDescriptionChanging;
                 Session.Dispose();
             }
         }
 
-        private void OnSessionRequestNew(object sender, System.EventArgs e)
+        private void OnSessionDescriptionChanging(object sender, System.EventArgs e)
         {
             Session = new Session(Plugin, this);
         }

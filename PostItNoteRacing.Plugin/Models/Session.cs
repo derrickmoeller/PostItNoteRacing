@@ -40,7 +40,7 @@ namespace PostItNoteRacing.Plugin.Models
             Plugin.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
-        public event EventHandler RequestNew;
+        public event EventHandler DescriptionChanging;
 
         private ObservableCollection<CarClass> CarClasses
         {
@@ -824,7 +824,7 @@ namespace PostItNoteRacing.Plugin.Models
         {
             if (Description != null)
             {
-                RequestNew?.Invoke(this, System.EventArgs.Empty);
+                DescriptionChanging?.Invoke(this, System.EventArgs.Empty);
             }
         }
 

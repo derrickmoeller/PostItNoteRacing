@@ -12,8 +12,7 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=local.viewmodels:TelemetryViewModel}">
     <StackPanel>
-        <styles:SHToggleCheckbox Content="Enable telemetry properties." HorizontalAlignment="Center" IsChecked="{Binding EnableTelemetry}" />
-        <Grid IsEnabled="{Binding EnableTelemetry}">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="*" />
