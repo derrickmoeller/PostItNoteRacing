@@ -5,9 +5,12 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "Reviewed.", Scope = "member", Target = "~M:PostItNoteRacing.Common.RelayCommand`1.#ctor(System.Action{`0},System.Predicate{`0})")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1633:File should have header", Justification = "Reviewed.")]
+[assembly: SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1516:Elements should be separated by blank line", Justification = "Property getter / setter.", Scope = "member", Target = "~P:PostItNoteRacing.Plugin.ViewModels.FooterViewModel.CurrentVersion")]
+[assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "How else would we name generic and non generic (https://stackoverflow.com/a/4063061/516433).", Scope = "type", Target = "~T:PostItNoteRacing.Common.RelayCommand`1")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:Field names should not begin with underscore", Justification = "Reviewed.")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "Conflicts with discard best practices.")]
 [assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1200:Using directives should be placed correctly", Justification = "Conflicts with IDE0065.")]
@@ -26,6 +29,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "Conflicts with IDE0055.", Scope = "member", Target = "~F:PostItNoteRacing.Plugin.Models.Session._livePositionLock")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "Conflicts with IDE0055.", Scope = "member", Target = "~F:PostItNoteRacing.Common.Utilities.PerformanceMonitor._observations")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "Conflicts with IDE0055.", Scope = "member", Target = "~F:PostItNoteRacing.Common.Utilities.PerformanceMonitor._stopwatch")]
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor", Scope = "type", Target = "~T:PostItNoteRacing.Common.Converters.BooleanConverter`1")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Common.Converters.EnumDescriptionTypeConverter")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Common.FixedSizeObservableCollection`1")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "Conflicts with primary constructor.", Scope = "type", Target = "~T:PostItNoteRacing.Common.ViewModels.ViewModelBase")]

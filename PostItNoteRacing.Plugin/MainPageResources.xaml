@@ -5,21 +5,30 @@
                     xmlns:local.views="clr-namespace:PostItNoteRacing.Plugin.Views">
     <DataTemplate x:Key="WorkspacesTemplate">
         <styles:SHTabControl ItemsSource="{Binding}">
+            <styles:SHTabControl.ContentTemplate>
+                <DataTemplate>
+                    <ScrollViewer>
+                        <DockPanel>
+                            <ContentControl DockPanel.Dock="Bottom" Content="{Binding DataContext.Footer, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                            <ContentControl Content="{Binding}" />
+                        </DockPanel>
+                    </ScrollViewer>
+                </DataTemplate>
+            </styles:SHTabControl.ContentTemplate>
             <styles:SHTabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}" />
                 </DataTemplate>
             </styles:SHTabControl.ItemTemplate>
             <styles:SHTabControl.Resources>
+                <DataTemplate DataType="{x:Type local.viewmodels:FooterViewModel}">
+                    <local.views:FooterView />
+                </DataTemplate>
                 <DataTemplate DataType="{x:Type local.viewmodels:TelemetryViewModel}">
-                    <ScrollViewer>
-                        <local.views:TelemetryView />
-                    </ScrollViewer>
+                    <local.views:TelemetryView />
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local.viewmodels:UtilityViewModel}">
-                    <ScrollViewer>
-                        <local.views:UtilityView />
-                    </ScrollViewer>
+                    <local.views:UtilityView />
                 </DataTemplate>
             </styles:SHTabControl.Resources>
         </styles:SHTabControl>

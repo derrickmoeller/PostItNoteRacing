@@ -64,6 +64,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\MahApps.Metro.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SimHub\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="SimHub.Logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -80,6 +84,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
@@ -91,6 +96,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\FixedSizeObservableCollection.cs" />
     <Compile Include="Common\Converters\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Common\DisposableObject.cs" />
@@ -136,8 +143,12 @@
     <Compile Include="ViewModels\BooleanPropertyViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModels\FooterViewModel.cs" />
     <Compile Include="ViewModels\UtilityViewModel.cs" />
     <Compile Include="ViewModels\TelemetryViewModel.cs" />
+    <Compile Include="Views\FooterView.xaml.cs">
+      <DependentUpon>FooterView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\UtilityView.xaml.cs">
       <DependentUpon>UtilityView.xaml</DependentUpon>
     </Compile>
@@ -165,6 +176,10 @@
     <Page Include="MainPageResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FooterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\UtilityView.xaml">
       <Generator>MSBuild:Compile</Generator>

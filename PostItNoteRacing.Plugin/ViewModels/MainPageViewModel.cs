@@ -12,6 +12,8 @@ namespace PostItNoteRacing.Plugin.ViewModels
             Workspaces.Add(new UtilityViewModel(plugin));
         }
 
+        public FooterViewModel Footer { get; } = new FooterViewModel();
+
         public ObservableCollection<ViewModelBase> Workspaces { get; } = new ObservableCollection<ViewModelBase>();
 
         protected override void Dispose(bool disposing)
