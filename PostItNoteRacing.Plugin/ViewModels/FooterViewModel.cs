@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
 using PostItNoteRacing.Common;
+using PostItNoteRacing.Common.Interfaces;
 using PostItNoteRacing.Common.ViewModels;
+using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -10,19 +11,14 @@ using System.Windows.Input;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class FooterViewModel : ViewModelBase
+    internal class FooterViewModel(IDialogService dialogService) : InteractiveViewModel(dialogService)
     {
-        private const string Filename = "PostItNoteRacing.Plugin.dll";
         private const string VersionsUrl = "https://api.github.com/repos/derrickmoeller/PostItNoteRacing/releases/latest";
 
         private string _currentVersion;
-        private ICommand _downloadCommand;
-        private string _downloadUrl;
+        private ICommand _gotoReleaseCommand;
+        private string _releaseUrl;
         private bool _oneShot = false;
-
-        public FooterViewModel()
-        {
-        }
 
         public string CurrentVersion
         {
@@ -46,12 +42,12 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public ICommand DownloadCommand
+        public ICommand GotoReleaseCommand
         {
             get
             {
-                _downloadCommand ??= new RelayCommand(x => Download(), CanDownload);
-                return _downloadCommand;
+                _gotoReleaseCommand ??= new RelayCommand(x => GotoRelease(), CanGotoRelease);
+                return _gotoReleaseCommand;
             }
         }
 
@@ -59,14 +55,21 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         public bool IsCurrent => string.Compare(InstalledVersion, CurrentVersion) >= 0;
 
-        private bool CanDownload(object obj)
+        private bool CanGotoRelease(object obj)
         {
-            return _downloadUrl != null;
+            return _releaseUrl != null;
         }
 
-        private void Download()
+        private void GotoRelease()
         {
-            Process.Start(_downloadUrl);
+            try
+            {
+                Process.Start(_releaseUrl);
+            }
+            catch (Exception ex)
+            {
+                DialogService.Show(ex.Message);
+            }
         }
 
         private void OnCurrentVersionChanged()
@@ -90,7 +93,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
             var jsonObject = JObject.Parse(json);
 
             CurrentVersion = (string)jsonObject["tag_name"];
-            _downloadUrl = (string)jsonObject["assets"].SingleOrDefault(x => (string)x["name"] == Filename)?["browser_download_url"];
+            _releaseUrl = (string)jsonObject["html_url"];
         }
     }
 }

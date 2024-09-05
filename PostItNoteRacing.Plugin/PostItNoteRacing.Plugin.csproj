@@ -97,6 +97,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Common\DialogService.cs" />
+    <Compile Include="Common\Interfaces\IDialogService.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\FixedSizeObservableCollection.cs" />
     <Compile Include="Common\Converters\EnumDescriptionTypeConverter.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Common\Extensions\EnumerableExtensions.cs" />
     <Compile Include="Common\Extensions\ListExtensions.cs" />
     <Compile Include="Common\Extensions\EnumBindingSourceExtension.cs" />
+    <Compile Include="Common\ViewModels\InteractiveViewModel.cs" />
     <Compile Include="Common\ViewModels\ViewModelBase.cs" />
     <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />
     <Compile Include="EventArgs\BestLapChangedEventArgs.cs" />

@@ -1,18 +1,22 @@
-﻿using PostItNoteRacing.Common.ViewModels;
+﻿using PostItNoteRacing.Common;
+using PostItNoteRacing.Common.ViewModels;
 using PostItNoteRacing.Plugin.Interfaces;
 using System.Collections.ObjectModel;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class MainPageViewModel : ViewModelBase
+    internal class MainPageViewModel : InteractiveViewModel
     {
         public MainPageViewModel(IModifySimHub plugin)
+            : base(new DialogService())
         {
+            Footer = new FooterViewModel(DialogService);
+
             Workspaces.Add(new TelemetryViewModel(plugin));
             Workspaces.Add(new UtilityViewModel(plugin));
         }
 
-        public FooterViewModel Footer { get; } = new FooterViewModel();
+        public FooterViewModel Footer { get; }
 
         public ObservableCollection<ViewModelBase> Workspaces { get; } = new ObservableCollection<ViewModelBase>();
 
@@ -24,6 +28,8 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 {
                     workspace.Dispose();
                 }
+
+                Footer?.Dispose();
             }
 
             base.Dispose(disposing);
