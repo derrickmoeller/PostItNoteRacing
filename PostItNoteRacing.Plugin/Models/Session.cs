@@ -692,7 +692,7 @@ namespace PostItNoteRacing.Plugin.Models
                         team.CurrentLap.MiniSectors.Add(new MiniSector
                         {
                             Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
-                            TrackPosition = opponent.TrackPositionPercent.Value,
+                            TrackPosition = opponent.TrackPositionPercent ?? 0D,
                         });
                     }
                 }
@@ -907,7 +907,7 @@ namespace PostItNoteRacing.Plugin.Models
                         GetGameData();
                     }
 
-                    UpdateLeaderboardPosition();
+                    UpdateLeaderboardPositions();
 
                     // 0
                     if (_counter % 60 == 0)
@@ -1003,7 +1003,7 @@ namespace PostItNoteRacing.Plugin.Models
             }
         }
 
-        private void UpdateLeaderboardPosition()
+        private void UpdateLeaderboardPositions()
         {
             lock (_leaderboardLock)
             {
