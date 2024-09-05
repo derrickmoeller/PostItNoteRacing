@@ -30,7 +30,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
                     SetCurrentVersionAsync();
                 }
 
-                return _currentVersion;
+                return _currentVersion ?? "0.0.0.0";
             }
             set
             {
@@ -51,9 +51,9 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
-        public string InstalledVersion => $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+        public string InstalledVersion => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        public bool IsCurrent => string.Compare(InstalledVersion, CurrentVersion) >= 0;
+        public bool IsCurrent => Version.Parse(InstalledVersion) >= Version.Parse(CurrentVersion);
 
         private bool CanGotoRelease(object obj)
         {
@@ -92,7 +92,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
             var jsonObject = JObject.Parse(json);
 
-            CurrentVersion = (string)jsonObject["tag_name"];
+            CurrentVersion = ((string)jsonObject["tag_name"]).TrimStart('v');
             _releaseUrl = (string)jsonObject["html_url"];
         }
     }
