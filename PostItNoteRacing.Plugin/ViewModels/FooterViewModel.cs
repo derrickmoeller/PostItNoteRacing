@@ -1,81 +1,64 @@
 ﻿using Newtonsoft.Json.Linq;
-using PostItNoteRacing.Common;
 using PostItNoteRacing.Common.Interfaces;
 using PostItNoteRacing.Common.ViewModels;
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
-using System.Windows.Input;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class FooterViewModel(IDialogService dialogService) : InteractiveViewModel(dialogService)
+    internal class FooterViewModel(IDialogService dialogService) : NavigableViewModel(dialogService)
     {
         private const string VersionsUrl = "https://api.github.com/repos/derrickmoeller/PostItNoteRacing/releases/latest";
 
-        private string _currentVersion;
-        private ICommand _gotoReleaseCommand;
-        private string _releaseUrl;
+        private Version _gitHubVersion;
         private bool _oneShot = false;
+        private string _releaseUrl;
 
-        public string CurrentVersion
+        public Version CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version;
+
+        public Version GitHubVersion
         {
             get
             {
-                if (_currentVersion == null && _oneShot == false)
+                if (_gitHubVersion == null && _oneShot == false)
                 {
                     _oneShot = true;
                     SetCurrentVersionAsync();
                 }
 
-                return _currentVersion ?? "0.0.0.0";
+                return _gitHubVersion;
             }
             set
             {
-                if (_currentVersion != value)
+                if (_gitHubVersion != value)
                 {
-                    _currentVersion = value;
-                    OnCurrentVersionChanged();
+                    _gitHubVersion = value;
+                    OnGitHubVersionChanged();
                 }
             }
         }
 
-        public ICommand GotoReleaseCommand
+        public bool IsCurrent => CurrentVersion.CompareTo(GitHubVersion) >= 0;
+
+        public string ReleaseUrl
         {
-            get
+            get => _releaseUrl;
+            set
             {
-                _gotoReleaseCommand ??= new RelayCommand(x => GotoRelease(), CanGotoRelease);
-                return _gotoReleaseCommand;
+                if (_releaseUrl != value)
+                {
+                    _releaseUrl = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 
-        public string InstalledVersion => Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        public bool IsCurrent => Version.Parse(InstalledVersion) >= Version.Parse(CurrentVersion);
-
-        private bool CanGotoRelease(object obj)
-        {
-            return _releaseUrl != null;
-        }
-
-        private void GotoRelease()
-        {
-            try
-            {
-                Process.Start(_releaseUrl);
-            }
-            catch (Exception ex)
-            {
-                DialogService.Show(ex.Message);
-            }
-        }
-
-        private void OnCurrentVersionChanged()
+        private void OnGitHubVersionChanged()
         {
             NotifyPropertyChanged(nameof(IsCurrent));
-            NotifyPropertyChanged(nameof(CurrentVersion));
+            NotifyPropertyChanged(nameof(GitHubVersion));
         }
 
         private async void SetCurrentVersionAsync()
@@ -92,8 +75,12 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
             var jsonObject = JObject.Parse(json);
 
-            CurrentVersion = ((string)jsonObject["tag_name"]).TrimStart('v');
-            _releaseUrl = (string)jsonObject["html_url"];
+            if (Version.TryParse(((string)jsonObject["tag_name"]).TrimStart('v'), out Version gitHubVersion) == true)
+            {
+                GitHubVersion = gitHubVersion;
+            }
+
+            ReleaseUrl = (string)jsonObject["html_url"];
         }
     }
 }

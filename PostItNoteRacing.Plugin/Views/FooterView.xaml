@@ -13,7 +13,7 @@
         <common.converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-        <styles:SHLinkButton Command="{Binding GotoReleaseCommand}" Content="{Binding CurrentVersion}" ContentStringFormat="{}New version available (v{0})" Margin="0,6" Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}" />
-        <TextBlock Margin="4" Text="{Binding InstalledVersion, StringFormat={}Post-It Note Racing Plugin v{0}}" />
+        <styles:SHLinkButton Command="{Binding GotoUrlCommand}" CommandParameter="{Binding ReleaseUrl}" Content="{Binding GitHubVersion}" ContentStringFormat="{}New version available (v{0})" Margin="0,6" Visibility="{Binding IsCurrent, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=True}" />
+        <TextBlock Margin="4" Text="{Binding CurrentVersion, StringFormat={}v{0}}" />
     </StackPanel>
 </UserControl>

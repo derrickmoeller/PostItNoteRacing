@@ -106,6 +106,7 @@
     <Compile Include="Common\Extensions\EnumerableExtensions.cs" />
     <Compile Include="Common\Extensions\ListExtensions.cs" />
     <Compile Include="Common\Extensions\EnumBindingSourceExtension.cs" />
+    <Compile Include="Common\ViewModels\NavigableViewModel.cs" />
     <Compile Include="Common\ViewModels\InteractiveViewModel.cs" />
     <Compile Include="Common\ViewModels\ViewModelBase.cs" />
     <Compile Include="EventArgs\NotifyDataUpdatedEventArgs.cs" />

@@ -24,12 +24,12 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (disposing)
             {
+                Footer?.Dispose();
+
                 foreach (var workspace in Workspaces)
                 {
                     workspace.Dispose();
                 }
-
-                Footer?.Dispose();
             }
 
             base.Dispose(disposing);
