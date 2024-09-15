@@ -118,26 +118,26 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\Entity.cs" />
+    <Compile Include="Telemetry\Entity.cs" />
     <Compile Include="Models\IntegerProperty.cs" />
-    <Compile Include="Models\Game.cs" />
+    <Compile Include="Telemetry\Game.cs" />
     <Compile Include="Models\ReferenceLap.cs" />
     <Compile Include="Models\Utility.cs" />
     <Compile Include="Models\SimHubAction.cs" />
-    <Compile Include="Models\Colors.cs" />
-    <Compile Include="Models\MiniSector.cs" />
-    <Compile Include="Models\Lap.cs" />
+    <Compile Include="Telemetry\Colors.cs" />
+    <Compile Include="Telemetry\MiniSector.cs" />
+    <Compile Include="Telemetry\Lap.cs" />
     <Compile Include="Models\Telemetry.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Models\Session.cs" />
-    <Compile Include="Models\Team.cs" />
-    <Compile Include="Models\License.cs" />
-    <Compile Include="Models\CarClass.cs" />
-    <Compile Include="Models\Driver.cs" />
+    <Compile Include="Telemetry\Session.cs" />
+    <Compile Include="Telemetry\Team.cs" />
+    <Compile Include="Telemetry\License.cs" />
+    <Compile Include="Telemetry\CarClass.cs" />
+    <Compile Include="Telemetry\Driver.cs" />
     <Compile Include="PostItNoteRacing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Utilities\PerformanceMonitor.cs" />

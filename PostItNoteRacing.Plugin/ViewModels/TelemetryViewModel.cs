@@ -2,12 +2,13 @@
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
+using PostItNoteRacing.Plugin.Telemetry;
 using System;
 using System.Linq;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class TelemetryViewModel : SettingsViewModel<Telemetry>
+    internal class TelemetryViewModel : SettingsViewModel<Models.Telemetry>
     {
         private Session _session;
 

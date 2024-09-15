@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class Driver : Entity, INotifyBestLapChanged
     {

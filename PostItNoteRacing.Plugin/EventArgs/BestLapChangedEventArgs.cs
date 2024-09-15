@@ -1,4 +1,4 @@
-﻿using PostItNoteRacing.Plugin.Models;
+﻿using PostItNoteRacing.Plugin.Telemetry;
 
 namespace PostItNoteRacing.Plugin.EventArgs
 {

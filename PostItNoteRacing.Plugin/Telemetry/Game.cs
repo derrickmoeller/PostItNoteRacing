@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class Game(string name)
     {

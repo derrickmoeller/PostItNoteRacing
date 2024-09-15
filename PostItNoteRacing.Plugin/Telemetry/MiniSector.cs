@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class MiniSector
     {

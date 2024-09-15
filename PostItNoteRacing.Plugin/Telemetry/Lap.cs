@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class Lap
     {

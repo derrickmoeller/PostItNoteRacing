@@ -1,7 +1,7 @@
 ﻿using PostItNoteRacing.Common;
 using PostItNoteRacing.Plugin.Interfaces;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal abstract class Entity : DisposableObject
     {

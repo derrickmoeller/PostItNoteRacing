@@ -4,6 +4,7 @@ using PostItNoteRacing.Common.Extensions;
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
+using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.ViewModels;
 using SimHub.Plugins;
 using System;
@@ -14,7 +15,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class Session : Entity
     {

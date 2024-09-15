@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace PostItNoteRacing.Plugin.Models
+namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class CarClass(IModifySimHub plugin, int index, object livePositionLock) : Entity(plugin, index), INotifyBestLapChanged
     {

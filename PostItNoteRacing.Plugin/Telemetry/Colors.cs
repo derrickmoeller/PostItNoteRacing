@@ -1,4 +1,4 @@
-﻿namespace PostItNoteRacing.Plugin.Models
+﻿namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal static class Colors
     {
