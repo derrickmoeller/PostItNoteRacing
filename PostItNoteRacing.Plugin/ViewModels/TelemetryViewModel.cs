@@ -19,7 +19,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             Plugin.AddAction("IncrementNLaps", (a, b) => NLaps++);
             Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
             Plugin.AddAction("NextReferenceLap", (a, b) => ReferenceLap++);
-            Plugin.AddAction("ToggleJSOverrides", (a, b) => OverrideJavaScriptFunctions = OverrideJavaScriptFunctions == false);
 
             Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
             Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
