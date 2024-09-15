@@ -850,29 +850,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 team.ActiveDriver = driver;
             }
 
-            if (CarClasses.SelectMany(x => x.Teams).Count(x => x.IsPlayer == true) > 1)
-            {
-                foreach (var carClass in CarClasses.Where(x => x.Teams.Any(y => y.IsConnected == false && y.IsPlayer == true)))
-                {
-                    foreach (var team in carClass.Teams.Where(x => x.IsConnected == false && x.IsPlayer == true).ToList())
-                    {
-                        team.Dispose();
-
-                        carClass.Teams.Remove(team);
-                    }
-                }
-            }
-
-            if (CarClasses.Any(x => x.Teams.Count == 0))
-            {
-                foreach (var carClass in CarClasses.Where(x => x.Teams.Count == 0).ToList())
-                {
-                    carClass.Dispose();
-
-                    CarClasses.Remove(carClass);
-                }
-            }
-
             if (StatusDatabase.GetRawDataObject() is DataSampleEx iRacingData)
             {
                 iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
@@ -1040,9 +1017,21 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     }
                 }
 
-                foreach (var team in CarClasses.SelectMany(x => x.Teams).GetAbsent(StatusDatabase.Opponents, Game))
+                foreach (var carClass in CarClasses.Where(x => x.Teams.GetAbsent(StatusDatabase.Opponents, Game).Any() == true))
                 {
-                    team.LeaderboardPosition = -1;
+                    foreach (var team in carClass.Teams.GetAbsent(StatusDatabase.Opponents, Game).ToList())
+                    {
+                        team.Dispose();
+
+                        carClass.Teams.Remove(team);
+                    }
+                }
+
+                foreach (var carClass in CarClasses.Where(x => x.Teams.Any() == false).ToList())
+                {
+                    carClass.Dispose();
+
+                    CarClasses.Remove(carClass);
                 }
             }
         }
