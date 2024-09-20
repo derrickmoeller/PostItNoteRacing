@@ -917,8 +917,8 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         CalculateLivePositions();
                     }
 
-                    // 0, 30
-                    if (_counter % 30 == 0)
+                    // 0, 20, 40
+                    if (_counter % 20 == 0)
                     {
                         GenerateMiniSectors();
                     }
@@ -929,8 +929,8 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         CalculateGaps(_telemetry.EnableGapCalculations);
                     }
 
-                    // 2, 8, 14, 20, 26...
-                    if (_counter % 6 == 2)
+                    // 2, 6, 10, 14, 18...
+                    if (_counter % 4 == 2)
                     {
                         CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
                     }
