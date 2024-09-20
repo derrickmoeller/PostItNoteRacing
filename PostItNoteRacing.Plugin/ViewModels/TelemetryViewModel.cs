@@ -25,6 +25,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
             Plugin.AttachDelegate("Settings_ReferenceLap", () => ReferenceLap);
 
             Plugin.DataUpdated += OnPluginDataUpdated;
+            Session.DescriptionChanging += OnSessionDescriptionChanging;
         }
 
         public bool EnableGapCalculations
@@ -127,9 +128,8 @@ namespace PostItNoteRacing.Plugin.ViewModels
             {
                 if (_session != value)
                 {
-                    OnSessionChanging();
+                    _session?.Dispose();
                     _session = value;
-                    OnSessionChanged();
                 }
             }
         }
@@ -138,17 +138,14 @@ namespace PostItNoteRacing.Plugin.ViewModels
         {
             if (disposing)
             {
-                if (Session != null)
-                {
-                    Session.DescriptionChanging -= OnSessionDescriptionChanging;
-                    Session.Dispose();
-                }
+                Session?.Dispose();
 
                 Plugin.DetachDelegate("Settings_NLaps");
                 Plugin.DetachDelegate("Settings_OverrideJavaScriptFunctions");
                 Plugin.DetachDelegate("Settings_ReferenceLap");
 
                 Plugin.DataUpdated -= OnPluginDataUpdated;
+                Session.DescriptionChanging -= OnSessionDescriptionChanging;
             }
 
             base.Dispose(disposing);
@@ -163,23 +160,6 @@ namespace PostItNoteRacing.Plugin.ViewModels
             else
             {
                 Session = null;
-            }
-        }
-
-        private void OnSessionChanged()
-        {
-            if (Session != null)
-            {
-                Session.DescriptionChanging += OnSessionDescriptionChanging;
-            }
-        }
-
-        private void OnSessionChanging()
-        {
-            if (Session != null)
-            {
-                Session.DescriptionChanging -= OnSessionDescriptionChanging;
-                Session.Dispose();
             }
         }
 

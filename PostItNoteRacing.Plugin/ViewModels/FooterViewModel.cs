@@ -30,7 +30,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
                 return _gitHubVersion;
             }
-            set
+            private set
             {
                 if (_gitHubVersion != value)
                 {
@@ -45,7 +45,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
         public string ReleaseUrl
         {
             get => _releaseUrl;
-            set
+            private set
             {
                 if (_releaseUrl != value)
                 {

@@ -21,13 +21,14 @@ namespace PostItNoteRacing.Plugin.Telemetry
     {
         private static readonly double Weight = 1600 / Math.Log(2);
 
+        private static string _description;
+
         private readonly object _leaderboardLock = new();
         private readonly object _livePositionLock = new();
         private readonly TelemetryViewModel _telemetry;
 
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
-        private string _description;
         private Game _game;
         private int _incidents;
 
@@ -41,50 +42,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
             Plugin.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
-        public event EventHandler DescriptionChanging;
+        public static event EventHandler DescriptionChanging;
 
-        private ObservableCollection<CarClass> CarClasses
-        {
-            get
-            {
-                if (_carClasses == null)
-                {
-                    _carClasses = new ObservableCollection<CarClass>();
-                    _carClasses.CollectionChanged += OnCarClassesCollectionChanged;
-                }
-
-                return _carClasses;
-            }
-        }
-
-        private string Description
-        {
-            get => _description;
-            set
-            {
-                if (_description != value?.ToUpper())
-                {
-                    OnDescriptionChanging();
-                    _description = value?.ToUpper();
-                }
-            }
-        }
-
-        private Game Game
-        {
-            get => _game;
-            set
-            {
-                if (_game?.Name != value.Name)
-                {
-                    _game = value;
-                }
-            }
-        }
-
-        private bool IsMultiClass => CarClasses.Count > 1;
-
-        private bool IsPractice
+        public static bool IsPractice
         {
             get
             {
@@ -101,7 +61,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        private bool IsQualifying
+        public static bool IsQualifying
         {
             get
             {
@@ -117,7 +77,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        private bool IsRace
+        public static bool IsRace
         {
             get
             {
@@ -130,6 +90,47 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 }
             }
         }
+
+        private static string Description
+        {
+            get => _description;
+            set
+            {
+                if (_description != value?.ToUpper())
+                {
+                    OnDescriptionChanging();
+                    _description = value?.ToUpper();
+                }
+            }
+        }
+
+        private ObservableCollection<CarClass> CarClasses
+        {
+            get
+            {
+                if (_carClasses == null)
+                {
+                    _carClasses = new ObservableCollection<CarClass>();
+                    _carClasses.CollectionChanged += OnCarClassesCollectionChanged;
+                }
+
+                return _carClasses;
+            }
+        }
+
+        private Game Game
+        {
+            get => _game;
+            set
+            {
+                if (_game?.Name != value.Name)
+                {
+                    _game = value;
+                }
+            }
+        }
+
+        private bool IsMultiClass => CarClasses.Count > 1;
 
         private StatusDataBase StatusDatabase { get; set; }
 
@@ -210,6 +211,14 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 Time = TimeSpan.FromTicks(GetLinearInterpolation(trackPosition, lastSector.TrackPosition, nextSector.TrackPosition, lastSector.Time.Ticks, nextSector.Time.Ticks)),
                 TrackPosition = trackPosition,
             };
+        }
+
+        private static void OnDescriptionChanging()
+        {
+            if (Description != null)
+            {
+                DescriptionChanging?.Invoke(typeof(Session), System.EventArgs.Empty);
+            }
         }
 
         private void CalculateDeltas()
@@ -765,7 +774,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
                 {
-                    carClass = new CarClass(Plugin, CarClasses.Count() + 1, _livePositionLock)
+                    carClass = new CarClass(Plugin, (CarClasses.Max(x => (int?)x.Index) ?? 0) + 1, _livePositionLock)
                     {
                         Color = opponent.CarClassColor,
                         Name = opponent.CarClass,
@@ -778,7 +787,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 var team = carClass.Teams.GetUnique(opponent, Game);
                 if (team == null)
                 {
-                    team = new Team(Plugin, CarClasses.SelectMany(x => x.Teams).Count() + 1, carClass, _telemetry)
+                    team = new Team(Plugin, (CarClasses.SelectMany(x => x.Teams).Max(x => (int?)x.Index) ?? 0) + 1, carClass, _telemetry)
                     {
                         CarModel = opponent.CarName,
                         CarNumber = opponent.CarNumber,
@@ -834,7 +843,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 var driver = team.Drivers.SingleOrDefault(x => x.Name == opponent.Name);
                 if (driver == null)
                 {
-                    driver = new Driver(Plugin, CarClasses.SelectMany(x => x.Teams).SelectMany(x => x.Drivers).Count() + 1, carClass)
+                    driver = new Driver(Plugin, (CarClasses.SelectMany(x => x.Teams).SelectMany(x => x.Drivers).Max(x => (int?)x.Index) ?? 0) + 1, carClass)
                     {
                         IRating = opponent.IRacing_IRating,
                         License = new License
@@ -874,14 +883,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 {
                     carClass.Teams.CollectionChanged += OnTeamsCollectionChanged;
                 }
-            }
-        }
-
-        private void OnDescriptionChanging()
-        {
-            if (Description != null)
-            {
-                DescriptionChanging?.Invoke(this, System.EventArgs.Empty);
             }
         }
 

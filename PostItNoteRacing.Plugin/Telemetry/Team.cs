@@ -615,7 +615,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void OnLastLapChanged(Driver activeDriver)
         {
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsDirty == false && LastLap.Number > 1 && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
+            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsDirty == false && ((Session.IsRace == true && LastLap.Number > 1) || (Session.IsRace == false && LastLap.Number > 0)) && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 activeDriver.BestLap = LastLap;
             }
