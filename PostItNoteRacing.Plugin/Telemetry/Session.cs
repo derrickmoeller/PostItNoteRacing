@@ -24,6 +24,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private readonly object _leaderboardLock = new ();
         private readonly object _livePositionLock = new ();
+        private readonly Player _player;
         private readonly TelemetryViewModel _telemetry;
 
         private ObservableCollection<CarClass> _carClasses;
@@ -33,6 +34,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
         public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
             : base(plugin)
         {
+            _player = new Player(Plugin);
             _telemetry = telemetry;
 
             Plugin.DataUpdated += OnPluginDataUpdated;
@@ -144,6 +146,8 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             if (disposing)
             {
+                _player?.Dispose();
+
                 if (_carClasses != null)
                 {
                     foreach (var carClass in _carClasses)
@@ -178,7 +182,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             Plugin?.DetachDelegate("Game_IsSupported");
             Plugin?.DetachDelegate("Game_Name");
-            Plugin?.DetachDelegate("Player_Incidents");
             Plugin?.DetachDelegate("Session_Description");
             Plugin?.DetachDelegate("Session_IsMultiClass");
         }
