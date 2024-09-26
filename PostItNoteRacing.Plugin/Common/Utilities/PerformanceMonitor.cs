@@ -7,8 +7,8 @@ namespace PostItNoteRacing.Common.Utilities
 {
     public class PerformanceMonitor(int maxObservations = 1000)
     {
-        private readonly FixedSizeObservableCollection<double> _observations = new(maxObservations);
-        private readonly Stopwatch _stopwatch = new();
+        private readonly FixedSizeObservableCollection<double> _observations = new (maxObservations);
+        private readonly Stopwatch _stopwatch = new ();
 
         public double AvgObservation => _observations.Average();
 

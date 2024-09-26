@@ -1,5 +1,4 @@
 ﻿using GameReaderCommon;
-using IRacingReader;
 using PostItNoteRacing.Common.Extensions;
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
@@ -23,14 +22,13 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private static string _description;
 
-        private readonly object _leaderboardLock = new();
-        private readonly object _livePositionLock = new();
+        private readonly object _leaderboardLock = new ();
+        private readonly object _livePositionLock = new ();
         private readonly TelemetryViewModel _telemetry;
 
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
         private Game _game;
-        private int _incidents;
 
         public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
             : base(plugin)
@@ -138,7 +136,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             Plugin.AttachDelegate("Game_IsSupported", () => Game != null ? (Game.IsSupported?.ToString() ?? "Untested") : null);
             Plugin.AttachDelegate("Game_Name", () => Game?.Name);
-            Plugin.AttachDelegate("Player_Incidents", () => _incidents);
             Plugin.AttachDelegate("Session_Description", () => Description);
             Plugin.AttachDelegate("Session_IsMultiClass", () => IsMultiClass);
         }
@@ -857,13 +854,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 }
 
                 team.ActiveDriver = driver;
-            }
-
-            if (StatusDatabase.GetRawDataObject() is DataSampleEx iRacingData)
-            {
-                iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
-
-                _incidents = Convert.ToInt32(rawIncidents);
             }
         }
 

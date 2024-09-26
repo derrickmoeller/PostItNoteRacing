@@ -50,7 +50,7 @@ namespace PostItNoteRacing.Plugin
         {
             try
             {
-                _dataUpdated?.Invoke(this, new NotifyDataUpdatedEventArgs(data));
+                _dataUpdated?.Invoke(this, new NotifyDataUpdatedEventArgs(data, PluginManager.IsSimHubLicenceValid));
             }
             catch (Exception ex)
             {

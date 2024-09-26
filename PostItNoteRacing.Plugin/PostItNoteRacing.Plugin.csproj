@@ -133,6 +133,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Telemetry\Player.cs" />
     <Compile Include="Telemetry\Session.cs" />
     <Compile Include="Telemetry\Team.cs" />
     <Compile Include="Telemetry\License.cs" />
