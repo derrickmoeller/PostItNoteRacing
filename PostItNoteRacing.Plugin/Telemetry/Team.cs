@@ -644,15 +644,18 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
 
             var bestNLaps = GetBestNLapsFromLastNLaps();
-            if (bestNLaps.Count > BestNLaps.Count)
+            if (bestNLaps.Any())
             {
-                BestNLaps = bestNLaps;
-            }
-            else if (bestNLaps.Count == BestNLaps.Count)
-            {
-                if (TimeSpan.FromSeconds(bestNLaps.Average(x => x.Time.TotalSeconds)) < BestNLapsAverage)
+                if (bestNLaps.Count > BestNLaps.Count)
                 {
                     BestNLaps = bestNLaps;
+                }
+                else if (bestNLaps.Count == BestNLaps.Count)
+                {
+                    if (TimeSpan.FromSeconds(bestNLaps.Average(x => x.Time.TotalSeconds)) < BestNLapsAverage)
+                    {
+                        BestNLaps = bestNLaps;
+                    }
                 }
             }
         }

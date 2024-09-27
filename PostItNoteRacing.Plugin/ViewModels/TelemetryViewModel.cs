@@ -207,7 +207,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
 
         private void OnSessionDescriptionChanging(object sender, System.EventArgs e)
         {
-            Session = new Session(Plugin, this);
+            Session = null;
         }
 
         private void ResetBestLaps(PluginManager _, string __)
