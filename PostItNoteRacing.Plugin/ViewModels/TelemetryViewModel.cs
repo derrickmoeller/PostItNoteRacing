@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace PostItNoteRacing.Plugin.ViewModels
 {
-    internal class TelemetryViewModel : SettingsViewModel<Models.Telemetry>
+    internal class TelemetryViewModel : SettingsViewModel<Models.Telemetry>, IProvideSettings
     {
         private Session _session;
 
@@ -16,13 +16,16 @@ namespace PostItNoteRacing.Plugin.ViewModels
             : base(plugin, Resources.TelemetryViewModel_DisplayName)
         {
             Plugin.AddAction("DecrementNLaps", (a, b) => NLaps--);
+            Plugin.AddAction("DecrementXLaps", (a, b) => XLaps--);
             Plugin.AddAction("IncrementNLaps", (a, b) => NLaps++);
+            Plugin.AddAction("IncrementXLaps", (a, b) => XLaps++);
             Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
             Plugin.AddAction("NextReferenceLap", (a, b) => ReferenceLap++);
 
             Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
             Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
             Plugin.AttachDelegate("Settings_ReferenceLap", () => ReferenceLap);
+            Plugin.AttachDelegate("Settings_XLaps", () => XLaps);
 
             Plugin.DataUpdated += OnPluginDataUpdated;
             Session.DescriptionChanging += OnSessionDescriptionChanging;
@@ -121,6 +124,35 @@ namespace PostItNoteRacing.Plugin.ViewModels
             }
         }
 
+        public int XLaps
+        {
+            get => Entity.XLaps;
+            set
+            {
+                if (Entity.XLaps != value)
+                {
+                    if (value < XLapsMinimum)
+                    {
+                        Entity.XLaps = XLapsMaximum;
+                    }
+                    else if (value > XLapsMaximum)
+                    {
+                        Entity.XLaps = XLapsMinimum;
+                    }
+                    else
+                    {
+                        Entity.XLaps = value;
+                    }
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int XLapsMaximum { get; } = 50;
+
+        public int XLapsMinimum { get; } = 1;
+
         private Session Session
         {
             get => _session;
@@ -143,6 +175,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
                 Plugin.DetachDelegate("Settings_NLaps");
                 Plugin.DetachDelegate("Settings_OverrideJavaScriptFunctions");
                 Plugin.DetachDelegate("Settings_ReferenceLap");
+                Plugin.DetachDelegate("Settings_XLaps");
 
                 Plugin.DataUpdated -= OnPluginDataUpdated;
                 Session.DescriptionChanging -= OnSessionDescriptionChanging;

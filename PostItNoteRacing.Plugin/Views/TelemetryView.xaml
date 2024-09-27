@@ -29,15 +29,20 @@
                         <RowDefinition />
                         <RowDefinition />
                         <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="0" ActionName="PostItNoteRacing.ResetBestLaps" FriendlyName="Reset Best Laps" />
                     <ui:TitledSlider Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Title="N Laps (Best / Last)" Maximum="{Binding NLapsMaximum}" Minimum="{Binding NLapsMinimum}" Value="{Binding NLaps}" VerticalAlignment="Bottom" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="1" ActionName="PostItNoteRacing.IncrementNLaps" FriendlyName="Increment N Laps" />
                     <ui:ControlsEditor Grid.Column="1" Grid.Row="2" ActionName="PostItNoteRacing.DecrementNLaps" FriendlyName="Decrement N Laps" />
-                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Reference Lap" Margin="5,-3" VerticalAlignment="Bottom" />
-                    <ComboBox Grid.Column="0" Grid.Row="4" ItemsSource="{Binding Source={common.extensions:EnumBindingSource {x:Type local.models:ReferenceLap}}}" SelectedItem="{Binding ReferenceLap}" Margin="5,10,6,10" />
-                    <ui:ControlsEditor Grid.Column="1" Grid.Row="3" ActionName="PostItNoteRacing.NextReferenceLap" FriendlyName="Next Reference Lap" />
-                    <ui:ControlsEditor Grid.Column="1" Grid.Row="4" ActionName="PostItNoteRacing.LastReferenceLap" FriendlyName="Last Reference Lap" />
+                    <ui:TitledSlider Grid.Column="0" Grid.Row="3" Grid.RowSpan="2" Title="X Laps (Brakes / Tires)" Maximum="{Binding XLapsMaximum}" Minimum="{Binding XLapsMinimum}" Value="{Binding XLaps}" VerticalAlignment="Bottom" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="3" ActionName="PostItNoteRacing.IncrementXLaps" FriendlyName="Increment X Laps" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="4" ActionName="PostItNoteRacing.DecrementXLaps" FriendlyName="Decrement X Laps" />
+                    <TextBlock Grid.Column="0" Grid.Row="5" Text="Reference Lap" Margin="5,-3" VerticalAlignment="Bottom" />
+                    <ComboBox Grid.Column="0" Grid.Row="6" ItemsSource="{Binding Source={common.extensions:EnumBindingSource {x:Type local.models:ReferenceLap}}}" SelectedItem="{Binding ReferenceLap}" Margin="5,10,6,10" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="5" ActionName="PostItNoteRacing.NextReferenceLap" FriendlyName="Next Reference Lap" />
+                    <ui:ControlsEditor Grid.Column="1" Grid.Row="6" ActionName="PostItNoteRacing.LastReferenceLap" FriendlyName="Last Reference Lap" />
                 </Grid>
             </styles:SHSubSection>
             <styles:SHSubSection Grid.Column="1" Title="Toggles">

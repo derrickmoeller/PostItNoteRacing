@@ -14,14 +14,18 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private readonly CornerTelemetry _brakeTemperatures = new ();
         private readonly CornerTelemetry _tirePressures = new ();
         private readonly CornerTelemetry _tireTemperatures = new ();
+
         private readonly IModifySimHub _plugin;
+        private readonly IProvideSettings _settingsProvider;
 
         private int _counter;
 
-        public Player(IModifySimHub plugin)
+        public Player(IModifySimHub plugin, IProvideSettings settingsProvider)
         {
             _plugin = plugin;
             _plugin.DataUpdated += OnPluginDataUpdated;
+
+            _settingsProvider = settingsProvider;
 
             AttachDelegates();
         }
@@ -124,7 +128,13 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void GetBrakeTemperatures()
         {
-            _brakeTemperatures.AddValues(StatusDatabase.BrakeTemperatureFrontLeft, StatusDatabase.BrakeTemperatureFrontRight, StatusDatabase.BrakeTemperatureRearLeft, StatusDatabase.BrakeTemperatureRearRight, 80);
+            _brakeTemperatures.AddValues(
+                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
+                StatusDatabase.BrakeTemperatureFrontLeft,
+                StatusDatabase.BrakeTemperatureFrontRight,
+                StatusDatabase.BrakeTemperatureRearLeft,
+                StatusDatabase.BrakeTemperatureRearRight,
+                _settingsProvider.XLaps);
         }
 
         private void GetIncidents()
@@ -139,12 +149,24 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void GetTirePressures()
         {
-            _tirePressures.AddValues(StatusDatabase.TyrePressureFrontLeft, StatusDatabase.TyrePressureFrontRight, StatusDatabase.TyrePressureRearLeft, StatusDatabase.TyrePressureRearRight, 80);
+            _tirePressures.AddValues(
+                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
+                StatusDatabase.TyrePressureFrontLeft,
+                StatusDatabase.TyrePressureFrontRight,
+                StatusDatabase.TyrePressureRearLeft,
+                StatusDatabase.TyrePressureRearRight,
+                _settingsProvider.XLaps);
         }
 
         private void GetTireTemperatures()
         {
-            _tireTemperatures.AddValues(StatusDatabase.TyreTemperatureFrontLeft, StatusDatabase.TyreTemperatureFrontRight, StatusDatabase.TyreTemperatureRearLeft, StatusDatabase.TyreTemperatureRearRight, 80);
+            _tireTemperatures.AddValues(
+                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
+                StatusDatabase.TyreTemperatureFrontLeft,
+                StatusDatabase.TyreTemperatureFrontRight,
+                StatusDatabase.TyreTemperatureRearLeft,
+                StatusDatabase.TyreTemperatureRearRight,
+                _settingsProvider.XLaps);
         }
 
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
@@ -261,7 +283,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private class CornerTelemetry
         {
-            private readonly Queue<(double FrontLeft, double FrontRight, double RearLeft, double RearRight)> _values = new ();
+            private readonly Queue<(double LapHighPrecision, double FrontLeft, double FrontRight, double RearLeft, double RearRight)> _values = new ();
 
             public double FrontLeft => _values.LastOrDefault().FrontLeft;
 
@@ -279,11 +301,11 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
             public double RearRightAverage { get; private set; }
 
-            public void AddValues(double frontLeft, double frontRight, double rearLeft, double rearRight, int maxSamples)
+            public void AddValues(double lapHighPrecision, double frontLeft, double frontRight, double rearLeft, double rearRight, int lapsToAverage)
             {
-                _values.Enqueue((frontLeft, frontRight, rearLeft, rearRight));
+                _values.Enqueue((lapHighPrecision, frontLeft, frontRight, rearLeft, rearRight));
 
-                while (_values.Count > maxSamples)
+                while (_values.Any(x => x.LapHighPrecision < lapHighPrecision - lapsToAverage))
                 {
                     _values.Dequeue();
                 }

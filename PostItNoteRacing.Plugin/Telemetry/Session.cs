@@ -25,17 +25,17 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private readonly object _leaderboardLock = new ();
         private readonly object _livePositionLock = new ();
         private readonly Player _player;
-        private readonly TelemetryViewModel _telemetry;
+        private readonly IProvideSettings _settingsProvider;
 
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
         private Game _game;
 
-        public Session(IModifySimHub plugin, TelemetryViewModel telemetry)
+        public Session(IModifySimHub plugin, IProvideSettings settingsProvider)
             : base(plugin)
         {
-            _player = new Player(Plugin);
-            _telemetry = telemetry;
+            _settingsProvider = settingsProvider;
+            _player = new Player(Plugin, _settingsProvider);
 
             Plugin.DataUpdated += OnPluginDataUpdated;
 
@@ -533,7 +533,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                             team.GapToLeader = GetGap(team, leader, team.GapToLeader);
                         }
 
-                        team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader, _telemetry.EnableInverseGapStrings);
+                        team.GapToLeaderString = GetGapAsString(team, leader, team.GapToLeader, _settingsProvider.EnableInverseGapStrings);
                     }
 
                     if (classLeader != null)
@@ -545,7 +545,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                             team.GapToClassLeader = GetGap(team, classLeader, team.GapToClassLeader);
                         }
 
-                        team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader, _telemetry.EnableInverseGapStrings);
+                        team.GapToClassLeaderString = GetGapAsString(team, classLeader, team.GapToClassLeader, _settingsProvider.EnableInverseGapStrings);
                     }
 
                     if (player != null)
@@ -559,7 +559,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                             team.RelativeGapToPlayer = GetRelativeGap(team, player, team.RelativeGapToPlayer);
                         }
 
-                        team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer, _telemetry.EnableInverseGapStrings);
+                        team.GapToPlayerString = GetGapAsString(team, player, team.GapToPlayer, _settingsProvider.EnableInverseGapStrings);
                     }
 
                     if (team.LivePosition == 1)
@@ -787,7 +787,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 var team = carClass.Teams.GetUnique(opponent, Game);
                 if (team == null)
                 {
-                    team = new Team(Plugin, (CarClasses.SelectMany(x => x.Teams).Max(x => (int?)x.Index) ?? 0) + 1, carClass, _telemetry)
+                    team = new Team(Plugin, (CarClasses.SelectMany(x => x.Teams).Max(x => (int?)x.Index) ?? 0) + 1, carClass, _settingsProvider)
                     {
                         CarModel = opponent.CarName,
                         CarNumber = opponent.CarNumber,
@@ -919,13 +919,13 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     // 0, 6, 12, 18, 24...
                     if (_counter % 6 == 0)
                     {
-                        CalculateGaps(_telemetry.EnableGapCalculations);
+                        CalculateGaps(_settingsProvider.EnableGapCalculations);
                     }
 
                     // 2, 6, 10, 14, 18...
                     if (_counter % 4 == 2)
                     {
-                        CalculateEstimatedLapTimes(_telemetry.ReferenceLap);
+                        CalculateEstimatedLapTimes(_settingsProvider.ReferenceLap);
                     }
 
                     // 4, 34

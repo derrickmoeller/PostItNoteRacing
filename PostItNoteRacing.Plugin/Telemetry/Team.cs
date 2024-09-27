@@ -15,7 +15,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
     internal class Team : Entity, INotifyBestLapChanged
     {
         private readonly INotifyBestLapChanged _carClass;
-        private readonly TelemetryViewModel _telemetry;
+        private readonly IProvideSettings _settingsProvider;
 
         private Lap _bestLap;
         private List<Lap> _bestNLaps;
@@ -24,14 +24,14 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private ObservableCollection<Lap> _lastNLaps;
         private Lap _lastLap;
 
-        public Team(IModifySimHub plugin, int index, INotifyBestLapChanged carClass, TelemetryViewModel telemetry)
+        public Team(IModifySimHub plugin, int index, INotifyBestLapChanged carClass, IProvideSettings settingsProvider)
             : base(plugin, index)
         {
             _carClass = carClass;
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
 
-            _telemetry = telemetry;
-            _telemetry.PropertyChanged += OnTelemetryPropertyChanged;
+            _settingsProvider = settingsProvider;
+            _settingsProvider.PropertyChanged += OnSettingsProviderPropertyChanged;
         }
 
         public Driver ActiveDriver { get; set; }
@@ -147,7 +147,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             {
                 TimeSpan? referenceLapTime;
 
-                switch (_telemetry.ReferenceLap)
+                switch (_settingsProvider.ReferenceLap)
                 {
                     case ReferenceLap.PersonalBest:
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
@@ -168,7 +168,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         referenceLapTime = BestLap?.Time - TimeSpan.FromSeconds(DeltaToBest);
                         break;
                     default:
-                        throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
+                        throw new InvalidEnumArgumentException(nameof(_settingsProvider.ReferenceLap), (int)_settingsProvider.ReferenceLap, typeof(ReferenceLap));
                 }
 
                 return (EstimatedLapTime - referenceLapTime)?.TotalSeconds ?? 0D;
@@ -181,7 +181,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             {
                 TimeSpan? referenceLapTime;
 
-                switch (_telemetry.ReferenceLap)
+                switch (_settingsProvider.ReferenceLap)
                 {
                     case ReferenceLap.PersonalBest:
                         referenceLapTime = ActiveDriver?.BestLap?.Time;
@@ -202,7 +202,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         referenceLapTime = BestLap?.Time - TimeSpan.FromSeconds(DeltaToBest);
                         break;
                     default:
-                        throw new InvalidEnumArgumentException(nameof(_telemetry.ReferenceLap), (int)_telemetry.ReferenceLap, typeof(ReferenceLap));
+                        throw new InvalidEnumArgumentException(nameof(_settingsProvider.ReferenceLap), (int)_settingsProvider.ReferenceLap, typeof(ReferenceLap));
                 }
 
                 if (EstimatedLapTime <= referenceLapTime)
@@ -406,7 +406,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        public string RelativeGapToPlayerString => _telemetry.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
+        public string RelativeGapToPlayerString => _settingsProvider.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
         public string TireCompound { get; set; }
 
@@ -483,9 +483,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     _lastNLaps.CollectionChanged -= OnLastNLapsCollectionChanged;
                 }
 
-                if (_telemetry != null)
+                if (_settingsProvider != null)
                 {
-                    _telemetry.PropertyChanged -= OnTelemetryPropertyChanged;
+                    _settingsProvider.PropertyChanged -= OnSettingsProviderPropertyChanged;
                 }
             }
 
@@ -622,9 +622,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
             if (LastLap.Number > 0)
             {
-                if (LastNLaps.Count() == _telemetry.NLaps)
+                if (LastNLaps.Count() == _settingsProvider.NLaps)
                 {
-                    LastNLaps.RemoveAt(_telemetry.NLaps - 1);
+                    LastNLaps.RemoveAt(_settingsProvider.NLaps - 1);
                 }
 
                 LastNLaps.Insert(0, LastLap);
@@ -641,21 +641,21 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        private void OnTelemetryPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnSettingsProviderPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(TelemetryViewModel.NLaps))
+            if (e.PropertyName == nameof(_settingsProvider.NLaps))
             {
-                if (BestNLaps.Count() > _telemetry.NLaps)
+                if (BestNLaps.Count() > _settingsProvider.NLaps)
                 {
-                    foreach (var lap in BestNLaps.Skip(_telemetry.NLaps).ToList())
+                    foreach (var lap in BestNLaps.Skip(_settingsProvider.NLaps).ToList())
                     {
                         BestNLaps.Remove(lap);
                     }
                 }
 
-                if (LastNLaps.Count() > _telemetry.NLaps)
+                if (LastNLaps.Count() > _settingsProvider.NLaps)
                 {
-                    foreach (var lap in LastNLaps.Skip(_telemetry.NLaps).ToList())
+                    foreach (var lap in LastNLaps.Skip(_settingsProvider.NLaps).ToList())
                     {
                         LastNLaps.Remove(lap);
                     }
