@@ -889,7 +889,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 {
                     _statusDatabase = e.Data.NewData;
 
-                    if (e.IsLicensed) // 60Hz
+                    if (e.Is60Hz)
                     {
                         if (_counter > 59)
                         {
@@ -940,7 +940,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                             CalculateIRating();
                         }
                     }
-                    else // 10Hz
+                    else
                     {
                         if (_counter > 29)
                         {

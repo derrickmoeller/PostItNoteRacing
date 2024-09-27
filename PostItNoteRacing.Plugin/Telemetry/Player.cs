@@ -105,11 +105,11 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             _counter++;
 
-            if (OnTrack(e.Data) == true)
+            if (IsOnTrack(e.Data))
             {
                 _statusDatabase = e.Data.NewData;
 
-                if (e.IsLicensed == true) // 60Hz
+                if (e.Is60Hz)
                 {
                     if (_counter > 179)
                     {
@@ -140,7 +140,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         GetIncidents();
                     }
                 }
-                else // 10Hz
+                else
                 {
                     if (_counter > 29)
                     {
@@ -174,7 +174,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        private bool OnTrack(GameData data)
+        private bool IsOnTrack(GameData data)
         {
             return data.GameRunning &&
                 data.NewData != null &&

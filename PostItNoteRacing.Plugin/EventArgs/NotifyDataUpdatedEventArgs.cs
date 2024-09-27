@@ -6,6 +6,6 @@ namespace PostItNoteRacing.Plugin.EventArgs
     {
         public GameData Data { get; } = data;
 
-        public bool IsLicensed { get; } = isLicensed;
+        public bool Is60Hz { get; } = isLicensed;
     }
 }
