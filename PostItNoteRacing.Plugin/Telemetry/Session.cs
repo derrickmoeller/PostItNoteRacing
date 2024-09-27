@@ -38,8 +38,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
             _player = new Player(Plugin, _settingsProvider);
 
             Plugin.DataUpdated += OnPluginDataUpdated;
-
-            Plugin.AddAction("ResetBestLaps", ResetBestLaps);
         }
 
         public static event EventHandler DescriptionChanging;
@@ -131,6 +129,14 @@ namespace PostItNoteRacing.Plugin.Telemetry
         }
 
         private bool IsMultiClass => CarClasses.Count > 1;
+
+        public void ResetBestLaps()
+        {
+            foreach (var driver in CarClasses.SelectMany(x => x.Teams).SelectMany(x => x.Drivers))
+            {
+                driver.BestLap = null;
+            }
+        }
 
         protected override void AttachDelegates()
         {
@@ -1027,14 +1033,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                         }
                     });
                 }
-            }
-        }
-
-        private void ResetBestLaps(PluginManager _, string __)
-        {
-            foreach (var driver in CarClasses.SelectMany(x => x.Teams).SelectMany(x => x.Drivers))
-            {
-                driver.BestLap = null;
             }
         }
 

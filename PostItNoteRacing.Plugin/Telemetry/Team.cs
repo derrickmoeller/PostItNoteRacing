@@ -2,7 +2,6 @@
 using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
-using PostItNoteRacing.Plugin.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

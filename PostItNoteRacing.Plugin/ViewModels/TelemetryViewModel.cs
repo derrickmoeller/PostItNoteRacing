@@ -3,6 +3,7 @@ using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
 using PostItNoteRacing.Plugin.Properties;
 using PostItNoteRacing.Plugin.Telemetry;
+using SimHub.Plugins;
 using System;
 using System.Linq;
 
@@ -21,6 +22,7 @@ namespace PostItNoteRacing.Plugin.ViewModels
             Plugin.AddAction("IncrementXLaps", (a, b) => XLaps++);
             Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
             Plugin.AddAction("NextReferenceLap", (a, b) => ReferenceLap++);
+            Plugin.AddAction("ResetBestLaps", ResetBestLaps);
 
             Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
             Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
@@ -199,6 +201,11 @@ namespace PostItNoteRacing.Plugin.ViewModels
         private void OnSessionDescriptionChanging(object sender, System.EventArgs e)
         {
             Session = new Session(Plugin, this);
+        }
+
+        private void ResetBestLaps(PluginManager _, string __)
+        {
+            Session?.ResetBestLaps();
         }
     }
 }
