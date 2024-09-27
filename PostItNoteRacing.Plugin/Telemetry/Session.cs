@@ -1055,6 +1055,11 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 {
                     foreach (var team in carClass.Teams.GetAbsent(_statusDatabase.Opponents, Game).ToList())
                     {
+                        foreach (var driver in team.Drivers)
+                        {
+                            driver.Dispose();
+                        }
+
                         team.Dispose();
 
                         carClass.Teams.Remove(team);
