@@ -6,10 +6,10 @@ namespace PostItNoteRacing.Common.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static double StDev(this IEnumerable<double> values)
+        public static double StDev(this IEnumerable<double> source)
         {
-            double avg = values.Average();
-            return Math.Sqrt(values.Average(v => Math.Pow(v - avg, 2)));
+            double avg = source.Average();
+            return Math.Sqrt(source.Average(v => Math.Pow(v - avg, 2)));
         }
     }
 }

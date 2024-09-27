@@ -17,10 +17,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private readonly IProvideSettings _settingsProvider;
 
         private Lap _bestLap;
-        private List<Lap> _bestNLaps;
+        private List<Lap> _bestNLaps = new ();
         private Lap _currentLap;
         private ObservableCollection<Driver> _drivers;
-        private ObservableCollection<Lap> _lastNLaps;
         private Lap _lastLap;
 
         public Team(IModifySimHub plugin, int index, INotifyBestLapChanged carClass, IProvideSettings settingsProvider)
@@ -30,7 +29,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
             _carClass.BestLapChanged += OnCarClassBestLapChanged;
 
             _settingsProvider = settingsProvider;
-            _settingsProvider.PropertyChanged += OnSettingsProviderPropertyChanged;
         }
 
         public Driver ActiveDriver { get; set; }
@@ -50,28 +48,18 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         public List<Lap> BestNLaps
         {
-            get
+            get => _bestNLaps;
+            set
             {
-                _bestNLaps ??= new List<Lap>();
-
-                return _bestNLaps;
-            }
-        }
-
-        public TimeSpan? BestNLapsAverage
-        {
-            get
-            {
-                if (BestNLaps.Any() == false)
+                if (_bestNLaps != value)
                 {
-                    return null;
-                }
-                else
-                {
-                    return TimeSpan.FromSeconds(BestNLaps.Average(x => x.Time.TotalSeconds));
+                    _bestNLaps = value;
+                    OnBestNLapsChanged();
                 }
             }
         }
+
+        public TimeSpan? BestNLapsAverage { get; private set; }
 
         public string BestNLapsColor
         {
@@ -277,34 +265,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         public int LapsCompleted => (int)(CurrentLapHighPrecision ?? 0D);
 
-        public ObservableCollection<Lap> LastNLaps
-        {
-            get
-            {
-                if (_lastNLaps == null)
-                {
-                    _lastNLaps = new ObservableCollection<Lap>();
-                    _lastNLaps.CollectionChanged += OnLastNLapsCollectionChanged;
-                }
+        public Queue<Lap> LastNLaps { get; } = new Queue<Lap>();
 
-                return _lastNLaps;
-            }
-        }
-
-        public TimeSpan? LastNLapsAverage
-        {
-            get
-            {
-                if (LastNLaps.Any() == false)
-                {
-                    return null;
-                }
-                else
-                {
-                    return TimeSpan.FromSeconds(LastNLaps.Average(x => x.Time.TotalSeconds));
-                }
-            }
-        }
+        public TimeSpan? LastNLapsAverage { get; private set; }
 
         public string LastNLapsColor
         {
@@ -405,7 +368,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        public string RelativeGapToPlayerString => _settingsProvider.EnableInverseGapStrings == true ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
+        public string RelativeGapToPlayerString => _settingsProvider.EnableInverseGapStrings ? $"{RelativeGapToPlayer:-0.0;+0.0}" : $"{RelativeGapToPlayer:+0.0;-0.0}";
 
         public string TireCompound { get; set; }
 
@@ -476,16 +439,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     _drivers.RemoveAll();
                     _drivers.CollectionChanged -= OnDriversCollectionChanged;
                 }
-
-                if (_lastNLaps != null)
-                {
-                    _lastNLaps.CollectionChanged -= OnLastNLapsCollectionChanged;
-                }
-
-                if (_settingsProvider != null)
-                {
-                    _settingsProvider.PropertyChanged -= OnSettingsProviderPropertyChanged;
-                }
             }
 
             base.Dispose(disposing);
@@ -544,9 +497,45 @@ namespace PostItNoteRacing.Plugin.Telemetry
             Plugin?.DetachDelegate($"Team_{Index:D2}_TireCompound");
         }
 
+        private List<Lap> GetBestNLapsFromLastNLaps()
+        {
+            var bestNLaps = new List<Lap>();
+            int i = 0;
+
+            while (i < Math.Min(LastNLaps.Count(), _settingsProvider.NLaps))
+            {
+                var nLaps = LastNLaps.Skip(i).TakeWhile(x => !x.IsInLap && !x.IsOutLap && !x.IsDirty && ((!Session.IsRace && LastLap.Number > 0) || (Session.IsRace && LastLap.Number > 1)));
+                if (nLaps.Any())
+                {
+                    if (nLaps.Count() > bestNLaps.Count)
+                    {
+                        bestNLaps = [.. nLaps];
+                    }
+                    else if (nLaps.Count() == bestNLaps.Count)
+                    {
+                        if (TimeSpan.FromSeconds(nLaps.Average(x => x.Time.TotalSeconds)) < TimeSpan.FromSeconds(bestNLaps.Average(x => x.Time.TotalSeconds)))
+                        {
+                            bestNLaps = [.. nLaps];
+                        }
+                    }
+
+                    i += nLaps.Count();
+                }
+
+                i++;
+            }
+
+            return bestNLaps;
+        }
+
         private void OnBestLapChanged()
         {
             BestLapChanged?.Invoke(this, new BestLapChangedEventArgs(BestLap));
+        }
+
+        private void OnBestNLapsChanged()
+        {
+            BestNLapsAverage = BestNLaps != null ? TimeSpan.FromSeconds(BestNLaps.Average(x => x.Time.TotalSeconds)) : null;
         }
 
         private void OnCarClassBestLapChanged(object sender, BestLapChangedEventArgs e)
@@ -607,57 +596,63 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 {
                     driver.BestLapChanged += OnDriverBestLapChanged;
 
-                    Plugin.AttachDelegate($"Driver_{driver.Index:D3}_BestLapColor", () => driver.BestLapColor == Colors.White ? (IsPlayer == true ? Colors.Yellow : Colors.White) : driver.BestLapColor);
+                    Plugin.AttachDelegate($"Driver_{driver.Index:D3}_BestLapColor", () => driver.BestLapColor == Colors.White ? (IsPlayer ? Colors.Yellow : Colors.White) : driver.BestLapColor);
                 }
             }
         }
 
         private void OnLastLapChanged(Driver activeDriver)
         {
-            if (LastLap.IsInLap == false && LastLap.IsOutLap == false && LastLap.IsDirty == false && ((Session.IsRace == true && LastLap.Number > 1) || (Session.IsRace == false && LastLap.Number > 0)) && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
+            if (!LastLap.IsInLap && !LastLap.IsOutLap && !LastLap.IsDirty && ((!Session.IsRace && LastLap.Number > 0) || (Session.IsRace && LastLap.Number > 1)) && LastLap.Time < (activeDriver?.BestLap?.Time ?? TimeSpan.MaxValue))
             {
                 activeDriver.BestLap = LastLap;
             }
 
             if (LastLap.Number > 0)
             {
-                if (LastNLaps.Count() == _settingsProvider.NLaps)
+                LastNLaps.Enqueue(LastLap);
+
+                while (LastNLaps.Count > _settingsProvider.NLaps)
                 {
-                    LastNLaps.RemoveAt(_settingsProvider.NLaps - 1);
+                    LastNLaps.Dequeue();
                 }
 
-                LastNLaps.Insert(0, LastLap);
+                OnLastNLapsChanged();
             }
         }
 
-        private void OnLastNLapsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnLastNLapsChanged()
         {
-            if (BestNLaps.Count < LastNLaps.Count(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1) || LastNLapsAverage < BestNLapsAverage)
-            {
-                BestNLaps.Clear();
+            LastNLapsAverage = TimeSpan.FromSeconds(LastNLaps.Average(x => x.Time.TotalSeconds));
 
-                BestNLaps.AddRange(LastNLaps.Where(x => x.IsInLap == false && x.IsOutLap == false && x.IsDirty == false && x.Number > 1));
-            }
-        }
-
-        private void OnSettingsProviderPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(_settingsProvider.NLaps))
+            if (BestNLaps.Count > _settingsProvider.NLaps)
             {
-                if (BestNLaps.Count() > _settingsProvider.NLaps)
+                var bestNLapsAverage = TimeSpan.MaxValue;
+                int j = 0;
+
+                for (int i = 0; i < BestNLaps.Count - _settingsProvider.NLaps; i++)
                 {
-                    foreach (var lap in BestNLaps.Skip(_settingsProvider.NLaps).ToList())
+                    var nLapsAverage = TimeSpan.FromSeconds(BestNLaps.Skip(i).Take(_settingsProvider.NLaps).Average(x => x.Time.TotalSeconds));
+                    if (nLapsAverage < bestNLapsAverage)
                     {
-                        BestNLaps.Remove(lap);
+                        bestNLapsAverage = nLapsAverage;
+                        j = i;
                     }
                 }
 
-                if (LastNLaps.Count() > _settingsProvider.NLaps)
+                BestNLaps = [.. BestNLaps.Skip(j).Take(_settingsProvider.NLaps)];
+            }
+
+            var bestNLaps = GetBestNLapsFromLastNLaps();
+            if (bestNLaps.Count > BestNLaps.Count)
+            {
+                BestNLaps = bestNLaps;
+            }
+            else if (bestNLaps.Count == BestNLaps.Count)
+            {
+                if (TimeSpan.FromSeconds(bestNLaps.Average(x => x.Time.TotalSeconds)) < BestNLapsAverage)
                 {
-                    foreach (var lap in LastNLaps.Skip(_settingsProvider.NLaps).ToList())
-                    {
-                        LastNLaps.Remove(lap);
-                    }
+                    BestNLaps = bestNLaps;
                 }
             }
         }

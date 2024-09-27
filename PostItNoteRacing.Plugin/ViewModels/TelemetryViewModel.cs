@@ -16,20 +16,11 @@ namespace PostItNoteRacing.Plugin.ViewModels
         public TelemetryViewModel(IModifySimHub plugin)
             : base(plugin, Resources.TelemetryViewModel_DisplayName)
         {
-            Plugin.AddAction("DecrementNLaps", (a, b) => NLaps--);
-            Plugin.AddAction("DecrementXLaps", (a, b) => XLaps--);
-            Plugin.AddAction("IncrementNLaps", (a, b) => NLaps++);
-            Plugin.AddAction("IncrementXLaps", (a, b) => XLaps++);
-            Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
-            Plugin.AddAction("NextReferenceLap", (a, b) => ReferenceLap++);
-            Plugin.AddAction("ResetBestLaps", ResetBestLaps);
-
-            Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
-            Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
-            Plugin.AttachDelegate("Settings_ReferenceLap", () => ReferenceLap);
-            Plugin.AttachDelegate("Settings_XLaps", () => XLaps);
-
             Plugin.DataUpdated += OnPluginDataUpdated;
+
+            AddActions();
+            AttachDelegates();
+
             Session.DescriptionChanging += OnSessionDescriptionChanging;
         }
 
@@ -174,16 +165,32 @@ namespace PostItNoteRacing.Plugin.ViewModels
             {
                 Session?.Dispose();
 
-                Plugin.DetachDelegate("Settings_NLaps");
-                Plugin.DetachDelegate("Settings_OverrideJavaScriptFunctions");
-                Plugin.DetachDelegate("Settings_ReferenceLap");
-                Plugin.DetachDelegate("Settings_XLaps");
+                TryDetachDelegates();
 
                 Plugin.DataUpdated -= OnPluginDataUpdated;
                 Session.DescriptionChanging -= OnSessionDescriptionChanging;
             }
 
             base.Dispose(disposing);
+        }
+
+        private void AddActions()
+        {
+            Plugin.AddAction("DecrementNLaps", (a, b) => NLaps--);
+            Plugin.AddAction("DecrementXLaps", (a, b) => XLaps--);
+            Plugin.AddAction("IncrementNLaps", (a, b) => NLaps++);
+            Plugin.AddAction("IncrementXLaps", (a, b) => XLaps++);
+            Plugin.AddAction("LastReferenceLap", (a, b) => ReferenceLap--);
+            Plugin.AddAction("NextReferenceLap", (a, b) => ReferenceLap++);
+            Plugin.AddAction("ResetBestLaps", ResetBestLaps);
+        }
+
+        private void AttachDelegates()
+        {
+            Plugin.AttachDelegate("Settings_NLaps", () => NLaps);
+            Plugin.AttachDelegate("Settings_OverrideJavaScriptFunctions", () => OverrideJavaScriptFunctions);
+            Plugin.AttachDelegate("Settings_ReferenceLap", () => ReferenceLap);
+            Plugin.AttachDelegate("Settings_XLaps", () => XLaps);
         }
 
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
@@ -206,6 +213,14 @@ namespace PostItNoteRacing.Plugin.ViewModels
         private void ResetBestLaps(PluginManager _, string __)
         {
             Session?.ResetBestLaps();
+        }
+
+        private void TryDetachDelegates()
+        {
+            Plugin?.DetachDelegate("Settings_NLaps");
+            Plugin?.DetachDelegate("Settings_OverrideJavaScriptFunctions");
+            Plugin?.DetachDelegate("Settings_ReferenceLap");
+            Plugin?.DetachDelegate("Settings_XLaps");
         }
     }
 }

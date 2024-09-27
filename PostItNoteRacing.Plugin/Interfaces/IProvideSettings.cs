@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace PostItNoteRacing.Plugin.Interfaces
 {
-    internal interface IProvideSettings : INotifyPropertyChanged
+    internal interface IProvideSettings
     {
         bool EnableGapCalculations { get; }
 
