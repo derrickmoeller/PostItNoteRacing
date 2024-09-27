@@ -103,6 +103,10 @@ function sc_GetDriverPropertyFromRelativePosition(relativePosition, propertyName
     return sc_GetDriverPropertyFromLivePosition(position, propertyName);
 }
 
+function sc_GetPlayerProperty(propertyName) {
+    return $prop('PostItNoteRacing.Player_' + propertyName);
+}
+
 function sc_GetTeamPropertyFromAheadBehind(aheadBehind, propertyName) {
     let leaderboardPosition = getopponentleaderboardposition_aheadbehind(aheadBehind);
 
