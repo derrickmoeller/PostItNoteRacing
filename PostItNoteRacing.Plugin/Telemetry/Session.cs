@@ -4,7 +4,6 @@ using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
-using PostItNoteRacing.Plugin.ViewModels;
 using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
@@ -30,6 +29,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private ObservableCollection<CarClass> _carClasses;
         private short _counter;
         private Game _game;
+        private StatusDataBase _statusDatabase;
 
         public Session(IModifySimHub plugin, IProvideSettings settingsProvider)
             : base(plugin)
@@ -131,8 +131,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
         }
 
         private bool IsMultiClass => CarClasses.Count > 1;
-
-        private StatusDataBase StatusDatabase { get; set; }
 
         protected override void AttachDelegates()
         {
@@ -526,7 +524,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 {
                     if (leader != null)
                     {
-                        team.GapToLeader = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoLeader ?? 0D;
+                        team.GapToLeader = _statusDatabase.Opponents.GetUnique(team, Game)?.GaptoLeader ?? 0D;
 
                         if (enableGapCalculations == true)
                         {
@@ -538,7 +536,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
                     if (classLeader != null)
                     {
-                        team.GapToClassLeader = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoClassLeader ?? 0D;
+                        team.GapToClassLeader = _statusDatabase.Opponents.GetUnique(team, Game)?.GaptoClassLeader ?? 0D;
 
                         if (enableGapCalculations == true)
                         {
@@ -550,8 +548,8 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
                     if (player != null)
                     {
-                        team.GapToPlayer = StatusDatabase.Opponents.GetUnique(team, Game)?.GaptoPlayer ?? 0D;
-                        team.RelativeGapToPlayer = StatusDatabase.Opponents.GetUnique(team, Game)?.RelativeGapToPlayer;
+                        team.GapToPlayer = _statusDatabase.Opponents.GetUnique(team, Game)?.GaptoPlayer ?? 0D;
+                        team.RelativeGapToPlayer = _statusDatabase.Opponents.GetUnique(team, Game)?.RelativeGapToPlayer;
 
                         if (enableGapCalculations == true)
                         {
@@ -669,7 +667,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void GenerateMiniSectors()
         {
-            Parallel.ForEach(StatusDatabase.Opponents, opponent =>
+            Parallel.ForEach(_statusDatabase.Opponents, opponent =>
             {
                 var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
                 if (team != null)
@@ -767,9 +765,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 return null;
             }
 
-            Description = StatusDatabase.SessionTypeName;
+            Description = _statusDatabase.SessionTypeName;
 
-            foreach (var opponent in StatusDatabase.Opponents)
+            foreach (var opponent in _statusDatabase.Opponents)
             {
                 var carClass = CarClasses.SingleOrDefault(x => x.Name == opponent.CarClass);
                 if (carClass == null)
@@ -826,7 +824,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     });
                 }
 
-                if (IsRace == true && StatusDatabase.Flag_Green == 1 && team.CurrentLapHighPrecision < 1)
+                if (IsRace == true && _statusDatabase.Flag_Green == 1 && team.CurrentLapHighPrecision < 1)
                 {
                     if (Game.IsIRacing == true)
                     {
@@ -883,61 +881,103 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             _counter++;
 
-            if (_counter > 59)
-            {
-                _counter = 0;
-            }
-
             if (e.Data.GameRunning && e.Data.NewData != null)
             {
                 Game = new Game(e.Data.GameName);
 
                 if (Game.IsSupported != false)
                 {
-                    StatusDatabase = e.Data.NewData;
+                    _statusDatabase = e.Data.NewData;
 
-                    // 0, 4, 8, 12, 16...
-                    if (_counter % 4 == 0)
+                    if (e.IsLicensed) // 60Hz
                     {
+                        if (_counter > 59)
+                        {
+                            _counter = 0;
+                        }
+
+                        // 0, 4, 8, 12, 16...
+                        if (_counter % 4 == 0)
+                        {
+                            GetGameData();
+                        }
+
+                        UpdateLeaderboardPositions();
+
+                        // 0
+                        if (_counter % 60 == 0)
+                        {
+                            CalculateLivePositions();
+                        }
+
+                        // 0, 20, 40
+                        if (_counter % 20 == 0)
+                        {
+                            GenerateMiniSectors();
+                        }
+
+                        // 0, 6, 12, 18, 24...
+                        if (_counter % 6 == 0)
+                        {
+                            CalculateGaps(_settingsProvider.EnableGapCalculations);
+                        }
+
+                        // 2, 6, 10, 14, 18...
+                        if (_counter % 4 == 2)
+                        {
+                            CalculateEstimatedLapTimes(_settingsProvider.ReferenceLap);
+                        }
+
+                        // 4, 34
+                        if (_counter % 30 == 4)
+                        {
+                            CalculateDeltas();
+                        }
+
+                        // 30
+                        if (_counter % 60 == 30 && Game.IsIRacing == true)
+                        {
+                            CalculateIRating();
+                        }
+                    }
+                    else // 10Hz
+                    {
+                        if (_counter > 29)
+                        {
+                            _counter = 0;
+                        }
+
                         GetGameData();
-                    }
 
-                    UpdateLeaderboardPositions();
+                        UpdateLeaderboardPositions();
 
-                    // 0
-                    if (_counter % 60 == 0)
-                    {
-                        CalculateLivePositions();
-                    }
+                        // 0, 10, 20
+                        if (_counter % 10 == 0)
+                        {
+                            CalculateLivePositions();
+                        }
 
-                    // 0, 20, 40
-                    if (_counter % 20 == 0)
-                    {
-                        GenerateMiniSectors();
-                    }
+                        // 0, 5, 10, 15, 20...
+                        if (_counter % 5 == 0)
+                        {
+                            GenerateMiniSectors();
+                        }
 
-                    // 0, 6, 12, 18, 24...
-                    if (_counter % 6 == 0)
-                    {
                         CalculateGaps(_settingsProvider.EnableGapCalculations);
-                    }
 
-                    // 2, 6, 10, 14, 18...
-                    if (_counter % 4 == 2)
-                    {
                         CalculateEstimatedLapTimes(_settingsProvider.ReferenceLap);
-                    }
 
-                    // 4, 34
-                    if (_counter % 30 == 4)
-                    {
-                        CalculateDeltas();
-                    }
+                        // 3, 9, 15, 21, 27
+                        if (_counter % 6 == 2)
+                        {
+                            CalculateDeltas();
+                        }
 
-                    // 30
-                    if (_counter % 60 == 30 && Game.IsIRacing == true)
-                    {
-                        CalculateIRating();
+                        // 5, 15, 25
+                        if (_counter % 10 == 5 && Game.IsIRacing == true)
+                        {
+                            CalculateIRating();
+                        }
                     }
                 }
             }
@@ -1002,7 +1042,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
         {
             lock (_leaderboardLock)
             {
-                foreach (var (opponent, i) in StatusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
+                foreach (var (opponent, i) in _statusDatabase.Opponents.Select((opponent, i) => (opponent, i)))
                 {
                     var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
                     if (team != null)
@@ -1011,9 +1051,9 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     }
                 }
 
-                foreach (var carClass in CarClasses.Where(x => x.Teams.GetAbsent(StatusDatabase.Opponents, Game).Any() == true))
+                foreach (var carClass in CarClasses.Where(x => x.Teams.GetAbsent(_statusDatabase.Opponents, Game).Any() == true))
                 {
-                    foreach (var team in carClass.Teams.GetAbsent(StatusDatabase.Opponents, Game).ToList())
+                    foreach (var team in carClass.Teams.GetAbsent(_statusDatabase.Opponents, Game).ToList())
                     {
                         team.Dispose();
 
