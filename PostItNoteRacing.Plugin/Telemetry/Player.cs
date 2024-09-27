@@ -11,14 +11,15 @@ namespace PostItNoteRacing.Plugin.Telemetry
 {
     internal class Player : DisposableObject
     {
-        private readonly CornerTelemetry _brakeTemperatures = new ();
-        private readonly CornerTelemetry _tirePressures = new ();
-        private readonly CornerTelemetry _tireTemperatures = new ();
+        private readonly CornerTelemetry _brakeTemperatures;
+        private readonly CornerTelemetry _tirePressures;
+        private readonly CornerTelemetry _tireTemperatures;
 
         private readonly IModifySimHub _plugin;
         private readonly IProvideSettings _settingsProvider;
 
         private int _counter;
+        private StatusDataBase _statusDatabase;
 
         public Player(IModifySimHub plugin, IProvideSettings settingsProvider)
         {
@@ -27,60 +28,14 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
             _settingsProvider = settingsProvider;
 
+            _brakeTemperatures = new CornerTelemetry(_plugin, _settingsProvider, "BrakeTemperature");
+            _tirePressures = new CornerTelemetry(_plugin, _settingsProvider, "TirePressure");
+            _tireTemperatures = new CornerTelemetry(_plugin, _settingsProvider, "TireTemperature");
+
             AttachDelegates();
         }
 
-        private double BrakeTemperatureFrontLeft => _brakeTemperatures.FrontLeft;
-
-        private double BrakeTemperatureFrontLeftAverage => _brakeTemperatures.FrontLeftAverage;
-
-        private double BrakeTemperatureFrontRight => _brakeTemperatures.FrontRight;
-
-        private double BrakeTemperatureFrontRightAverage => _brakeTemperatures.FrontRightAverage;
-
-        private double BrakeTemperatureRearLeft => _brakeTemperatures.RearLeft;
-
-        private double BrakeTemperatureRearLeftAverage => _brakeTemperatures.RearLeftAverage;
-
-        private double BrakeTemperatureRearRight => _brakeTemperatures.RearRight;
-
-        private double BrakeTemperatureRearRightAverage => _brakeTemperatures.RearRightAverage;
-
         private int Incidents { get; set; }
-
-        private StatusDataBase StatusDatabase { get; set; }
-
-        private double TirePressureFrontLeft => _tirePressures.FrontLeft;
-
-        private double TirePressureFrontLeftAverage => _tirePressures.FrontLeftAverage;
-
-        private double TirePressureFrontRight => _tirePressures.FrontRight;
-
-        private double TirePressureFrontRightAverage => _tirePressures.FrontRightAverage;
-
-        private double TirePressureRearLeft => _tirePressures.RearLeft;
-
-        private double TirePressureRearLeftAverage => _tirePressures.RearLeftAverage;
-
-        private double TirePressureRearRight => _tirePressures.RearRight;
-
-        private double TirePressureRearRightAverage => _tirePressures.RearRightAverage;
-
-        private double TireTemperatureFrontLeft => _tireTemperatures.FrontLeft;
-
-        private double TireTemperatureFrontLeftAverage => _tireTemperatures.FrontLeftAverage;
-
-        private double TireTemperatureFrontRight => _tireTemperatures.FrontRight;
-
-        private double TireTemperatureFrontRightAverage => _tireTemperatures.FrontRightAverage;
-
-        private double TireTemperatureRearLeft => _tireTemperatures.RearLeft;
-
-        private double TireTemperatureRearLeftAverage => _tireTemperatures.RearLeftAverage;
-
-        private double TireTemperatureRearRight => _tireTemperatures.RearRight;
-
-        private double TireTemperatureRearRightAverage => _tireTemperatures.RearRightAverage;
 
         protected override void Dispose(bool disposing)
         {
@@ -91,6 +46,10 @@ namespace PostItNoteRacing.Plugin.Telemetry
                     _plugin.DataUpdated -= OnPluginDataUpdated;
                 }
 
+                _brakeTemperatures?.Dispose();
+                _tirePressures?.Dispose();
+                _tireTemperatures?.Dispose();
+
                 TryDetachDelegates();
             }
 
@@ -99,47 +58,22 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void AttachDelegates()
         {
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureFrontLeft)}", () => BrakeTemperatureFrontLeft);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureFrontLeftAverage)}", () => BrakeTemperatureFrontLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureFrontRight)}", () => BrakeTemperatureFrontRight);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureFrontRightAverage)}", () => BrakeTemperatureFrontRightAverage);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureRearLeft)}", () => BrakeTemperatureRearLeft);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureRearLeftAverage)}", () => BrakeTemperatureRearLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureRearRight)}", () => BrakeTemperatureRearRight);
-            _plugin.AttachDelegate($"Player_{nameof(BrakeTemperatureRearRightAverage)}", () => BrakeTemperatureRearRightAverage);
             _plugin.AttachDelegate($"Player_{nameof(Incidents)}", () => Incidents);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureFrontLeft)}", () => TirePressureFrontLeft);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureFrontLeftAverage)}", () => TirePressureFrontLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureFrontRight)}", () => TirePressureFrontRight);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureFrontRightAverage)}", () => TirePressureFrontRightAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureRearLeft)}", () => TirePressureRearLeft);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureRearLeftAverage)}", () => TirePressureRearLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureRearRight)}", () => TirePressureRearRight);
-            _plugin.AttachDelegate($"Player_{nameof(TirePressureRearRightAverage)}", () => TirePressureRearRightAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureFrontLeft)}", () => TireTemperatureFrontLeft);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureFrontLeftAverage)}", () => TireTemperatureFrontLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureFrontRight)}", () => TireTemperatureFrontRight);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureFrontRightAverage)}", () => TireTemperatureFrontRightAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureRearLeft)}", () => TireTemperatureRearLeft);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureRearLeftAverage)}", () => TireTemperatureRearLeftAverage);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureRearRight)}", () => TireTemperatureRearRight);
-            _plugin.AttachDelegate($"Player_{nameof(TireTemperatureRearRightAverage)}", () => TireTemperatureRearRightAverage);
         }
 
         private void GetBrakeTemperatures()
         {
             _brakeTemperatures.AddValues(
-                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
-                StatusDatabase.BrakeTemperatureFrontLeft,
-                StatusDatabase.BrakeTemperatureFrontRight,
-                StatusDatabase.BrakeTemperatureRearLeft,
-                StatusDatabase.BrakeTemperatureRearRight,
-                _settingsProvider.XLaps);
+                _statusDatabase.CurrentLap + _statusDatabase.TrackPositionPercent,
+                _statusDatabase.BrakeTemperatureFrontLeft,
+                _statusDatabase.BrakeTemperatureFrontRight,
+                _statusDatabase.BrakeTemperatureRearLeft,
+                _statusDatabase.BrakeTemperatureRearRight);
         }
 
         private void GetIncidents()
         {
-            if (StatusDatabase.GetRawDataObject() is DataSampleEx iRacingData)
+            if (_statusDatabase.GetRawDataObject() is DataSampleEx iRacingData)
             {
                 iRacingData.Telemetry.TryGetValue("PlayerCarTeamIncidentCount", out object rawIncidents);
 
@@ -150,23 +84,21 @@ namespace PostItNoteRacing.Plugin.Telemetry
         private void GetTirePressures()
         {
             _tirePressures.AddValues(
-                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
-                StatusDatabase.TyrePressureFrontLeft,
-                StatusDatabase.TyrePressureFrontRight,
-                StatusDatabase.TyrePressureRearLeft,
-                StatusDatabase.TyrePressureRearRight,
-                _settingsProvider.XLaps);
+                _statusDatabase.CurrentLap + _statusDatabase.TrackPositionPercent,
+                _statusDatabase.TyrePressureFrontLeft,
+                _statusDatabase.TyrePressureFrontRight,
+                _statusDatabase.TyrePressureRearLeft,
+                _statusDatabase.TyrePressureRearRight);
         }
 
         private void GetTireTemperatures()
         {
             _tireTemperatures.AddValues(
-                StatusDatabase.CurrentLap + StatusDatabase.TrackPositionPercent,
-                StatusDatabase.TyreTemperatureFrontLeft,
-                StatusDatabase.TyreTemperatureFrontRight,
-                StatusDatabase.TyreTemperatureRearLeft,
-                StatusDatabase.TyreTemperatureRearRight,
-                _settingsProvider.XLaps);
+                _statusDatabase.CurrentLap + _statusDatabase.TrackPositionPercent,
+                _statusDatabase.TyreTemperatureFrontLeft,
+                _statusDatabase.TyreTemperatureFrontRight,
+                _statusDatabase.TyreTemperatureRearLeft,
+                _statusDatabase.TyreTemperatureRearRight);
         }
 
         private void OnPluginDataUpdated(object sender, NotifyDataUpdatedEventArgs e)
@@ -175,7 +107,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
             if (OnTrack(e.Data) == true)
             {
-                StatusDatabase = e.Data.NewData;
+                _statusDatabase = e.Data.NewData;
 
                 if (e.IsLicensed == true) // 60Hz
                 {
@@ -254,58 +186,46 @@ namespace PostItNoteRacing.Plugin.Telemetry
 
         private void TryDetachDelegates()
         {
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureFrontLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureFrontLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureFrontRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureFrontRightAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureRearLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureRearLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureRearRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(BrakeTemperatureRearRightAverage)}");
             _plugin?.DetachDelegate($"Player_{nameof(Incidents)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureFrontLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureFrontLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureFrontRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureFrontRightAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureRearLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureRearLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureRearRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TirePressureRearRightAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureFrontLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureFrontLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureFrontRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureFrontRightAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureRearLeft)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureRearLeftAverage)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureRearRight)}");
-            _plugin?.DetachDelegate($"Player_{nameof(TireTemperatureRearRightAverage)}");
         }
 
-        private class CornerTelemetry
+        private class CornerTelemetry : DisposableObject
         {
+            private readonly string _description;
+            private readonly IModifySimHub _plugin;
+            private readonly IProvideSettings _settingsProvider;
             private readonly Queue<(double LapHighPrecision, double FrontLeft, double FrontRight, double RearLeft, double RearRight)> _values = new ();
 
-            public double FrontLeft => _values.LastOrDefault().FrontLeft;
+            public CornerTelemetry(IModifySimHub plugin, IProvideSettings settingsProvider, string description)
+            {
+                _plugin = plugin;
+                _settingsProvider = settingsProvider;
+                _description = description;
 
-            public double FrontLeftAverage { get; private set; }
+                AttachDelegates();
+            }
 
-            public double FrontRight => _values.LastOrDefault().FrontRight;
+            private double FrontLeft => _values.LastOrDefault().FrontLeft;
 
-            public double FrontRightAverage { get; private set; }
+            private double FrontLeftAverage { get; set; }
 
-            public double RearLeft => _values.LastOrDefault().RearLeft;
+            private double FrontRight => _values.LastOrDefault().FrontRight;
 
-            public double RearLeftAverage { get; private set; }
+            private double FrontRightAverage { get; set; }
 
-            public double RearRight => _values.LastOrDefault().RearRight;
+            private double RearLeft => _values.LastOrDefault().RearLeft;
 
-            public double RearRightAverage { get; private set; }
+            private double RearLeftAverage { get;  set; }
 
-            public void AddValues(double lapHighPrecision, double frontLeft, double frontRight, double rearLeft, double rearRight, int lapsToAverage)
+            private double RearRight => _values.LastOrDefault().RearRight;
+
+            private double RearRightAverage { get; set; }
+
+            public void AddValues(double lapHighPrecision, double frontLeft, double frontRight, double rearLeft, double rearRight)
             {
                 _values.Enqueue((lapHighPrecision, frontLeft, frontRight, rearLeft, rearRight));
 
-                while (_values.Any(x => x.LapHighPrecision < lapHighPrecision - lapsToAverage))
+                while (_values.Any(x => x.LapHighPrecision < lapHighPrecision - _settingsProvider.XLaps))
                 {
                     _values.Dequeue();
                 }
@@ -314,6 +234,40 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 FrontRightAverage = _values.Average(x => x.FrontRight);
                 RearLeftAverage = _values.Average(x => x.RearLeft);
                 RearRightAverage = _values.Average(x => x.RearRight);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    TryDetachDelegates();
+                }
+
+                base.Dispose(disposing);
+            }
+
+            private void AttachDelegates()
+            {
+                _plugin.AttachDelegate($"Player_{_description}{nameof(FrontLeft)}", () => FrontLeft);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(FrontLeftAverage)}", () => FrontLeftAverage);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(FrontRight)}", () => FrontRight);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(FrontRightAverage)}", () => FrontRightAverage);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(RearLeft)}", () => RearLeft);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(RearLeftAverage)}", () => RearLeftAverage);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(RearRight)}", () => RearRight);
+                _plugin.AttachDelegate($"Player_{_description}{nameof(RearRightAverage)}", () => RearRightAverage);
+            }
+
+            private void TryDetachDelegates()
+            {
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(FrontLeft)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(FrontLeftAverage)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(FrontRight)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(FrontRightAverage)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(RearLeft)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(RearLeftAverage)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(RearRight)}");
+                _plugin?.DetachDelegate($"Player_{_description}{nameof(RearRightAverage)}");
             }
         }
     }
