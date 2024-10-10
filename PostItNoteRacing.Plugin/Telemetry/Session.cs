@@ -4,7 +4,6 @@ using PostItNoteRacing.Plugin.EventArgs;
 using PostItNoteRacing.Plugin.Extensions;
 using PostItNoteRacing.Plugin.Interfaces;
 using PostItNoteRacing.Plugin.Models;
-using SimHub.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -678,37 +677,34 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 var team = CarClasses.SelectMany(x => x.Teams).GetUnique(opponent, Game);
                 if (team != null)
                 {
-                    if (team.IsPlayer == true || IsQualifying == false)
+                    if (opponent.CurrentLap > team.CurrentLap.Number)
                     {
-                        if (opponent.CurrentLap > team.CurrentLap.Number)
-                        {
-                            team.CurrentLap.IsInLap = opponent.IsCarInPitLane;
+                        team.CurrentLap.IsInLap = opponent.IsCarInPitLane;
 
-                            team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= 1);
-                            team.CurrentLap.MiniSectors.Add(new MiniSector
-                            {
-                                Time = opponent.LastLapTime,
-                                TrackPosition = 1,
-                            });
-
-                            team.CurrentLap = new Lap(opponent.CurrentLap.Value)
-                            {
-                                IsOutLap = opponent.IsCarInPitLane,
-                            };
-                        }
-
-                        if (team.CurrentLap.IsDirty == false)
-                        {
-                            team.CurrentLap.IsDirty = opponent.LapValid == false;
-                        }
-
-                        team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= opponent.TrackPositionPercent);
+                        team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= 1);
                         team.CurrentLap.MiniSectors.Add(new MiniSector
                         {
-                            Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
-                            TrackPosition = opponent.TrackPositionPercent ?? 0D,
+                            Time = opponent.LastLapTime,
+                            TrackPosition = 1,
                         });
+
+                        team.CurrentLap = new Lap(opponent.CurrentLap.Value)
+                        {
+                            IsOutLap = opponent.IsCarInPitLane,
+                        };
                     }
+
+                    if (team.CurrentLap.IsDirty == false)
+                    {
+                        team.CurrentLap.IsDirty = opponent.LapValid == false;
+                    }
+
+                    team.CurrentLap.MiniSectors.RemoveAll(x => x.TrackPosition >= opponent.TrackPositionPercent);
+                    team.CurrentLap.MiniSectors.Add(new MiniSector
+                    {
+                        Time = opponent.CurrentLapTime ?? TimeSpan.Zero,
+                        TrackPosition = opponent.TrackPositionPercent ?? 0D,
+                    });
                 }
             });
         }
@@ -817,17 +813,6 @@ namespace PostItNoteRacing.Plugin.Telemetry
                 else
                 {
                     team.IsInPit = true;
-                }
-
-                if (IsQualifying == true && opponent.BestLapTime > TimeSpan.Zero && opponent.BestLapTime < (team.BestLap?.Time ?? TimeSpan.MaxValue))
-                {
-                    team.BestLap = new Lap((opponent.CurrentLap - 1) ?? 0);
-
-                    team.BestLap.MiniSectors.Add(new MiniSector
-                    {
-                        Time = opponent.BestLapTime,
-                        TrackPosition = 1,
-                    });
                 }
 
                 if (IsRace == true && _statusDatabase.Flag_Green == 1 && team.CurrentLapHighPrecision < 1)
