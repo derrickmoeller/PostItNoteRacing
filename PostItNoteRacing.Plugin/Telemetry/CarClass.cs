@@ -62,7 +62,7 @@ namespace PostItNoteRacing.Plugin.Telemetry
             }
         }
 
-        public int StrengthOfField => GetStrengthOfField(Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value));
+        public int StrengthOfField => GetStrengthOfField(Teams.Where(x => x.IRating > 0).Select(x => x.IRating.Value).ToList());
 
         public string StrengthOfFieldString => $"{StrengthOfField / 1000D:0.0k}";
 
